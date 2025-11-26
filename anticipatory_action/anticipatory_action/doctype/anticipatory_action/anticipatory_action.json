@@ -1,0 +1,225 @@
+{
+ "actions": [],
+ "allow_guest_to_view": 1,
+ "allow_rename": 1,
+ "creation": "2025-11-26 12:21:58.362827",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "patner_details_section",
+  "name_of_implementing_entity_or_organization",
+  "entity_or_organization_type",
+  "funding_source_or_funding_organization",
+  "name_of_the_person_reporting",
+  "provide_email_of_the_person_reporting",
+  "anticipatory_actions_section",
+  "type_of_hazard_being_anticipated",
+  "is_this_anticipatory_activation_ongoing",
+  "sector",
+  "describe_the_early_action_intervention",
+  "did_you_have_any_coimplementing_partners",
+  "commencement_date_for_early_actions",
+  "end_date_for_the_early_actions",
+  "geographical_scope_and_intervention_details_section",
+  "county",
+  "subcounty",
+  "total_amount_for_the_aa_interventions_in_the_county_selected",
+  "estimated_number_of_households_to_be_reached",
+  "estimated_number_of_people_to_be_reached_in_the_county_selected",
+  "additional_details_section",
+  "what_triggers_and_thresholds_did_you_use",
+  "key_lessons_learnt_from_implementing_early_actions",
+  "challenges_faced_during_implemation_of_early_actions",
+  "recommendations_for_future_anticipatory_actions"
+ ],
+ "fields": [
+  {
+   "fieldname": "patner_details_section",
+   "fieldtype": "Section Break",
+   "label": "Patner Details"
+  },
+  {
+   "fieldname": "name_of_implementing_entity_or_organization",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name of implementing entity or organization",
+   "reqd": 1
+  },
+  {
+   "fieldname": "entity_or_organization_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Entity or organization type",
+   "options": "National government\nCounty government\nNGOs\nCBOs\nUN agencies\nFBOs\nPrivate",
+   "reqd": 1
+  },
+  {
+   "fieldname": "funding_source_or_funding_organization",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Funding source or funding organization",
+   "reqd": 1
+  },
+  {
+   "fieldname": "name_of_the_person_reporting",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name of the person reporting",
+   "reqd": 1
+  },
+  {
+   "description": "Provide official email or organisational email",
+   "fieldname": "provide_email_of_the_person_reporting",
+   "fieldtype": "Data",
+   "label": "Provide email of the person reporting"
+  },
+  {
+   "fieldname": "anticipatory_actions_section",
+   "fieldtype": "Section Break",
+   "label": "Anticipatory Actions"
+  },
+  {
+   "fieldname": "type_of_hazard_being_anticipated",
+   "fieldtype": "Select",
+   "label": "Type of hazard being anticipated?",
+   "options": "Drought\nFloods\nConflict\nDisease Outbreak\nDisplacement\nPest\nLandslides / Earth movements\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "is_this_anticipatory_activation_ongoing",
+   "fieldtype": "Select",
+   "label": "Is this anticipatory activation ongoing?",
+   "options": "Yes - currently ongoing\nNo - previously done / completed\nNot sure",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sector",
+   "fieldtype": "Select",
+   "label": "Sector",
+   "options": "Cash transfer\nFood security\nNutrition\nNon-Food Items (NFI)\nWater, Sanitation and Hygiene (WASH)\nShelter/Infrastructure\nVaccination/ fumigation\nEducation\nDRM and Cordination\nRisk Communication and Community Engagement",
+   "reqd": 1
+  },
+  {
+   "description": "Describe actual AA intervention carried out e.g.: distribution of early maturing seeds to farmers",
+   "fieldname": "describe_the_early_action_intervention",
+   "fieldtype": "Small Text",
+   "label": "Describe the early action intervention"
+  },
+  {
+   "fieldname": "did_you_have_any_coimplementing_partners",
+   "fieldtype": "Select",
+   "label": "Did you have any coimplementing partners?",
+   "options": "Yes\nNo\nNot Sure",
+   "reqd": 1
+  },
+  {
+   "fieldname": "commencement_date_for_early_actions",
+   "fieldtype": "Date",
+   "label": "Commencement date for early actions?",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date_for_the_early_actions",
+   "fieldtype": "Date",
+   "label": "End date for the early actions?",
+   "reqd": 1
+  },
+  {
+   "fieldname": "geographical_scope_and_intervention_details_section",
+   "fieldtype": "Section Break",
+   "label": "Geographical Scope and intervention details"
+  },
+  {
+   "fieldname": "county",
+   "fieldtype": "Link",
+   "label": "County",
+   "options": "Counties",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subcounty",
+   "fieldtype": "Link",
+   "label": "Subcounty",
+   "options": "Sub county",
+   "reqd": 1,
+   "get_query": "anticipatory_action.anticipatory_action.anticipatory_action.get_subcounties"
+
+  },
+  {
+   "fieldname": "total_amount_for_the_aa_interventions_in_the_county_selected",
+   "fieldtype": "Currency",
+   "label": "Total amount for the AA interventions in the county selected",
+   "reqd": 1
+  },
+  {
+   "description": " In the county selected",
+   "fieldname": "estimated_number_of_households_to_be_reached",
+   "fieldtype": "Int",
+   "label": "Estimated number of households to be reached",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "estimated_number_of_people_to_be_reached_in_the_county_selected",
+   "fieldtype": "Int",
+   "label": "Estimated number of people to be reached in the county selected",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "additional_details_section",
+   "fieldtype": "Section Break",
+   "label": "Additional details"
+  },
+  {
+   "fieldname": "what_triggers_and_thresholds_did_you_use",
+   "fieldtype": "Small Text",
+   "label": "What triggers and thresholds did you use?"
+  },
+  {
+   "description": "Describe the main take aways, insights, or good practices that emerged during implementation",
+   "fieldname": "key_lessons_learnt_from_implementing_early_actions",
+   "fieldtype": "Small Text",
+   "label": " Key Lessons Learnt from Implementing Early Actions"
+  },
+  {
+   "description": "List the difficulties, barriers, or constraints encountered.",
+   "fieldname": "challenges_faced_during_implemation_of_early_actions",
+   "fieldtype": "Small Text",
+   "label": "Challenges faced during implemation of early actions"
+  },
+  {
+   "description": "Suggest ways to improve anticipatory actions in the future.\n",
+   "fieldname": "recommendations_for_future_anticipatory_actions",
+   "fieldtype": "Small Text",
+   "label": "Recommendations for Future Anticipatory Actions"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-26 14:11:04.897224",
+ "modified_by": "Administrator",
+ "module": "Anticipatory Action",
+ "name": "Anticipatory Action",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
