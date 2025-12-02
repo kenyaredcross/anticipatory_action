@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class Subcounty(Document):
+class SubCountyAADetails(Document):
 	pass

@@ -2,6 +2,7 @@
  "actions": [],
  "allow_guest_to_view": 1,
  "allow_rename": 1,
+ "autoname": "format:AA-{YY}-{MM}-{####}",
  "creation": "2025-11-26 12:21:58.362827",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -10,26 +11,32 @@
   "name_of_implementing_entity_or_organization",
   "entity_or_organization_type",
   "funding_source_or_funding_organization",
+  "column_break_itco",
   "name_of_the_person_reporting",
   "provide_email_of_the_person_reporting",
   "anticipatory_actions_section",
   "type_of_hazard_being_anticipated",
   "is_this_anticipatory_activation_ongoing",
   "sector",
-  "describe_the_early_action_intervention",
+  "column_break_baci",
   "did_you_have_any_coimplementing_partners",
   "commencement_date_for_early_actions",
   "end_date_for_the_early_actions",
+  "section_break_ijje",
+  "describe_the_early_action_intervention",
   "geographical_scope_and_intervention_details_section",
   "county",
-  "subcounty",
+  "sub_county",
   "total_amount_for_the_aa_interventions_in_the_county_selected",
+  "column_break_ygcd",
   "estimated_number_of_households_to_be_reached",
   "estimated_number_of_people_to_be_reached_in_the_county_selected",
+  "section_break_gspj",
+  "sub_county_aa_details",
   "additional_details_section",
   "what_triggers_and_thresholds_did_you_use",
   "key_lessons_learnt_from_implementing_early_actions",
-  "challenges_faced_during_implemation_of_early_actions",
+  "challenges_faced_during_implimation_of_early_actions",
   "recommendations_for_future_anticipatory_actions"
  ],
  "fields": [
@@ -50,7 +57,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Entity or organization type",
-   "options": "National government\nCounty government\nNGOs\nCBOs\nUN agencies\nFBOs\nPrivate",
+   "options": "\nNational government\nCounty government\nNGOs\nCBOs\nUN agencies\nFBOs\nPrivate",
    "reqd": 1
   },
   {
@@ -82,14 +89,14 @@
    "fieldname": "type_of_hazard_being_anticipated",
    "fieldtype": "Select",
    "label": "Type of hazard being anticipated?",
-   "options": "Drought\nFloods\nConflict\nDisease Outbreak\nDisplacement\nPest\nLandslides / Earth movements\nOther",
+   "options": "\nDrought\nFloods\nConflict\nDisease Outbreak\nDisplacement\nPest\nLandslides / Earth movements\nOther",
    "reqd": 1
   },
   {
    "fieldname": "is_this_anticipatory_activation_ongoing",
    "fieldtype": "Select",
    "label": "Is this anticipatory activation ongoing?",
-   "options": "Yes - currently ongoing\nNo - previously done / completed\nNot sure",
+   "options": "\nYes - currently ongoing\nNo - previously done / completed\nNot sure",
    "reqd": 1
   },
   {
@@ -109,7 +116,7 @@
    "fieldname": "did_you_have_any_coimplementing_partners",
    "fieldtype": "Select",
    "label": "Did you have any coimplementing partners?",
-   "options": "Yes\nNo\nNot Sure",
+   "options": "\nYes\nNo\nNot Sure",
    "reqd": 1
   },
   {
@@ -133,17 +140,8 @@
    "fieldname": "county",
    "fieldtype": "Link",
    "label": "County",
-   "options": "Counties",
+   "options": "County",
    "reqd": 1
-  },
-  {
-   "fieldname": "subcounty",
-   "fieldtype": "Link",
-   "label": "Subcounty",
-   "options": "Sub county",
-   "reqd": 1,
-   "get_query": "anticipatory_action.anticipatory_action.anticipatory_action.get_subcounties"
-
   },
   {
    "fieldname": "total_amount_for_the_aa_interventions_in_the_county_selected",
@@ -183,25 +181,59 @@
    "label": " Key Lessons Learnt from Implementing Early Actions"
   },
   {
-   "description": "List the difficulties, barriers, or constraints encountered.",
-   "fieldname": "challenges_faced_during_implemation_of_early_actions",
-   "fieldtype": "Small Text",
-   "label": "Challenges faced during implemation of early actions"
-  },
-  {
    "description": "Suggest ways to improve anticipatory actions in the future.\n",
    "fieldname": "recommendations_for_future_anticipatory_actions",
    "fieldtype": "Small Text",
    "label": "Recommendations for Future Anticipatory Actions"
+  },
+  {
+   "fieldname": "column_break_itco",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_baci",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_ygcd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "List the difficulties, barriers, or constraints encountered.",
+   "fieldname": "challenges_faced_during_implimation_of_early_actions",
+   "fieldtype": "Small Text",
+   "label": "Challenges faced during implimation of early actions"
+  },
+  {
+   "fieldname": "section_break_ijje",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "sub_county",
+   "fieldtype": "Link",
+   "label": "Sub County",
+   "options": "Sub County",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_gspj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "sub_county_aa_details",
+   "fieldtype": "Table",
+   "label": "Sub County AA Details",
+   "options": "Sub County AA Details"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-26 14:11:04.897224",
+ "modified": "2025-12-01 04:24:47.584572",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
