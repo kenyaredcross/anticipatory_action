@@ -60,7 +60,7 @@
    "fieldname": "role",
    "fieldtype": "Select",
    "label": "Role",
-   "options": "Anticipatory Action User",
+   "options": "Anticipatory Action User\nAnticipatory Action Admin",
    "reqd": 1
   },
   {
@@ -85,7 +85,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-03 07:33:13.289550",
+ "modified": "2025-12-03 13:30:00.936626",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action User",
@@ -101,6 +101,17 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Anticipatory Action Admin",
    "share": 1,
    "write": 1
   }

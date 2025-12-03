@@ -19,12 +19,18 @@ class AnticipatoryActionUser(Document):
 				"first_name": self.first_name,
 				"last_name": self.last_name,
 				"enabled": 1, 
+				"role_profile_name": self.role,
+				"module_profile": self.role
+				
 
 			}
 		)
 
+	
 		new_user.append('roles', {
-			'role': self.role			
+			'role': self.role, 
+			# 'role_profile': self.role_profile,
+			# 'module_profile': self.module_profile		
 		})
 
 	
