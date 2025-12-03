@@ -13,6 +13,7 @@
   "funding_source_or_funding_organization",
   "column_break_itco",
   "created_by",
+  "name_of_person_creating",
   "user_phone_number",
   "user_email",
   "anticipatory_actions_section",
@@ -39,13 +40,11 @@
    "label": "Patner Details"
   },
   {
-   "fetch_from": "implementing_organization.type_of_organization",
    "fieldname": "entity_or_organization_type",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Entity or organization type",
-   "options": "\nNational government\nCounty government\nNGOs\nCBOs\nUN agencies\nFBOs\nPrivate",
-   "read_only": 1
+   "options": "\nNational government\nCounty government\nNGOs\nCBOs\nUN agencies\nFBOs\nPrivate"
   },
   {
    "fieldname": "funding_source_or_funding_organization",
@@ -175,12 +174,17 @@
    "in_list_view": 1,
    "label": "Implementing Organization",
    "options": "Anticipatory Action Organization"
+  },
+  {
+   "fieldname": "name_of_person_creating",
+   "fieldtype": "Data",
+   "label": "Name of Person Creating"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-03 13:54:06.678260",
+ "modified": "2025-12-03 14:27:41.101523",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action",
