@@ -12,19 +12,15 @@
   "entity_or_organization_type",
   "funding_source_or_funding_organization",
   "column_break_itco",
-  "created_by",
   "name_of_person_creating",
   "user_phone_number",
   "user_email",
   "anticipatory_actions_section",
   "type_of_hazard_being_anticipated",
-  "sector",
-  "column_break_baci",
   "activation_date",
+  "column_break_baci",
   "end_date",
   "did_you_have_any_coimplementing_partners",
-  "section_break_ijje",
-  "describe_the_early_action_intervention",
   "section_break_gspj",
   "anticipatory_action_details",
   "additional_details_section",
@@ -64,19 +60,6 @@
    "label": "Type of hazard being anticipated?",
    "options": "\nDrought\nFloods\nConflict\nDisease Outbreak\nDisplacement\nPest\nLandslides / Earth movements\nOther",
    "reqd": 1
-  },
-  {
-   "fieldname": "sector",
-   "fieldtype": "Select",
-   "label": "Sector",
-   "options": "Cash transfer\nFood security\nNutrition\nNon-Food Items (NFI)\nWater, Sanitation and Hygiene (WASH)\nShelter/Infrastructure\nVaccination/ fumigation\nEducation\nDRM and Cordination\nRisk Communication and Community Engagement",
-   "reqd": 1
-  },
-  {
-   "description": "Describe actual AA intervention carried out e.g.: distribution of early maturing seeds to farmers",
-   "fieldname": "describe_the_early_action_intervention",
-   "fieldtype": "Small Text",
-   "label": "Describe the early action intervention"
   },
   {
    "fieldname": "did_you_have_any_coimplementing_partners",
@@ -121,10 +104,6 @@
    "label": "Challenges faced during implimation of early actions"
   },
   {
-   "fieldname": "section_break_ijje",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "section_break_gspj",
    "fieldtype": "Section Break"
   },
@@ -145,14 +124,6 @@
    "fieldtype": "Table",
    "label": "Anticipatory Action Details",
    "options": "Anticipatory Action Details"
-  },
-  {
-   "default": "__user",
-   "fieldname": "created_by",
-   "fieldtype": "Link",
-   "label": "Created By",
-   "options": "User",
-   "read_only": 1
   },
   {
    "fetch_from": "created_by.phone",
@@ -184,7 +155,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-03 14:27:41.101523",
+ "modified": "2025-12-03 14:38:41.752249",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action",
