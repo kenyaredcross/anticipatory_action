@@ -6,18 +6,18 @@ from frappe.model.document import Document
 
 
 class AnticipatoryAction(Document):
-	pass
+	
 
 
-@frappe.whitelist()
-def get_subcounties(doctype, txt, searchfield, start, page_len, filters):
-    county = filters.get("county")
-    if not county:
-        return []
+    @frappe.whitelist()
+    def get_subcounties(doctype, txt, searchfield, start, page_len, filters):
+        county = filters.get("county")
+        if not county:
+            return []
 
-    return frappe.db.get_all(
-        "Sub County",
-        filters={"county": county},  # Only subcounties linked to this county
-        fields=["name"],
-        as_list=True
-    )
+        return frappe.db.get_all(
+            "Sub County",
+            filters={"county": county},  # Only subcounties linked to this county
+            fields=["name"],
+            as_list=True
+        )

@@ -1,0 +1,154 @@
+{
+ "actions": [],
+ "creation": "2025-12-01 04:08:45.249974",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "location_section",
+  "sector",
+  "column_break_kmtu",
+  "county",
+  "section_break_vzfw",
+  "describe_the_anticipatory_action_intervention",
+  "estimates_section",
+  "estimated_number_of_hh_to_be_reached",
+  "amount_for_anticipatory_action_kes",
+  "column_break_kwdb",
+  "estimated_number_of_people_to_be_reached",
+  "section_break_skiq",
+  "actual_number_of_people_reached",
+  "households_reached",
+  "children_under_5",
+  "column_break_xqlq",
+  "men_reached",
+  "women_reached",
+  "pwds_reached"
+ ],
+ "fields": [
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "county",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "County",
+   "options": "County",
+   "unique": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "estimated_number_of_hh_to_be_reached",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Estimated number of households (HHs) to be reached"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "estimated_number_of_people_to_be_reached",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Estimated number of people to be reached "
+  },
+  {
+   "fieldname": "column_break_kmtu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_skiq",
+   "fieldtype": "Section Break",
+   "label": "Actuals"
+  },
+  {
+   "fieldname": "column_break_xqlq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "location_section",
+   "fieldtype": "Section Break",
+   "label": "Sector and Location"
+  },
+  {
+   "fieldname": "estimates_section",
+   "fieldtype": "Section Break",
+   "label": "Estimates"
+  },
+  {
+   "fieldname": "column_break_kwdb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_vzfw",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "describe_the_anticipatory_action_intervention",
+   "fieldtype": "Small Text",
+   "label": "Describe the Anticipatory Action Intervention"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "actual_number_of_people_reached",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "People Reached"
+  },
+  {
+   "fieldname": "amount_for_anticipatory_action_kes",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount for Anticipatory Action (KES)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "sector",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Sector",
+   "options": "\nFood Security & Livelihoods (FSL)\nWater, Sanitation & Hygiene (WASH)\nHealth and nutrition\nProtection (including Child Protection & GBV)\nShelter & Non-Food Items (NFI)\nCoordination & Information Management\nAgricuture and livestock\nHousing and infrastructure\nEducation\nSocial Protection"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "households_reached",
+   "fieldtype": "Int",
+   "label": "Household Reached"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "children_under_5",
+   "fieldtype": "Int",
+   "label": "Number of Children under 5"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "men_reached",
+   "fieldtype": "Int",
+   "label": "Number of Men Reached"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "women_reached",
+   "fieldtype": "Int",
+   "label": "Number of Women Reached"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "pwds_reached",
+   "fieldtype": "Int",
+   "label": "Number of PWDs reached"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-12-03 09:31:25.940694",
+ "modified_by": "Administrator",
+ "module": "Anticipatory Action",
+ "name": "Anticipatory Action Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

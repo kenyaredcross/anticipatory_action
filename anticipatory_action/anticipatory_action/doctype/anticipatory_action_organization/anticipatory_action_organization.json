@@ -1,0 +1,145 @@
+{
+ "actions": [],
+ "autoname": "format:AA-ORG-{####}",
+ "creation": "2025-12-03 06:38:33.836253",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "name_of_organization",
+  "column_break_xeqh",
+  "type_of_organization",
+  "contact_person_details_section",
+  "primary_contact_person_name",
+  "column_break_vexs",
+  "primary_phone_contact",
+  "primary_email_contact",
+  "section_break_xinl",
+  "organization_phone",
+  "organization_email",
+  "organization_website",
+  "column_break_znst",
+  "address"
+ ],
+ "fields": [
+  {
+   "fieldname": "name_of_organization",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name of Organization",
+   "reqd": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "type_of_organization",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type of Organization",
+   "options": "\nFood Security & Livelihoods (FSL)\nWater, Sanitation & Hygiene (WASH)\nHealth and nutrition\nProtection (including Child Protection & GBV)\nShelter & Non-Food Items (NFI)\nCoordination & Information Management\nAgricuture and livestock\nHousing and infrastructure\nEducation\nSocial Protection",
+   "reqd": 1,
+   "sort_options": 1
+  },
+  {
+   "fieldname": "column_break_xeqh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "contact_person_details_section",
+   "fieldtype": "Section Break",
+   "label": "Contact Person Details"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "primary_contact_person_name",
+   "fieldtype": "Data",
+   "label": "Primary Contact Person Name"
+  },
+  {
+   "fieldname": "column_break_vexs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "primary_phone_contact",
+   "fieldtype": "Data",
+   "label": "Primary Phone Contact"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "primary_email_contact",
+   "fieldtype": "Data",
+   "label": "Primary Email Contact"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_xinl",
+   "fieldtype": "Section Break",
+   "label": "Address and Contact"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "organization_phone",
+   "fieldtype": "Data",
+   "label": "Organization Phone",
+   "options": "Phone"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "organization_email",
+   "fieldtype": "Data",
+   "label": "Organization Email",
+   "options": "Email"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "organization_website",
+   "fieldtype": "Data",
+   "label": "Organization Website",
+   "options": "URL"
+  },
+  {
+   "fieldname": "column_break_znst",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Anticipatory Action User",
+   "link_fieldname": "organization"
+  }
+ ],
+ "modified": "2025-12-03 07:01:25.883576",
+ "modified_by": "Administrator",
+ "module": "Anticipatory Action",
+ "name": "Anticipatory Action Organization",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "name_of_organization"
+}

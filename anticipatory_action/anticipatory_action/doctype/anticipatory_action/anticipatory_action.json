@@ -8,31 +8,24 @@
  "engine": "InnoDB",
  "field_order": [
   "patner_details_section",
-  "name_of_implementing_entity_or_organization",
+  "implementing_organization",
   "entity_or_organization_type",
   "funding_source_or_funding_organization",
   "column_break_itco",
-  "name_of_the_person_reporting",
-  "provide_email_of_the_person_reporting",
+  "created_by",
+  "user_phone_number",
+  "user_email",
   "anticipatory_actions_section",
   "type_of_hazard_being_anticipated",
-  "is_this_anticipatory_activation_ongoing",
   "sector",
   "column_break_baci",
+  "activation_date",
+  "end_date",
   "did_you_have_any_coimplementing_partners",
-  "commencement_date_for_early_actions",
-  "end_date_for_the_early_actions",
   "section_break_ijje",
   "describe_the_early_action_intervention",
-  "geographical_scope_and_intervention_details_section",
-  "county",
-  "sub_county",
-  "total_amount_for_the_aa_interventions_in_the_county_selected",
-  "column_break_ygcd",
-  "estimated_number_of_households_to_be_reached",
-  "estimated_number_of_people_to_be_reached_in_the_county_selected",
   "section_break_gspj",
-  "sub_county_aa_details",
+  "anticipatory_action_details",
   "additional_details_section",
   "what_triggers_and_thresholds_did_you_use",
   "key_lessons_learnt_from_implementing_early_actions",
@@ -46,19 +39,12 @@
    "label": "Patner Details"
   },
   {
-   "fieldname": "name_of_implementing_entity_or_organization",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Name of implementing entity or organization",
-   "reqd": 1
-  },
-  {
    "fieldname": "entity_or_organization_type",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Entity or organization type",
    "options": "\nNational government\nCounty government\nNGOs\nCBOs\nUN agencies\nFBOs\nPrivate",
-   "reqd": 1
+   "read_only": 1
   },
   {
    "fieldname": "funding_source_or_funding_organization",
@@ -66,19 +52,6 @@
    "in_list_view": 1,
    "label": "Funding source or funding organization",
    "reqd": 1
-  },
-  {
-   "fieldname": "name_of_the_person_reporting",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Name of the person reporting",
-   "reqd": 1
-  },
-  {
-   "description": "Provide official email or organisational email",
-   "fieldname": "provide_email_of_the_person_reporting",
-   "fieldtype": "Data",
-   "label": "Provide email of the person reporting"
   },
   {
    "fieldname": "anticipatory_actions_section",
@@ -90,13 +63,6 @@
    "fieldtype": "Select",
    "label": "Type of hazard being anticipated?",
    "options": "\nDrought\nFloods\nConflict\nDisease Outbreak\nDisplacement\nPest\nLandslides / Earth movements\nOther",
-   "reqd": 1
-  },
-  {
-   "fieldname": "is_this_anticipatory_activation_ongoing",
-   "fieldtype": "Select",
-   "label": "Is this anticipatory activation ongoing?",
-   "options": "\nYes - currently ongoing\nNo - previously done / completed\nNot sure",
    "reqd": 1
   },
   {
@@ -116,53 +82,7 @@
    "fieldname": "did_you_have_any_coimplementing_partners",
    "fieldtype": "Select",
    "label": "Did you have any coimplementing partners?",
-   "options": "\nYes\nNo\nNot Sure",
-   "reqd": 1
-  },
-  {
-   "fieldname": "commencement_date_for_early_actions",
-   "fieldtype": "Date",
-   "label": "Commencement date for early actions?",
-   "reqd": 1
-  },
-  {
-   "fieldname": "end_date_for_the_early_actions",
-   "fieldtype": "Date",
-   "label": "End date for the early actions?",
-   "reqd": 1
-  },
-  {
-   "fieldname": "geographical_scope_and_intervention_details_section",
-   "fieldtype": "Section Break",
-   "label": "Geographical Scope and intervention details"
-  },
-  {
-   "fieldname": "county",
-   "fieldtype": "Link",
-   "label": "County",
-   "options": "County",
-   "reqd": 1
-  },
-  {
-   "fieldname": "total_amount_for_the_aa_interventions_in_the_county_selected",
-   "fieldtype": "Currency",
-   "label": "Total amount for the AA interventions in the county selected",
-   "reqd": 1
-  },
-  {
-   "description": " In the county selected",
-   "fieldname": "estimated_number_of_households_to_be_reached",
-   "fieldtype": "Int",
-   "label": "Estimated number of households to be reached",
-   "non_negative": 1,
-   "reqd": 1
-  },
-  {
-   "fieldname": "estimated_number_of_people_to_be_reached_in_the_county_selected",
-   "fieldtype": "Int",
-   "label": "Estimated number of people to be reached in the county selected",
-   "non_negative": 1,
-   "reqd": 1
+   "options": "\nYes\nNo\nNot Sure"
   },
   {
    "fieldname": "additional_details_section",
@@ -195,10 +115,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "column_break_ygcd",
-   "fieldtype": "Column Break"
-  },
-  {
    "description": "List the difficulties, barriers, or constraints encountered.",
    "fieldname": "challenges_faced_during_implimation_of_early_actions",
    "fieldtype": "Small Text",
@@ -209,27 +125,60 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "sub_county",
-   "fieldtype": "Link",
-   "label": "Sub County",
-   "options": "Sub County",
-   "reqd": 1
-  },
-  {
    "fieldname": "section_break_gspj",
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "sub_county_aa_details",
+   "fieldname": "activation_date",
+   "fieldtype": "Date",
+   "label": "Date of Anticipatory Action Activation Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "Proposed end date for the anticipatory action",
+   "reqd": 1
+  },
+  {
+   "fieldname": "anticipatory_action_details",
    "fieldtype": "Table",
-   "label": "Sub County AA Details",
-   "options": "Sub County AA Details"
+   "label": "Anticipatory Action Details",
+   "options": "Anticipatory Action Details"
+  },
+  {
+   "default": "__user",
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "user_phone_number",
+   "fieldtype": "Data",
+   "label": "User Phone Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "user_email",
+   "fieldtype": "Data",
+   "label": "User Email",
+   "read_only": 1
+  },
+  {
+   "fieldname": "implementing_organization",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Implementing Organization",
+   "options": "Anticipatory Action Organization",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-01 04:24:47.584572",
+ "modified": "2025-12-03 09:45:46.150843",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action",

@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class SubCountyAADetails(Document):
+class AnticipatoryActionReferenceDocuments(Document):
 	pass
