@@ -2,26 +2,29 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
+ "autoname": "field:county",
  "creation": "2025-11-26 13:43:50.034567",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "name1"
+  "county"
  ],
  "fields": [
   {
-   "fieldname": "name1",
+   "fieldname": "county",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "County",
+   "unique": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-26 13:55:15.399659",
+ "modified": "2025-12-03 15:52:46.665981",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Counties",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -39,7 +42,9 @@
  ],
  "row_format": "Dynamic",
  "rows_threshold_for_grid_search": 20,
+ "show_title_field_in_link": 1,
  "sort_field": "creation",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "county"
 }

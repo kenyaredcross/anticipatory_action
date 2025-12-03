@@ -17,10 +17,11 @@
   "user_email",
   "anticipatory_actions_section",
   "type_of_hazard_being_anticipated",
-  "activation_date",
-  "column_break_baci",
-  "end_date",
   "did_you_have_any_coimplementing_partners",
+  "partners",
+  "column_break_baci",
+  "activation_date",
+  "end_date",
   "section_break_gspj",
   "anticipatory_action_details",
   "additional_details_section",
@@ -33,7 +34,7 @@
   {
    "fieldname": "patner_details_section",
    "fieldtype": "Section Break",
-   "label": "Patner Details"
+   "label": "Implementing Organization details"
   },
   {
    "fieldname": "entity_or_organization_type",
@@ -64,7 +65,7 @@
   {
    "fieldname": "did_you_have_any_coimplementing_partners",
    "fieldtype": "Select",
-   "label": "Did you have any coimplementing partners?",
+   "label": "Did you have any co-implementing partners?",
    "options": "\nYes\nNo\nNot Sure"
   },
   {
@@ -129,15 +130,13 @@
    "fetch_from": "created_by.phone",
    "fieldname": "user_phone_number",
    "fieldtype": "Data",
-   "label": "User Phone Number",
-   "read_only": 1
+   "label": "User Phone Number"
   },
   {
    "fetch_from": "created_by.email",
    "fieldname": "user_email",
    "fieldtype": "Data",
-   "label": "User Email",
-   "read_only": 1
+   "label": "User Email"
   },
   {
    "fieldname": "implementing_organization",
@@ -150,12 +149,18 @@
    "fieldname": "name_of_person_creating",
    "fieldtype": "Data",
    "label": "Name of Person Creating"
+  },
+  {
+   "depends_on": "eval:doc.did_you_have_any_coimplementing_partners==\"Yes\"",
+   "fieldname": "partners",
+   "fieldtype": "Small Text",
+   "label": "Co-implementing partners"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-03 14:38:41.752249",
+ "modified": "2025-12-03 15:45:26.566328",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action",

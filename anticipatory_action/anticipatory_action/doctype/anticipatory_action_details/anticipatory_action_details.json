@@ -8,6 +8,7 @@
   "sector",
   "column_break_kmtu",
   "county",
+  "subcounty",
   "section_break_vzfw",
   "describe_the_anticipatory_action_intervention",
   "estimates_section",
@@ -31,7 +32,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "County",
-   "options": "County",
+   "options": "Counties",
    "unique": 1
   },
   {
@@ -135,13 +136,18 @@
    "fieldname": "pwds_reached",
    "fieldtype": "Int",
    "label": "Number of PWDs reached"
+  },
+  {
+   "fieldname": "subcounty",
+   "fieldtype": "Data",
+   "label": "Subcounty"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-12-03 13:12:38.903292",
+ "modified": "2025-12-03 15:48:32.418617",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action Details",
