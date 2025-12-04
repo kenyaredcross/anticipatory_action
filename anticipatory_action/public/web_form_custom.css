@@ -1,0 +1,13 @@
+
+[data-fieldname="name"] {
+    display: none !important;
+}
+
+.frappe-control[data-fieldname="name"] {
+    display: none !important;
+}
+
+
+.grid-row [data-fieldname="name"] {
+    display: none !important;
+}

@@ -10,25 +10,29 @@
   "patner_details_section",
   "implementing_organization",
   "entity_or_organization_type",
-  "funding_source_or_funding_organization",
+  "other_organization_entity",
+  "funding_source",
   "column_break_itco",
-  "name_of_person_creating",
-  "user_phone_number",
-  "user_email",
+  "reporting_person",
+  "reporter_email",
+  "reporter_phone_number",
   "anticipatory_actions_section",
-  "type_of_hazard_being_anticipated",
-  "did_you_have_any_coimplementing_partners",
-  "partners",
+  "anticipated_hazard",
+  "other_anticipated_hazards",
+  "implementing_partners",
+  "other_implementing_partners",
   "column_break_baci",
-  "activation_date",
-  "end_date",
+  "activation_start_date",
+  "activation_end_date",
   "section_break_gspj",
   "anticipatory_action_details",
   "additional_details_section",
-  "what_triggers_and_thresholds_did_you_use",
-  "key_lessons_learnt_from_implementing_early_actions",
-  "challenges_faced_during_implimation_of_early_actions",
-  "recommendations_for_future_anticipatory_actions"
+  "triggers_and_thresholds",
+  "lessons_learnt",
+  "challenges",
+  "recommendations",
+  "supporting_materials",
+  "email_me_a_copy"
  ],
  "fields": [
   {
@@ -41,54 +45,18 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Entity or organization type",
-   "options": "\nNational government\nCounty government\nNGOs\nCBOs\nUN agencies\nFBOs\nPrivate"
-  },
-  {
-   "fieldname": "funding_source_or_funding_organization",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Funding source or funding organization",
+   "options": "\nNational government\nCounty government\nNGOs\nCivil Societies (CSOs)\nCBOs\nHumanitarian Agency\nDevelopment Partners\nFBOs\nPrivate Sector\nUN agencies\nAcademic Institutions\nOther",
    "reqd": 1
   },
   {
    "fieldname": "anticipatory_actions_section",
    "fieldtype": "Section Break",
-   "label": "Anticipatory Actions"
-  },
-  {
-   "fieldname": "type_of_hazard_being_anticipated",
-   "fieldtype": "Select",
-   "label": "Type of hazard being anticipated?",
-   "options": "\nDrought\nFloods\nConflict\nDisease Outbreak\nDisplacement\nPest\nLandslides / Earth movements\nOther",
-   "reqd": 1
-  },
-  {
-   "fieldname": "did_you_have_any_coimplementing_partners",
-   "fieldtype": "Select",
-   "label": "Did you have any co-implementing partners?",
-   "options": "\nYes\nNo\nNot Sure"
+   "label": "Hazard and Anticipatory Actions"
   },
   {
    "fieldname": "additional_details_section",
    "fieldtype": "Section Break",
    "label": "Additional details"
-  },
-  {
-   "fieldname": "what_triggers_and_thresholds_did_you_use",
-   "fieldtype": "Small Text",
-   "label": "What triggers and thresholds did you use?"
-  },
-  {
-   "description": "Describe the main take aways, insights, or good practices that emerged during implementation",
-   "fieldname": "key_lessons_learnt_from_implementing_early_actions",
-   "fieldtype": "Small Text",
-   "label": " Key Lessons Learnt from Implementing Early Actions"
-  },
-  {
-   "description": "Suggest ways to improve anticipatory actions in the future.\n",
-   "fieldname": "recommendations_for_future_anticipatory_actions",
-   "fieldtype": "Small Text",
-   "label": "Recommendations for Future Anticipatory Actions"
   },
   {
    "fieldname": "column_break_itco",
@@ -99,26 +67,8 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "List the difficulties, barriers, or constraints encountered.",
-   "fieldname": "challenges_faced_during_implimation_of_early_actions",
-   "fieldtype": "Small Text",
-   "label": "Challenges faced during implimation of early actions"
-  },
-  {
    "fieldname": "section_break_gspj",
    "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "activation_date",
-   "fieldtype": "Date",
-   "label": "Date of Anticipatory Action Activation Date",
-   "reqd": 1
-  },
-  {
-   "fieldname": "end_date",
-   "fieldtype": "Date",
-   "label": "Proposed end date for the anticipatory action",
-   "reqd": 1
   },
   {
    "fieldname": "anticipatory_action_details",
@@ -127,40 +77,122 @@
    "options": "Anticipatory Action Details"
   },
   {
-   "fetch_from": "created_by.phone",
-   "fieldname": "user_phone_number",
+   "description": "Use full names not abbreviations",
+   "fieldname": "implementing_organization",
    "fieldtype": "Data",
-   "label": "User Phone Number"
+   "in_list_view": 1,
+   "label": "Name of implementing entity or organization:",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.implementing_partners==\"Yes\"",
+   "fieldname": "other_implementing_partners",
+   "fieldtype": "Small Text",
+   "label": "Other implementing partners"
+  },
+  {
+   "default": "0",
+   "fieldname": "email_me_a_copy",
+   "fieldtype": "Check",
+   "label": "Email me a copy"
+  },
+  {
+   "depends_on": "eval:doc.entity_or_organization_type==\"Other\"",
+   "fieldname": "other_organization_entity",
+   "fieldtype": "Data",
+   "label": "If other, please specify"
+  },
+  {
+   "fieldname": "funding_source",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Funding source or funding organization",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reporting_person",
+   "fieldtype": "Data",
+   "label": "Name of Person Reporting",
+   "reqd": 1
   },
   {
    "fetch_from": "created_by.email",
-   "fieldname": "user_email",
+   "fieldname": "reporter_email",
    "fieldtype": "Data",
-   "label": "User Email"
+   "label": "Provide Email",
+   "options": "Email",
+   "reqd": 1
   },
   {
-   "fieldname": "implementing_organization",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Implementing Organization",
-   "options": "Anticipatory Action Organization"
+   "description": "(254 7xx xxx xxx)",
+   "fetch_from": "created_by.phone",
+   "fieldname": "reporter_phone_number",
+   "fieldtype": "Int",
+   "label": "Phone Number"
   },
   {
-   "fieldname": "name_of_person_creating",
+   "fieldname": "anticipated_hazard",
+   "fieldtype": "Select",
+   "label": "Type of hazard being anticipated?",
+   "options": "\nDrought\nFloods\nConflict\nPest / Parasite Infection\nDisease Outbreak\nCivil disorders\nLandslides / Earth movements\nOther",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.anticipated_hazard==\"Other\"",
+   "fieldname": "other_anticipated_hazards",
    "fieldtype": "Data",
-   "label": "Name of Person Creating"
+   "label": "If other, please specify"
   },
   {
-   "depends_on": "eval:doc.did_you_have_any_coimplementing_partners==\"Yes\"",
-   "fieldname": "partners",
+   "fieldname": "implementing_partners",
+   "fieldtype": "Select",
+   "label": "Did you have other implementing partners?",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "activation_start_date",
+   "fieldtype": "Date",
+   "label": "Date of Anticipatory Action Activation",
+   "reqd": 1
+  },
+  {
+   "fieldname": "activation_end_date",
+   "fieldtype": "Date",
+   "label": "Proposed end date for the anticipatory action"
+  },
+  {
+   "fieldname": "triggers_and_thresholds",
    "fieldtype": "Small Text",
-   "label": "Co-implementing partners"
+   "label": "What triggers and thresholds did you use?"
+  },
+  {
+   "description": "Describe the main take aways, insights, or good practices that emerged during implementation",
+   "fieldname": "lessons_learnt",
+   "fieldtype": "Small Text",
+   "label": " Key Lessons Learnt from activating/implementing Early Actions"
+  },
+  {
+   "description": "List the difficulties, barriers, or constraints encountered.",
+   "fieldname": "challenges",
+   "fieldtype": "Small Text",
+   "label": "Challenges faced during activation/implementing of early actions"
+  },
+  {
+   "description": "Suggest ways to improve anticipatory actions in the future.\n",
+   "fieldname": "recommendations",
+   "fieldtype": "Small Text",
+   "label": "Recommendations for Future Anticipatory Actions"
+  },
+  {
+   "fieldname": "supporting_materials",
+   "fieldtype": "Attach",
+   "label": "Upload supporting materials"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-03 15:45:26.566328",
+ "modified": "2025-12-04 11:54:30.477357",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action",
