@@ -1,53 +1,19 @@
-frappe.ready(function() {
-    frappe.web_form.on('Anticipatory Action Details', {
-        after_load: function(form, doctype, docname) {
-            $('input[data-fieldname="name"]').closest('.form-group').hide();
-        }
-    });
-    
-    // Add "Edit Details" button to each row
-    setTimeout(function() {
-        let field = frappe.web_form.fields_dict['anticipatory_action_details'];
-        
-        if (field && field.grid) {
-            let grid = field.grid;
+frappe.web_form.on('load', () => {
+    frappe.web_form.fields.forEach(df => {
+        if (df.fieldtype === "Table") {
+            const table = frappe.web_form.fields_dict[df.fieldname];
             
-            // Add edit button to each row
-            grid.wrapper.find('.grid-row').each(function() {
-                let $row = $(this);
-                if ($row.find('.btn-open-row').length === 0) {
-                    let idx = $row.attr('data-idx');
-                    let $editBtn = $('<button class="btn btn-xs btn-default btn-open-row" style="margin-left: 10px;">Edit Full Details</button>');
-                    
-                    $editBtn.on('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        let doc = grid.get_row(idx).doc;
-                        grid.open_grid_row(doc);
-                    });
-                    
-                    $row.find('.data-row').append($editBtn);
+            table.grid.fields_map && Object.keys(table.grid.fields_map).forEach(childfield => {
+                const child_df = table.grid.fields_map[childfield];
+
+                if (["county", "sub_county"].includes(child_df.fieldname)) {
+                    child_df.get_query = () => {
+                        return {
+                            query: "anticipatory_action.api.search_link.search_link_fields"
+                        };
+                    };
                 }
             });
-            
-            // Watch for new rows being added
-            let original_render_row = grid.render_row.bind(grid);
-            grid.render_row = function(row) {
-                original_render_row(row);
-                
-                let $row = $(row.wrapper);
-                if ($row.find('.btn-open-row').length === 0) {
-                    let $editBtn = $('<button class="btn btn-xs btn-default btn-open-row" style="margin-left: 10px;">Edit Full Details</button>');
-                    
-                    $editBtn.on('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        grid.open_grid_row(row.doc);
-                    });
-                    
-                    $row.find('.data-row').append($editBtn);
-                }
-            };
         }
-    }, 1000);
+    });
 });
