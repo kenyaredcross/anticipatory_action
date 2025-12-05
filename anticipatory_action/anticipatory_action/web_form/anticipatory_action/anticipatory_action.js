@@ -17,3 +17,32 @@ frappe.web_form.on('load', () => {
         }
     });
 });
+frappe.web_form.after_load = () => {
+    setTimeout(() => {
+        let child_table_fieldname = 'anticipatory_action_details';
+        
+        let grid_field = frappe.web_form.fields_dict[child_table_fieldname];
+        
+        if (grid_field && grid_field.grid) {
+            // Override add_new_row to add closed, then open
+            let original_add_new_row = grid_field.grid.add_new_row.bind(grid_field.grid);
+            
+            grid_field.grid.add_new_row = function(idx, callback, show_dialog) {
+                // Call original with show_dialog = false to add row collapsed
+                let row = original_add_new_row(idx, callback, false);
+                
+                // Now open it
+                setTimeout(() => {
+                    let $last_row = $(grid_field.grid.wrapper).find('.grid-body .grid-row').last();
+                    let $edit_btn = $last_row.find('.btn-open-row');
+                    
+                    if ($edit_btn.length) {
+                        $edit_btn[0].click();
+                    }
+                }, 100);
+                
+                return row;
+            };
+        }
+    }, 1000);
+};
