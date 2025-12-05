@@ -28,9 +28,9 @@ def get_anticipatory_action_data(limit=100):
             "Anticipatory Action",
             fields = [
                 "name",
-                "patner_details_section", "implementing_organization", "entity_or_organization_type",
+                "implementing_organization", "entity_or_organization_type",
                 "other_organization_entity","funding_source","reporting_person","reporter_email",
-                "reporter_phone_number","anticipatory_actions_section","anticipated_hazard","other_anticipated_hazards",
+                "reporter_phone_number","anticipated_hazard","other_anticipated_hazards",
                 "implementing_partners", "other_implementing_partners", "activation_start_date",
                 "activation_end_date", "triggers_and_thresholds","lessons_learnt", "challenges",
                 "recommendations", "supporting_materials","email_me_a_copy"
@@ -48,7 +48,7 @@ def get_anticipatory_action_data(limit=100):
                 "Anticipatory Action Details",
                 filters = {"parent": parent}, 
                 fields = [
-                    "location_section", "subcounty_level", "county", "subcounty", "section_break_zyob", "sector", "amount_for_anticipatory_action_kes", "section_break_vzfw", "describe_the_anticipatory_action_intervention", "targeting_section", "number_of_people_targeted", "number_of_hh_targeted", "column_break_kwdb", "number_of_males_targeted", "number_of_females_targeted",
+                    "subcounty_level", "county", "subcounty", "sector", "amount_for_anticipatory_action_kes", "describe_the_anticipatory_action_intervention", "number_of_people_targeted", "number_of_hh_targeted", "number_of_males_targeted", "number_of_females_targeted",
 
                 ]
             )
