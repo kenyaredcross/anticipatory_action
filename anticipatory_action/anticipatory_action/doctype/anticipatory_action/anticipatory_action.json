@@ -192,7 +192,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-04 11:54:30.477357",
+ "modified": "2025-12-05 11:24:37.946874",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action",
@@ -239,5 +239,14 @@
  "rows_threshold_for_grid_search": 20,
  "sort_field": "creation",
  "sort_order": "DESC",
- "states": []
+ "states": [
+  {
+   "color": "Green",
+   "title": "New"
+  },
+  {
+   "color": "Yellow",
+   "title": "Update"
+  }
+ ]
 }
