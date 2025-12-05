@@ -43,7 +43,7 @@ def get_anticipatory_action_data(limit=100):
         
 
         for aa in anticipatory_actions:
-            parent = aa ["name"]
+            parent = aa["name"]
             aa["anticipatory_action_details"] = frappe.db.get_all(
                 "Anticipatory Action Details",
                 filters = {"parent": parent}, 
