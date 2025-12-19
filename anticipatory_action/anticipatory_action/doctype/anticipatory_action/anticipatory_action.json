@@ -32,7 +32,8 @@
   "challenges",
   "recommendations",
   "supporting_materials",
-  "email_me_a_copy"
+  "email_me_a_copy",
+  "status"
  ],
  "fields": [
   {
@@ -187,12 +188,19 @@
    "fieldname": "supporting_materials",
    "fieldtype": "Attach",
    "label": "Upload supporting materials"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nApproved\nNot Approved"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-05 11:24:37.946874",
+ "modified": "2025-12-19 13:25:40.210261",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action",
@@ -248,5 +256,6 @@
    "color": "Yellow",
    "title": "Update"
   }
- ]
+ ],
+ "title_field": "implementing_organization"
 }

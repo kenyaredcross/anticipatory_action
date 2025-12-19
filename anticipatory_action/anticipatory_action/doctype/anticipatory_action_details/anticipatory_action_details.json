@@ -5,14 +5,13 @@
  "engine": "InnoDB",
  "field_order": [
   "location_section",
+  "subcounty_level",
   "county",
   "subcounty",
-  "ward",
-  "column_break_ueyt",
-  "subcounty_level",
-  "are_you_reporting__at_ward_level",
   "section_break_zyob",
   "sector",
+  "number_of_livestock_targeted",
+  "number_of_wildlife_targeted",
   "amount_for_anticipatory_action_kes",
   "section_break_vzfw",
   "describe_the_anticipatory_action_intervention",
@@ -68,7 +67,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "AA cluster",
-   "options": "\nFood Security & Livelihoods (FSL)\nWater, Sanitation & Hygiene (WASH)\nHealth and nutrition\nProtection (including Child Protection & GBV)& Social protection (Cash welfare or social support)\nShelter & Non-Food Items (NFI)\nCoordination & Information Management\nAgriculture ( Crop and livestock)\nEducation",
+   "options": "\nFood Security & Livelihoods (FSL)\nWater, Sanitation & Hygiene (WASH)\nHealth and Nutrition\nProtection (including Child Protection & GBV)& Social protection (Cash welfare or social support)\nShelter & Non-Food Items (NFI)\nCoordination & Information Management\nCrop Agriculture\nAnimal Resources - Livestock\nAnimal Resources - Wildlife\nEducation",
    "reqd": 1
   },
   {
@@ -126,32 +125,27 @@
    "default": "Planned",
    "fieldname": "status_of_the_early_action",
    "fieldtype": "Select",
-   "label": "Status of the early action",
+   "label": "Status of the early action stated above",
    "options": "Planned\nOngoing\nComplete"
   },
   {
-   "default": "0",
-   "fieldname": "are_you_reporting__at_ward_level",
-   "fieldtype": "Check",
-   "in_list_view": 1,
-   "label": "Are you reporting  at ward level?"
+   "depends_on": "eval:doc.sector == \"Animal Resources - Livestock\"",
+   "fieldname": "number_of_livestock_targeted",
+   "fieldtype": "Int",
+   "label": "Number of livestock targeted"
   },
   {
-   "fieldname": "column_break_ueyt",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval:doc.are_you_reporting__at_ward_level==\"1\"",
-   "fieldname": "ward",
-   "fieldtype": "Data",
-   "label": "Ward"
+   "depends_on": "eval:doc.sector == \"Animal Resources - Wildlife\"",
+   "fieldname": "number_of_wildlife_targeted",
+   "fieldtype": "Int",
+   "label": "Number of wildlife targeted"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-12-05 13:22:05.405265",
+ "modified": "2025-12-19 10:50:02.259608",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action Details",
