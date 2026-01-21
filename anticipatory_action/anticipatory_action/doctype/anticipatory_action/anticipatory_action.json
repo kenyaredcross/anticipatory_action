@@ -33,7 +33,8 @@
   "recommendations",
   "supporting_materials",
   "email_me_a_copy",
-  "status"
+  "status",
+  "reason_for_rejection"
  ],
  "fields": [
   {
@@ -195,12 +196,19 @@
    "fieldtype": "Select",
    "label": "Status",
    "options": "Pending\nApproved\nNot Approved"
+  },
+  {
+   "depends_on": "eval:doc.status == \"Not Approved\"",
+   "fieldname": "reason_for_rejection",
+   "fieldtype": "Small Text",
+   "label": "Reason for rejection",
+   "mandatory_depends_on": "eval:doc.status == \"Not Approved\""
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-19 13:25:40.210261",
+ "modified": "2026-01-21 15:12:48.142098",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action",
