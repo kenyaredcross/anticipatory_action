@@ -133,17 +133,13 @@ app_include_css = "/assets/anticipatory_action/css/web_form_custom.css"
 # ---------------
 # Hook on document methods and events
 
-doc_events = {
+# doc_events = {
 	# "*": {
 	# 	"on_update": "method",
 	# 	"on_cancel": "method",
 	# 	"on_trash": "method"
 	# }
-    "User": {
-        "before_insert": "anticipatory_action.utils.prevent_default_welcome_email",
-        "after_insert": "anticipatory_action.utils.send_custom_welcome_email"
-    }
-}
+# }
 
 # Scheduled Tasks
 # ---------------
