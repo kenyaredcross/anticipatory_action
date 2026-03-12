@@ -1,4 +1,11 @@
 app_name = "anticipatory_action"
+
+fixtures = [
+    {
+        "doctype": "Email Template",
+        "filters": [["name", "=", "Anticipatory Action Submission"]],
+    }
+]
 app_title = "Anticipatory Action"
 app_publisher = "Kelvin Njenga"
 app_description = "Anticipatory Action Kenya"
