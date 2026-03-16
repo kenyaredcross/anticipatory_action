@@ -1,0 +1,31 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.status == \"Submitted\"",
+ "condition_type": "Python",
+ "creation": "2026-03-16 15:00:36.966817",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Anticipatory Action",
+ "enabled": 1,
+ "event": "Submit",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "test main",
+ "message_type": "HTML",
+ "minutes_offset": 0,
+ "modified": "2026-03-16 15:01:18.704569",
+ "modified_by": "Administrator",
+ "module": "Anticipatory Action",
+ "name": "user email",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "reporter_email"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "subject": "New Anticipatory"
+}

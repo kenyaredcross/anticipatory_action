@@ -3,21 +3,31 @@
 
 import frappe
 from frappe.model.document import Document
+from anticipatory_action.anticipatory_action.doctype.anticipatory_action.pdf import build_submission_pdf
 
 
 class AnticipatoryAction(Document):
-	
 
+	def on_submit(self):
+		if self.email_me_a_copy and self.reporter_email:
+			self._send_copy_to_user()
 
-    @frappe.whitelist()
-    def get_subcounties(doctype, txt, searchfield, start, page_len, filters):
-        county = filters.get("county")
-        if not county:
-            return []
+	def _send_copy_to_user(self):
+		try:
+			pdf = build_submission_pdf(self)
 
-        return frappe.db.get_all(
-            "Sub County",
-            filters={"county": county},  # Only subcounties linked to this county
-            fields=["name"],
-            as_list=True
-        )
+			message = frappe.render_template(
+				"anticipatory_action/notification/user_email_copy/user_email_copy.html",
+				{"doc": self, "frappe": frappe},
+			)
+			frappe.sendmail(
+				recipients=[self.reporter_email],
+				subject=f"Anticipatory Action Submission \u2013 Reference {self.name}",
+				message=message,
+				attachments=[{
+					"fname": f"Anticipatory_Action_{self.name}.pdf",
+					"fcontent": pdf,
+				}],
+			)
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "AnticipatoryAction.send_copy_to_user")

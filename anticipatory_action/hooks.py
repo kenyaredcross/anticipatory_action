@@ -1,11 +1,4 @@
 app_name = "anticipatory_action"
-
-fixtures = [
-    {
-        "doctype": "Email Template",
-        "filters": [["name", "=", "Anticipatory Action Submission"]],
-    }
-]
 app_title = "Anticipatory Action"
 app_publisher = "Kelvin Njenga"
 app_description = "Anticipatory Action Kenya"
@@ -33,7 +26,7 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/anticipatory_action/css/anticipatory_action.css"
-app_include_css = "/assets/anticipatory_action/css/web_form_custom.css"
+# app_include_css = "/assets/anticipatory_action/css/anticipatory_action.css"
 # app_include_js = "/assets/anticipatory_action/js/anticipatory_action.js"
 
 # include js, css files in header of web template
