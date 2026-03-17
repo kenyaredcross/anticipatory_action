@@ -130,7 +130,7 @@
    "description": "(254 7xx xxx xxx)",
    "fetch_from": "created_by.phone",
    "fieldname": "reporter_phone_number",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "label": "Phone Number"
   },
   {
