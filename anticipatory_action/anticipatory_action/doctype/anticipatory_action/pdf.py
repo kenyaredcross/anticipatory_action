@@ -59,7 +59,8 @@ def _grid(*fields):
 		pair = items[i:i+2]
 		if len(pair) == 1:
 			pair.append("")
-		rows += f"<tr>{''.join(f'<td style=\"width:50%;vertical-align:top;padding-right:20px;\">{c}</td>' for c in pair)}</tr>"
+			cells = ''.join(f'<td style="width:50%;vertical-align:top;padding-right:20px;">{c}</td>' for c in pair)
+			rows += f"<tr>{cells}</tr>"
 	return f'<table width="100%" cellpadding="0" cellspacing="0">{rows}</table>'
 
 

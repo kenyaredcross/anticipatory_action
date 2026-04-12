@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports &amp; Documents — Kenya Anticipatory Action</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+  --dark:#1A1A1A;--dark-2:#252525;--red:#CC0000;--red-dark:#A30000;
+  --red-soft:#FFF3F3;--white:#FFFFFF;--off-white:#FAFAF8;--warm:#F3EDE6;
+  --warm-2:#EAE2D9;--mid:#5C5752;--muted:#9A9590;--border:#E8E2DB;
+  --shadow-r:0 8px 40px rgba(204,0,0,0.14);--shadow-d:0 8px 40px rgba(26,26,26,0.12)
+}
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Poppins',sans-serif;background:var(--off-white);color:var(--dark);overflow-x:hidden}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 56px;height:72px;background:rgba(255,255,255,0.98);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);box-shadow:0 2px 20px rgba(26,26,26,0.06)}
+    .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .nav-right{display:flex;align-items:center;gap:4px}
+    .nav-link{font-size:13px;font-weight:500;color:var(--mid);text-decoration:none;letter-spacing:0.01em;padding:7px 14px;border-radius:8px;transition:color 0.2s,background 0.2s}
+    .nav-link:hover,.nav-link.active{color:var(--dark);background:var(--warm)}
+    .nav-item{position:relative;display:flex;align-items:center}
+    .nav-link-btn{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--mid);letter-spacing:0.01em;cursor:pointer;padding:7px 14px;border-radius:8px;transition:color 0.2s,background 0.2s;user-select:none}
+    .nav-link-btn:hover,.nav-item:hover .nav-link-btn{color:var(--dark);background:var(--warm)}
+    .nav-link-btn .chev{transition:transform 0.22s}
+    .nav-item:hover .nav-link-btn .chev{transform:rotate(180deg)}
+    .nav-dropdown{position:absolute;top:100%;left:50%;padding-top:10px;transform:translateX(-50%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity 0.18s,visibility 0.18s;z-index:300}
+    .nav-item:hover .nav-dropdown{opacity:1;visibility:visible;pointer-events:all}
+    .nav-dropdown.align-left{left:0;transform:none}
+    .nav-dropdown-inner{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:6px;box-shadow:0 20px 60px rgba(26,26,26,0.14);min-width:210px}
+    .nav-dropdown-inner a{display:block;padding:9px 14px;font-size:12.5px;font-weight:500;color:var(--dark);text-decoration:none;border-radius:8px;white-space:nowrap;transition:background 0.15s}
+    .nav-dropdown-inner a:hover{background:var(--warm)}
+    .pillar-item{display:flex!important;align-items:center;gap:10px}
+    .pillar-num{font-size:11px;font-weight:700;color:var(--red);background:var(--red-soft);border-radius:4px;padding:2px 6px;letter-spacing:0.04em;flex-shrink:0}
+    .btn-login{display:inline-flex;align-items:center;gap:8px;padding:9px 22px;background:var(--dark);color:var(--white);border-radius:8px;font-size:12.5px;font-weight:600;text-decoration:none;letter-spacing:0.02em;margin-left:8px;transition:background 0.2s,transform 0.15s,box-shadow 0.2s}
+    .btn-login:hover{background:var(--red);transform:translateY(-1px);box-shadow:var(--shadow-r)}
+
+    /* HERO */
+    .page-hero{min-height:40vh;display:flex;flex-direction:column;justify-content:flex-end;padding:120px 56px 64px;position:relative;overflow:hidden;background:var(--dark)}
+    .page-hero::after{content:'';position:absolute;top:0;right:0;bottom:0;width:40%;background:linear-gradient(135deg,transparent 0%,rgba(204,0,0,0.04) 100%);pointer-events:none}
+    .breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:500;color:rgba(255,255,255,0.35);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:24px;position:relative;z-index:1}
+    .breadcrumb a{color:rgba(255,255,255,0.35);text-decoration:none;transition:color 0.2s}
+    .breadcrumb a:hover{color:rgba(255,255,255,0.7)}
+    .breadcrumb span{color:rgba(255,255,255,0.18)}
+    .page-hero-label{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:16px;position:relative;z-index:1}
+    .page-hero-label::before{content:'';width:24px;height:2px;background:var(--red);border-radius:2px}
+    .page-hero-title{font-family:'Playfair Display',serif;font-size:clamp(40px,6vw,68px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:16px;position:relative;z-index:1}
+    .page-hero-title .accent{color:var(--red)}
+    .page-hero-sub{font-size:clamp(14px,1.5vw,16px);font-weight:400;font-style:italic;color:rgba(255,255,255,0.55);max-width:560px;line-height:1.65;position:relative;z-index:1}
+
+    /* SHARED UTILITIES */
+    .sec-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--red);margin-bottom:16px}
+    .sec-eyebrow::before{content:'';width:20px;height:2px;background:var(--red);border-radius:2px}
+    .sec-title{font-family:'Playfair Display',serif;font-size:clamp(24px,2.8vw,36px);font-weight:700;line-height:1.2;color:var(--dark);margin-bottom:24px}
+    p{font-size:15px;color:var(--mid);line-height:1.8;margin-bottom:16px}
+    p:last-child{margin-bottom:0}
+
+    /* FILTER */
+    .filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:36px}
+    .filter-label{font-size:12px;font-weight:600;color:var(--mid);letter-spacing:0.06em;text-transform:uppercase;margin-right:4px}
+    .filter-btn{padding:7px 16px;border-radius:999px;border:1px solid var(--border);background:var(--white);font-size:12px;font-weight:500;color:var(--mid);cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.15s}
+    .filter-btn:hover,.filter-btn.active{background:var(--dark);border-color:var(--dark);color:var(--white)}
+
+    /* CTA STRIP */
+    .cta-strip{background:var(--dark);padding:72px 56px;text-align:center}
+    .cta-strip h2{font-family:'Playfair Display',serif;font-size:clamp(28px,3.5vw,44px);font-weight:800;color:var(--white);margin-bottom:10px}
+    .cta-strip p{font-size:15px;color:rgba(255,255,255,0.7);margin-bottom:32px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.65}
+    .btn-white{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:var(--white);color:var(--red);border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s}
+    .btn-white:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,0.25)}
+    .btn-red{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:var(--red);color:var(--white);border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s,background 0.2s}
+    .btn-red:hover{background:var(--red-dark);transform:translateY(-2px);box-shadow:var(--shadow-r)}
+
+    /* EMPTY STATE */
+    .empty-state{text-align:center;padding:80px 24px;color:var(--muted)}
+    .empty-state svg{margin:0 auto 16px;display:block;opacity:0.25}
+    .empty-state p{font-size:15px}
+
+    /* FOOTER */
+    footer{background:var(--dark);color:rgba(255,255,255,0.35);padding:40px 56px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+    footer p{font-size:12px;line-height:1.6}
+    footer a{color:rgba(204,0,0,0.75);text-decoration:none;transition:color 0.2s}
+    footer a:hover{color:var(--red)}
+    .footer-brand{display:flex;align-items:center;gap:12px;color:var(--white);font-size:13px;font-weight:600}
+
+    /* RESPONSIVE */
+    @media(max-width:960px){nav{padding:0 24px}.nav-item,.nav-link{display:none}.btn-login{display:inline-flex}}
+    @media(max-width:768px){.page-hero{padding:100px 24px 48px}.cta-strip{padding:56px 24px}footer{padding:28px 24px;flex-direction:column;align-items:flex-start}}
+
+    .page-wrap{max-width:1240px;margin:0 auto;padding:72px 56px 88px}
+
+    /* FILTER ROW */
+    .filter-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:36px}
+    .search-box{flex:1;min-width:200px;position:relative}
+    .search-box input{width:100%;padding:10px 16px 10px 40px;border:1px solid var(--border);border-radius:10px;font-family:'Poppins',sans-serif;font-size:13.5px;color:var(--dark);background:var(--white);outline:none;transition:border-color 0.2s,box-shadow 0.2s}
+    .search-box input:focus{border-color:var(--dark);box-shadow:0 0 0 3px rgba(26,26,26,0.07)}
+    .search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+    .filter-select{padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;color:var(--mid);background:var(--white);cursor:pointer;outline:none}
+    .filter-select:focus{border-color:var(--dark)}
+
+    /* CARDS */
+    .reports-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+    .report-card{background:var(--white);border:1px solid var(--border);border-top:3px solid transparent;border-radius:16px;padding:28px 24px;display:flex;flex-direction:column;gap:12px;transition:box-shadow 0.25s,transform 0.25s,border-top-color 0.25s}
+    .report-card:hover{box-shadow:var(--shadow-d);transform:translateY(-4px);border-top-color:var(--red)}
+    .report-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .report-cat{font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--red);background:var(--red-soft);padding:3px 8px;border-radius:4px}
+    .report-year{font-size:11.5px;font-weight:500;color:var(--muted)}
+    .report-title{font-size:14.5px;font-weight:700;color:var(--dark);line-height:1.4}
+    .report-desc{font-size:12.5px;color:var(--mid);line-height:1.65;flex:1}
+    .report-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;border-top:1px solid var(--border)}
+    .report-source{font-size:11.5px;font-weight:500;color:var(--muted)}
+    .report-link{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--dark);text-decoration:none;transition:color 0.2s}
+    .report-link:hover{color:var(--red)}
+    .no-link{font-size:12px;color:var(--border);font-style:italic}
+
+    @media(max-width:768px){.page-wrap{padding:48px 24px 56px}}
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/anticipatory" class="nav-logo"><img src="/NDOC.png" alt="NDOC Logo" style="height:44px;width:auto;object-fit:contain;" /></a>
+    <div class="nav-right">
+      <div class="nav-item">
+        <span class="nav-link-btn">Who Are We <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="/aa-about">About Us</a><a href="/aa-membership">Membership</a><a href="/aa-contact">Contact Us</a></div></div>
+      </div>
+      <div class="nav-item">
+        <span class="nav-link-btn">Pillars <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+        <div class="nav-dropdown align-left"><div class="nav-dropdown-inner">
+          <a href="/aa-early-warning" class="pillar-item"><span class="pillar-num">01</span>Early Warning</a>
+          <a href="/aa-early-action" class="pillar-item"><span class="pillar-num">02</span>Early Action</a>
+          <a href="/aa-coordination" class="pillar-item"><span class="pillar-num">03</span>Coordination &amp; Governance</a>
+          <a href="/aa-research" class="pillar-item"><span class="pillar-num">04</span>Research, Innovation &amp; Learning</a>
+          <a href="/aa-policy" class="pillar-item"><span class="pillar-num">05</span>Policy &amp; Advocacy</a>
+          <a href="/aa-financing" class="pillar-item"><span class="pillar-num">06</span>Financing</a>
+          <a href="/aa-monitoring" class="pillar-item"><span class="pillar-num">07</span>Monitoring &amp; Evaluation</a>
+        </div></div>
+      </div>
+      <a href="/aa-activities" class="nav-link">AA Activities</a>
+      <div class="nav-item">
+        <span class="nav-link-btn">Knowledge Hub <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+        <div class="nav-dropdown"><div class="nav-dropdown-inner"><a href="/aa-reports">Reports &amp; Documents</a></div></div>
+      </div>
+      <a href="https://redhive.redcross.or.ke" class="btn-login"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Log In</a>
+    </div>
+  </nav>
+
+  <div class="page-hero">
+    <div class="breadcrumb"><a href="/anticipatory">Home</a><span>›</span>Knowledge Hub<span>›</span>Reports &amp; Documents</div>
+    <div class="page-hero-label">Knowledge Hub</div>
+    <h1 class="page-hero-title">Reports &amp; <span class="accent">Documents</span></h1>
+    <p class="page-hero-sub">Access evaluations, learning products, policy briefs, and technical documents from Kenya's anticipatory action programme.</p>
+  </div>
+
+  <div class="page-wrap">
+    {% if reports %}
+    <div class="filter-row">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search reports by title or keyword…" oninput="filterReports()" />
+      </div>
+      <select class="filter-select" id="catFilter" onchange="filterReports()">
+        <option value="">All Categories</option>
+        {% for cat in categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}
+      </select>
+      <select class="filter-select" id="yearFilter" onchange="filterReports()">
+        <option value="">All Years</option>
+        {% for yr in years %}<option value="{{ yr }}">{{ yr }}</option>{% endfor %}
+      </select>
+    </div>
+
+    <div class="reports-grid" id="reportsGrid">
+      {% for r in reports %}
+      <div class="report-card" data-cat="{{ r.category or '' }}" data-year="{{ r.year or '' }}" data-search="{{ (r.title or '') | lower }} {{ (r.description or '') | lower }} {{ (r.key_words or '') | lower }}">
+        <div class="report-meta">
+          {% if r.category %}<span class="report-cat">{{ r.category }}</span>{% endif %}
+          <span class="report-year">{% if r.month %}{{ r.month }} {% endif %}{% if r.year %}{{ r.year }}{% endif %}</span>
+        </div>
+        <div class="report-title">{{ r.title }}</div>
+        {% if r.description %}<div class="report-desc">{{ r.description }}</div>{% endif %}
+        <div class="report-footer">
+          <span class="report-source">{% if r.source %}{{ r.source }}{% endif %}</span>
+          {% if r.link %}
+          <a href="{{ r.link }}" target="_blank" rel="noopener" class="report-link">
+            Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </a>
+          {% else %}<span class="no-link">Link coming soon</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div id="noResults" style="display:none" class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <p>No reports match your search.</p>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <p>No reports have been published yet.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <script>
+    function filterReports() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const cat = document.getElementById('catFilter').value;
+      const yr = document.getElementById('yearFilter').value;
+      const cards = document.querySelectorAll('.report-card');
+      let visible = 0;
+      cards.forEach(c => {
+        const show = (!cat || c.dataset.cat === cat) && (!yr || c.dataset.year === yr) && (!q || c.dataset.search.includes(q));
+        c.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+      document.getElementById('reportsGrid').style.display = visible === 0 ? 'none' : '';
+    }
+  </script>
+
+  <footer>
+    <div class="footer-brand"><img src="/NDOC.png" alt="NDOC Logo" style="height:32px;width:auto;object-fit:contain;filter:brightness(0) invert(1);" />Anticipatory Action</div>
+    <p>National Technical Working Group on Anticipatory Action &middot; <a href="mailto:ndoc@redcross.or.ke">NDOC</a> &middot; <a href="mailto:info@redcross.or.ke">KRCS</a></p>
+  </footer>

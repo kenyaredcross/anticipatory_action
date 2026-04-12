@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kenya Anticipatory Action Programme</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black:     #0F0F0F;
+      --dark:      #1A1A1A;
+      --dark-2:    #252525;
+      --dark-3:    #333333;
+      --red:       #CC0000;
+      --red-dark:  #A30000;
+      --red-soft:  #FFF3F3;
+      --red-mid:   #FFE0E0;
+      --white:     #FFFFFF;
+      --off-white: #FAFAF8;
+      --warm:      #F3EDE6;
+      --warm-2:    #EAE2D9;
+      --mid:       #5C5752;
+      --muted:     #9A9590;
+      --border:    #E8E2DB;
+      --shadow:    0 2px 20px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 48px rgba(0,0,0,0.14);
+      --shadow-r:  0 8px 32px rgba(204,0,0,0.18);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Poppins', sans-serif; background: var(--off-white); color: var(--dark); overflow-x: hidden; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      height: 68px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 56px;
+      background: rgba(255,255,255,0.97); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .nav-logo-text { font-size: 13px; font-weight: 700; color: var(--dark); letter-spacing: 0.01em; line-height: 1.2; }
+    .nav-logo-text span { display: block; font-size: 10px; font-weight: 500; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+    .nav-right { display: flex; align-items: center; gap: 2px; }
+    .nav-link { font-size: 13px; font-weight: 500; color: var(--mid); text-decoration: none; padding: 7px 13px; border-radius: 6px; transition: color 0.18s, background 0.18s; }
+    .nav-link:hover { color: var(--dark); background: var(--warm); }
+    .nav-item { position: relative; display: flex; align-items: center; }
+    .nav-link-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; color: var(--mid); cursor: pointer; padding: 7px 13px; border-radius: 6px; transition: color 0.18s, background 0.18s; user-select: none; }
+    .nav-link-btn:hover, .nav-item:hover .nav-link-btn { color: var(--dark); background: var(--warm); }
+    .nav-link-btn .chev { transition: transform 0.2s; }
+    .nav-item:hover .nav-link-btn .chev { transform: rotate(180deg); }
+    .nav-dropdown { position: absolute; top: 100%; left: 50%; padding-top: 8px; transform: translateX(-50%); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.16s, visibility 0.16s; z-index: 300; }
+    .nav-item:hover .nav-dropdown { opacity: 1; visibility: visible; pointer-events: all; }
+    .nav-dropdown.align-left { left: 0; transform: none; }
+    .nav-dropdown-inner { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 6px; box-shadow: 0 16px 48px rgba(0,0,0,0.12); min-width: 200px; }
+    .nav-dropdown-inner a { display: block; padding: 8px 13px; font-size: 12.5px; font-weight: 500; color: var(--dark); text-decoration: none; border-radius: 7px; white-space: nowrap; transition: background 0.14s; }
+    .nav-dropdown-inner a:hover { background: var(--warm); }
+    .pillar-item { display: flex !important; align-items: center; gap: 10px; }
+    .pillar-num { font-size: 10px; font-weight: 700; color: var(--red); background: var(--red-soft); border-radius: 4px; padding: 2px 6px; letter-spacing: 0.06em; flex-shrink: 0; }
+    .btn-nav { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; background: var(--dark); color: var(--white); border-radius: 7px; font-size: 12.5px; font-weight: 600; text-decoration: none; margin-left: 8px; transition: background 0.18s; }
+    .btn-nav:hover { background: var(--red); }
+
+    /* ── HERO ── */
+    .hero {
+      height: 100vh; min-height: 600px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 88px 56px 80px;
+      background: var(--dark); position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 55%, rgba(204,0,0,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .scroll-cue {
+      position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.2); z-index: 1;
+    }
+    .scroll-cue svg { animation: scrollBounce 2s ease-in-out infinite; }
+    @keyframes scrollBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+    .hero-inner { position: relative; z-index: 1; max-width: 820px; }
+    .hero-tag {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(255,255,255,0.4); margin-bottom: 36px;
+    }
+    .hero-tag-line { width: 28px; height: 1px; background: var(--red); }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(60px, 10vw, 120px); font-weight: 800;
+      line-height: 0.95; color: var(--white); margin-bottom: 28px;
+      letter-spacing: -0.02em;
+    }
+    .hero-title .red { color: var(--red); }
+    .hero-tagline {
+      font-size: clamp(13px, 1.4vw, 16px); font-weight: 500; letter-spacing: 0.18em;
+      text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 28px;
+    }
+    .hero-divider {
+      width: 40px; height: 1px; background: rgba(255,255,255,0.12);
+      margin: 0 auto 28px;
+    }
+    .hero-sub {
+      font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.45);
+      max-width: 520px; margin: 0 auto 48px; line-height: 1.8;
+    }
+    .hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 15px 36px; background: var(--red); color: var(--white);
+      border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none;
+      transition: background 0.18s, transform 0.18s;
+    }
+    .btn-primary:hover { background: var(--red-dark); transform: translateY(-2px); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 15px 36px; color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+      font-size: 14px; font-weight: 500; text-decoration: none;
+      transition: color 0.18s, border-color 0.18s, transform 0.18s;
+    }
+    .btn-ghost:hover { color: var(--white); border-color: rgba(255,255,255,0.35); transform: translateY(-2px); }
+
+    /* ── RED BAND ── */
+    .red-band {
+      background: var(--red); padding: 48px 56px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    }
+    .rb-item { text-align: center; color: var(--white); padding: 0 24px; position: relative; }
+    .rb-item + .rb-item::before { content: ''; position: absolute; left: 0; top: 10%; bottom: 10%; width: 1px; background: rgba(255,255,255,0.2); }
+    .rb-num { font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+    .rb-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; margin-top: 6px; }
+
+    /* ── WHAT WE DO ── */
+    .wwd { background: var(--white); padding: 104px 56px; }
+    .wwd-inner { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .wwd-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--red); display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    .wwd-label::before { content: ''; width: 24px; height: 2px; background: var(--red); border-radius: 2px; }
+    .wwd-title { font-family: 'Playfair Display', serif; font-size: clamp(32px, 3.5vw, 48px); font-weight: 700; line-height: 1.18; color: var(--dark); margin-bottom: 24px; }
+    .wwd-body { font-size: 15px; font-weight: 400; color: var(--mid); line-height: 1.85; }
+    .wwd-body + .wwd-body { margin-top: 16px; }
+    .wwd-right { display: flex; flex-direction: column; gap: 24px; }
+    .wwd-card { background: var(--off-white); border-radius: 14px; padding: 28px; border-left: 3px solid var(--red); }
+    .wwd-card h4 { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+    .wwd-card p { font-size: 13px; font-weight: 400; color: var(--mid); line-height: 1.7; }
+
+    /* ── PILLARS ── */
+    .pillars-section { background: var(--warm); padding: 104px 56px; }
+    .pillars-inner { max-width: 1240px; margin: 0 auto; }
+    .section-header { margin-bottom: 56px; }
+    .section-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--red); display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .section-label::before { content: ''; width: 24px; height: 2px; background: var(--red); border-radius: 2px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 3vw, 42px); font-weight: 700; line-height: 1.18; color: var(--dark); margin-bottom: 12px; }
+    .section-sub { font-size: 15px; font-weight: 400; color: var(--mid); max-width: 520px; line-height: 1.75; }
+    .pillars-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .p-card {
+      background: var(--white); border-radius: 16px; padding: 32px 28px;
+      text-decoration: none; color: inherit; display: block; position: relative;
+      border: 1px solid rgba(0,0,0,0.06);
+      transition: box-shadow 0.24s, transform 0.24s;
+      overflow: hidden;
+    }
+    .p-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: var(--border); border-radius: 0; transition: background 0.24s;
+    }
+    .p-card:hover { box-shadow: 0 12px 48px rgba(0,0,0,0.1); transform: translateY(-4px); }
+    .p-card:hover::before { background: var(--red); }
+    .p-num { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 20px; }
+    .p-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--warm); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; transition: background 0.2s; }
+    .p-card:hover .p-icon { background: var(--red-soft); }
+    .p-card:hover .p-icon svg { color: var(--red); }
+    .p-title { font-size: 15px; font-weight: 700; color: var(--dark); margin-bottom: 10px; line-height: 1.3; }
+    .p-desc { font-size: 12.5px; font-weight: 400; color: var(--mid); line-height: 1.7; }
+    .p-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--red); margin-top: 20px; transition: gap 0.18s; }
+    .p-card:hover .p-link { gap: 10px; }
+
+    /* ── DARK IMPACT BAND ── */
+    .impact-band { background: var(--dark); padding: 104px 56px; }
+    .impact-inner { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .impact-left .section-label::before, .impact-left .section-label { color: rgba(255,100,100,0.8); }
+    .impact-left .section-label::before { background: rgba(255,100,100,0.8); }
+    .impact-left .section-title { color: var(--white); }
+    .impact-left .section-sub { color: rgba(255,255,255,0.5); }
+    .impact-points { display: flex; flex-direction: column; gap: 2px; margin-top: 40px; }
+    .impact-pt {
+      display: flex; align-items: flex-start; gap: 20px;
+      padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .impact-pt:last-child { border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .impact-pt-num { font-size: 11px; font-weight: 700; color: var(--red); min-width: 24px; padding-top: 2px; }
+    .impact-pt h4 { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+    .impact-pt p { font-size: 12.5px; font-weight: 400; color: rgba(255,255,255,0.45); line-height: 1.65; }
+    .impact-right { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .impact-stat { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px 24px; }
+    .impact-stat-num { font-size: 40px; font-weight: 800; color: var(--white); line-height: 1; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .impact-stat-num .unit { font-size: 22px; color: var(--red); }
+    .impact-stat-label { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.35); letter-spacing: 0.07em; text-transform: uppercase; line-height: 1.5; }
+
+    /* ── PARTNERS ── */
+    .partners-section { background: var(--white); padding: 88px 56px; }
+    .partners-inner { max-width: 1240px; margin: 0 auto; }
+    .partners-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
+    .partner-tag { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: var(--warm); border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--dark); white-space: nowrap; }
+    .partner-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+
+    /* ── CTA SECTION ── */
+    .cta-section { background: var(--warm); padding: 88px 56px; }
+    .cta-inner { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 48px; align-items: center; }
+    .cta-text h2 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 3vw, 40px); font-weight: 700; color: var(--dark); margin-bottom: 12px; }
+    .cta-text p { font-size: 15px; font-weight: 400; color: var(--mid); line-height: 1.7; max-width: 440px; }
+    .cta-actions { display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
+    .btn-dark { display: inline-flex; align-items: center; gap: 10px; padding: 14px 32px; background: var(--dark); color: var(--white); border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.18s; white-space: nowrap; }
+    .btn-dark:hover { background: var(--red); }
+    .btn-outline-dark { display: inline-flex; align-items: center; gap: 10px; padding: 13px 32px; background: transparent; color: var(--dark); border: 1px solid var(--border-2, #DDD7D0); border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; transition: border-color 0.18s, background 0.18s; white-space: nowrap; }
+    .btn-outline-dark:hover { border-color: var(--dark); background: var(--warm-2); }
+
+    /* ── FOOTER ── */
+    footer { background: var(--dark); padding: 56px 56px 36px; }
+    .footer-inner { max-width: 1240px; margin: 0 auto; }
+    .footer-top { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 48px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .footer-brand-text { font-size: 13px; font-weight: 700; color: var(--white); margin-top: 12px; margin-bottom: 10px; }
+    .footer-tagline { font-size: 12.5px; color: rgba(255,255,255,0.35); line-height: 1.7; }
+    .footer-col h4 { font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 18px; }
+    .footer-col a { display: block; font-size: 13px; font-weight: 400; color: rgba(255,255,255,0.55); text-decoration: none; margin-bottom: 10px; transition: color 0.18s; }
+    .footer-col a:hover { color: var(--white); }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 28px; flex-wrap: wrap; gap: 12px; }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,0.25); }
+    .footer-copy a { color: rgba(204,0,0,0.7); text-decoration: none; }
+    .footer-copy a:hover { color: var(--red); }
+
+    /* ── UTIL ── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media(max-width:1100px) {
+      .wwd-inner, .impact-inner { grid-template-columns: 1fr; gap: 48px; }
+    }
+    @media(max-width:900px) {
+      nav { padding: 0 24px; }
+      .nav-item, .nav-link { display: none; }
+      .btn-nav { display: inline-flex; }
+      .hero { padding: 88px 32px 72px; }
+      .red-band { grid-template-columns: 1fr 1fr; }
+      .wwd, .pillars-section, .impact-band, .partners-section, .cta-section { padding: 72px 24px; }
+      .cta-inner { grid-template-columns: 1fr; }
+      footer { padding: 48px 24px 28px; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+    }
+    @media(max-width:600px) {
+      .hero { padding: 80px 24px 64px; }
+      .red-band { grid-template-columns: 1fr 1fr; padding: 40px 24px; }
+      .impact-right { grid-template-columns: 1fr 1fr; }
+      .footer-top { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a href="/anticipatory" class="nav-logo">
+    <img src="/NDOC.png" alt="NDOC Logo" style="height:40px;width:auto;object-fit:contain;" />
+    <div class="nav-logo-text">Anticipatory Action<span>Kenya — NDOC / KRCS</span></div>
+  </a>
+  <div class="nav-right">
+    <div class="nav-item">
+      <span class="nav-link-btn">Who Are We <svg class="chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <div class="nav-dropdown"><div class="nav-dropdown-inner">
+        <a href="/aa-about">About the Programme</a>
+        <a href="/aa-membership">Member Organisations</a>
+        <a href="/aa-contact">Contact Us</a>
+      </div></div>
+    </div>
+    <div class="nav-item">
+      <span class="nav-link-btn">Pillars <svg class="chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <div class="nav-dropdown align-left"><div class="nav-dropdown-inner">
+        <a href="/aa-early-warning" class="pillar-item"><span class="pillar-num">01</span>Early Warning</a>
+        <a href="/aa-early-action" class="pillar-item"><span class="pillar-num">02</span>Early Action</a>
+        <a href="/aa-coordination" class="pillar-item"><span class="pillar-num">03</span>Coordination &amp; Governance</a>
+        <a href="/aa-research" class="pillar-item"><span class="pillar-num">04</span>Research, Innovation &amp; Learning</a>
+        <a href="/aa-policy" class="pillar-item"><span class="pillar-num">05</span>Policy &amp; Advocacy</a>
+        <a href="/aa-financing" class="pillar-item"><span class="pillar-num">06</span>Financing</a>
+        <a href="/aa-monitoring" class="pillar-item"><span class="pillar-num">07</span>Monitoring &amp; Evaluation</a>
+      </div></div>
+    </div>
+    <a href="/aa-activities" class="nav-link">Activities</a>
+    <div class="nav-item">
+      <span class="nav-link-btn">Knowledge <svg class="chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <div class="nav-dropdown"><div class="nav-dropdown-inner">
+        <a href="/aa-reports">Reports &amp; Documents</a>
+      </div></div>
+    </div>
+    <a href="https://redhive.redcross.or.ke" class="btn-nav">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Log In
+    </a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">
+      <span class="hero-tag-line"></span>
+      National Technical Working Group · Kenya
+      <span class="hero-tag-line"></span>
+    </div>
+    <h1 class="hero-title">
+      Anticipatory<br>
+      <span class="red">Action</span>
+    </h1>
+    <p class="hero-tagline">Predict &nbsp;·&nbsp; Prepare &nbsp;·&nbsp; Protect</p>
+    <div class="hero-divider"></div>
+    <p class="hero-sub">Kenya's national framework for acting before disasters strike — translating early warning into life-saving action across all 47 counties.</p>
+    <div class="hero-actions">
+      <a href="/aa-about" class="btn-primary">
+        Learn About the Programme
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="/aa-reports" class="btn-ghost">View Reports</a>
+    </div>
+  </div>
+  <div class="scroll-cue">
+    Scroll to explore
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+  </div>
+</section>
+
+<!-- ── RED BAND ── -->
+<div class="red-band">
+  <div class="rb-item"><div class="rb-num">40%</div><div class="rb-label">Reduction in Livestock Loss</div></div>
+  <div class="rb-item"><div class="rb-num">15+</div><div class="rb-label">Action Protocols Active</div></div>
+  <div class="rb-item"><div class="rb-num">30+</div><div class="rb-label">Partner Organisations</div></div>
+  <div class="rb-item"><div class="rb-num">2022</div><div class="rb-label">TWG Established</div></div>
+</div>
+
+<!-- ── WHAT WE DO ── -->
+<section class="wwd">
+  <div class="wwd-inner">
+    <div>
+      <div class="wwd-label">What We Do</div>
+      <h2 class="wwd-title">Acting before the crisis, not after it.</h2>
+      <p class="wwd-body">Anticipatory Action (AA) means delivering targeted interventions — cash, livestock support, health services — based on hazard forecasts before a disaster fully unfolds. When triggers are met, action is immediate, pre-agreed, and funded.</p>
+      <p class="wwd-body">Kenya's AA programme, coordinated by NDOC and KRCS through a national Technical Working Group, has proven that this approach is not only feasible — it is far more cost-effective than emergency response after the fact.</p>
+    </div>
+    <div class="wwd-right">
+      <div class="wwd-card">
+        <h4>Forecast-Based Triggers</h4>
+        <p>Actions are linked to probability thresholds from KMD, NDMA, and ICPAC forecasts — removing political delay from the activation equation.</p>
+      </div>
+      <div class="wwd-card">
+        <h4>Pre-Agreed Protocols</h4>
+        <p>Every intervention is defined in advance: who does what, for whom, funded by what mechanism, activated at what threshold.</p>
+      </div>
+      <div class="wwd-card">
+        <h4>Seven-Pillar Framework</h4>
+        <p>From early warning to M&amp;E, Kenya's AA programme covers the full cycle — ensuring no part of the system is left unaddressed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PILLARS ── -->
+<section class="pillars-section" id="pillars">
+  <div class="pillars-inner">
+    <div class="section-header">
+      <div class="section-label">Strategic Pillars</div>
+      <h2 class="section-title">The Seven Pillars of Kenya's AA Framework</h2>
+      <p class="section-sub">Each pillar addresses a critical component of a functional anticipatory action system — from data to delivery to learning.</p>
+    </div>
+    <div class="pillars-grid">
+
+      <a href="/aa-early-warning" class="p-card">
+        <div class="p-num">PILLAR 01</div>
+        <div class="p-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" color="#5C5752"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div class="p-title">Early Warning</div>
+        <div class="p-desc">Generating timely, localised, and actionable hazard forecasts that drive the AA trigger system across drought, flood, and health crises.</div>
+        <div class="p-link">Explore <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      </a>
+
+      <a href="/aa-early-action" class="p-card">
+        <div class="p-num">PILLAR 02</div>
+        <div class="p-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" color="#5C5752"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="p-title">Early Action</div>
+        <div class="p-desc">Delivering pre-agreed, pre-funded interventions — cash, livestock, health — before hazards reach destructive intensity.</div>
+        <div class="p-link">Explore <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      </a>
+
+      <a href="/aa-coordination" class="p-card">
+        <div class="p-num">PILLAR 03</div>
+        <div class="p-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" color="#5C5752"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="12" x2="5" y2="16"/><line x1="12" y1="12" x2="19" y2="16"/></svg></div>
+        <div class="p-title">Coordination &amp; Governance</div>
+        <div class="p-desc">The TWG structures, SOPs, county focal points, and data-sharing protocols that make cross-sector AA coordination function.</div>
+        <div class="p-link">Explore <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      </a>
+
+      <a href="/aa-research" class="p-card">
+        <div class="p-num">PILLAR 04</div>
+        <div class="p-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" color="#5C5752"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="p-title">Research, Innovation &amp; Learning</div>
+        <div class="p-desc">Cost-benefit evidence, new technology, academic partnerships, and structured learning cycles that keep the programme improving.</div>
+        <div class="p-link">Explore <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      </a>
+
+      <a href="/aa-policy" class="p-card">
+        <div class="p-num">PILLAR 05</div>
+        <div class="p-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" color="#5C5752"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="p-title">Policy &amp; Advocacy</div>
+        <div class="p-desc">Embedding AA in Kenya's DRM Act, county frameworks, and sector policies — creating legal and institutional mandates for sustained action.</div>
+        <div class="p-link">Explore <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      </a>
+
+      <a href="/aa-financing" class="p-card">
+        <div class="p-num">PILLAR 06</div>
+        <div class="p-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" color="#5C5752"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div class="p-title">Financing</div>
+        <div class="p-desc">Forecast-based financing, government contingency funds, parametric insurance, and pooled mechanisms that ensure pre-positioned resources.</div>
+        <div class="p-link">Explore <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      </a>
+
+      <a href="/aa-monitoring" class="p-card">
+        <div class="p-num">PILLAR 07</div>
+        <div class="p-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" color="#5C5752"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="p-title">Monitoring &amp; Evaluation</div>
+        <div class="p-desc">Real-time programme dashboards, after-action reviews, impact evaluations, and annual learning reviews that close the feedback loop.</div>
+        <div class="p-link">Explore <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── IMPACT BAND ── -->
+<section class="impact-band">
+  <div class="impact-inner">
+    <div class="impact-left">
+      <div class="section-label">Programme Impact</div>
+      <h2 class="section-title">Measurable results, before the crisis.</h2>
+      <p class="section-sub">Kenya's AA programme has consistently demonstrated that pre-emptive action is more humane, more equitable, and significantly cheaper than emergency response.</p>
+      <div class="impact-points">
+        <div class="impact-pt">
+          <div class="impact-pt-num">01</div>
+          <div>
+            <h4>Faster than Emergency Response</h4>
+            <p>From trigger to cash in hand: AA protocols have achieved 72-hour disbursement where traditional emergency response takes 3–6 weeks.</p>
+          </div>
+        </div>
+        <div class="impact-pt">
+          <div class="impact-pt-num">02</div>
+          <div>
+            <h4>Proven Cost Efficiency</h4>
+            <p>Every $1 invested in anticipatory action generates up to $7 in avoided humanitarian and recovery costs — evidence from Kenya's drought cycles.</p>
+          </div>
+        </div>
+        <div class="impact-pt">
+          <div class="impact-pt-num">03</div>
+          <div>
+            <h4>Dignity and Agency for Communities</h4>
+            <p>Early cash transfers allow households to make their own protective decisions before crisis sets in — not just receive aid after loss.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="impact-right">
+      <div class="impact-stat"><div class="impact-stat-num">$1<span class="unit">:$7</span></div><div class="impact-stat-label">Return on early action investment</div></div>
+      <div class="impact-stat"><div class="impact-stat-num">72<span class="unit">h</span></div><div class="impact-stat-label">Trigger-to-cash record</div></div>
+      <div class="impact-stat"><div class="impact-stat-num">40<span class="unit">%</span></div><div class="impact-stat-label">Reduction in livestock loss</div></div>
+      <div class="impact-stat"><div class="impact-stat-num">15<span class="unit">+</span></div><div class="impact-stat-label">Live action protocols</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PARTNERS ── -->
+<section class="partners-section">
+  <div class="partners-inner">
+    <div class="section-label">Key Partners</div>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-size:clamp(28px,2.8vw,38px);font-weight:700;color:var(--dark);margin-bottom:12px;">The Technical Working Group</h2>
+    <p style="font-size:15px;color:var(--mid);max-width:540px;line-height:1.75;">A multi-stakeholder body bringing together government, UN agencies, NGOs, and Red Cross/Red Crescent partners under the leadership of NDOC and KRCS.</p>
+    <div class="partners-grid">
+      <span class="partner-tag">Kenya Red Cross Society (KRCS)</span>
+      <span class="partner-tag">National Disaster Operations Centre (NDOC)</span>
+      <span class="partner-tag">NDMA</span>
+      <span class="partner-tag">Kenya Meteorological Department</span>
+      <span class="partner-tag">OCHA Kenya</span>
+      <span class="partner-tag">IFRC / ICRC</span>
+      <span class="partner-tag">WFP Kenya</span>
+      <span class="partner-tag">UNICEF Kenya</span>
+      <span class="partner-tag">FAO Kenya</span>
+      <span class="partner-tag">County Governments</span>
+      <span class="partner-tag">Start Network</span>
+      <span class="partner-tag">ICPAC</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-text">
+      <h2>Join Kenya's AA movement.</h2>
+      <p>Whether you are a humanitarian organisation, government agency, researcher, or donor — the Technical Working Group welcomes new members and partners committed to proactive disaster risk management.</p>
+    </div>
+    <div class="cta-actions">
+      <a href="/aa-membership" class="btn-dark">View Membership <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+      <a href="/aa-contact" class="btn-outline-dark">Contact the Secretariat</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <img src="/NDOC.png" alt="NDOC Logo" style="height:38px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:0.7;" />
+        <div class="footer-brand-text">Kenya Anticipatory Action</div>
+        <p class="footer-tagline">National Technical Working Group on Anticipatory Action, coordinated by NDOC and the Kenya Red Cross Society.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Programme</h4>
+        <a href="/aa-about">About Us</a>
+        <a href="/aa-membership">Membership</a>
+        <a href="/aa-activities">Activities</a>
+        <a href="/aa-reports">Reports</a>
+      </div>
+      <div class="footer-col">
+        <h4>Pillars</h4>
+        <a href="/aa-early-warning">Early Warning</a>
+        <a href="/aa-early-action">Early Action</a>
+        <a href="/aa-coordination">Coordination</a>
+        <a href="/aa-financing">Financing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="mailto:ndoc@redcross.or.ke">ndoc@redcross.or.ke</a>
+        <a href="mailto:info@redcross.or.ke">info@redcross.or.ke</a>
+        <a href="/aa-contact">Send a Message</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2026 Kenya Anticipatory Action TWG · <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross Society</a> · <a href="mailto:ndoc@redcross.or.ke">NDOC</a></p>
+      <p class="footer-copy" style="color:rgba(255,255,255,0.15);">Powered by NDOC / KRCS</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
