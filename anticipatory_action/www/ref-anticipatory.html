@@ -83,9 +83,9 @@
       flex: 0 0 33.333%;
       background-size: cover; background-position: center;
     }
-    .carousel-slide:nth-child(1) { background-image: url('/ndoc1.jpg'); }
-    .carousel-slide:nth-child(2) { background-image: url('/ndoc2.jpg'); }
-    .carousel-slide:nth-child(3) { background-image: url('/ndoc3.jpg'); }
+    .carousel-slide:nth-child(1) { background-image: url('https://images.unsplash.com/photo-1580125053497-0a79a60ef56c?w=1600&q=80'); }
+    .carousel-slide:nth-child(2) { background-image: url('https://images.unsplash.com/photo-1542223189-67a03fa0f0bd?w=1600&q=80'); }
+    .carousel-slide:nth-child(3) { background-image: url('https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1600&q=80'); }
 
     /* Dark tint overlay over the entire hero */
     .hero::before {
@@ -134,7 +134,7 @@
     }
 
     /* All original hero inner elements */
-    .hero-inner { position: relative; z-index: 2; max-width: 820px; margin-top: 68px; }
+    .hero-inner { position: relative; z-index: 2; max-width: 820px; }
     .hero-tag {
       display: inline-flex; align-items: center; justify-content: center; gap: 10px;
       font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
@@ -455,7 +455,7 @@
 <nav>
   <a href="/anticipatory" class="nav-logo">
     <img src="/NDOC.png" alt="NDOC Logo" style="height:40px;width:auto;object-fit:contain;" onerror="this.style.display='none'" />
-    <div class="nav-logo-text">Anticipatory Action<span>National Disaster Operations Center</span></div>
+    <div class="nav-logo-text">Anticipatory Action<span>Kenya — NDOC / KRCS</span></div>
   </a>
   <div class="nav-right">
     <div class="nav-item">
@@ -535,10 +535,10 @@
   </div>
 
   <!-- Original scroll cue -->
-  <!-- <div class="scroll-cue">
+  <div class="scroll-cue">
     Scroll to explore
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
-  </div> -->
+  </div>
 </section>
 
 <!-- ── RED BAND ── -->
@@ -556,7 +556,7 @@
       <div class="wwd-label">What We Do</div>
       <h2 class="wwd-title">Acting before the crisis, not after it.</h2>
       <p class="wwd-body">Anticipatory Action (AA) means delivering targeted interventions — cash, livestock support, health services — based on hazard forecasts before a disaster fully unfolds. When triggers are met, action is immediate, pre-agreed, and funded.</p>
-      <p class="wwd-body">Kenya's AA programme, coordinated by NDOC through a national Technical Working Group, has proven that this approach is not only feasible — it is far more cost-effective than emergency response after the fact.</p>
+      <p class="wwd-body">Kenya's AA programme, coordinated by NDOC and KRCS through a national Technical Working Group, has proven that this approach is not only feasible — it is far more cost-effective than emergency response after the fact.</p>
     </div>
     <div class="wwd-right">
       <div class="wwd-card">
@@ -715,8 +715,8 @@
     <h2 class="section-title" style="font-family:'Playfair Display',serif;font-size:clamp(28px,2.8vw,38px);font-weight:700;color:var(--dark);margin-bottom:12px;">The Technical Working Group</h2>
     <p style="font-size:15px;color:var(--mid);max-width:540px;line-height:1.75;">A multi-stakeholder body bringing together government, UN agencies, NGOs, and Red Cross/Red Crescent partners under the leadership of NDOC and KRCS.</p>
     <div class="partners-grid">
-      <span class="partner-tag">National Disaster Operations Centre (NDOC)</span>
       <span class="partner-tag">Kenya Red Cross Society (KRCS)</span>
+      <span class="partner-tag">National Disaster Operations Centre (NDOC)</span>
       <span class="partner-tag">NDMA</span>
       <span class="partner-tag">Kenya Meteorological Department</span>
       <span class="partner-tag">OCHA Kenya</span>
@@ -759,7 +759,7 @@
         <div class="footer-brand-icon"></div>
         <div class="footer-brand-name">Anticipatory Action</div>
         <div class="footer-brand-sub">National Technical Working Group</div>
-        <p class="footer-tagline">Coordinated by NDOC across all 47 counties.</p>
+        <p class="footer-tagline">Coordinated by NDOC and the Kenya Red Cross Society across all 47 counties.</p>
       </div>
       <!-- Programme col -->
       <div class="footer-col">
@@ -780,13 +780,13 @@
       <!-- Contact col -->
       <div class="footer-col">
         <h4>Contact</h4>
-        <a href="mailto:ndoc@redcross.or.ke">data@redcross.or.ke</a>
+        <a href="mailto:ndoc@redcross.or.ke">ndoc@redcross.or.ke</a>
         <a href="/aa-contact">Send Message</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p class="footer-copy">© 2026 Kenya Anticipatory Action TWG · <a href="mailto:data@redcross.or.ke">National Disaster Operations Center</a></p>
-      <p class="footer-copy">Powered by Kenya Red Cross Society</p>
+      <p class="footer-copy">© 2026 Kenya Anticipatory Action TWG · <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross Society</a> · <a href="mailto:ndoc@redcross.or.ke">NDOC</a></p>
+      <p class="footer-copy">Powered by NDOC / KRCS</p>
     </div>
   </div>
 </footer>
