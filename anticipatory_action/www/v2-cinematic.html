@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kenya Anticipatory Action Programme</title>
+  <title>Kenya AA — Version 2: Cinematic</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,600&family=Barlow:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
   <style>
@@ -13,7 +13,9 @@
       --dark-2: #1E1E1E;
       --red: #D42B2B;
       --red-glow: rgba(212,43,43,0.3);
+      --amber: #E8A23C;
       --white: #FFFFFF;
+      --off: #F5F0E8;
       --muted: rgba(255,255,255,0.45);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,7 +34,7 @@
       pointer-events: none;
     }
     .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; position: relative; z-index: 1; }
-    .nav-brand img { height: 32px; }
+    .nav-brand img { height: 32px; filter: brightness(0) invert(1); opacity: 0.9; }
     .nav-brand-text { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: var(--white); letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1; }
     .nav-brand-text span { display: block; font-size: 9px; font-weight: 400; color: rgba(255,255,255,0.4); letter-spacing: 0.14em; }
     .nav-links { display: flex; align-items: center; gap: 4px; flex: 1; position: relative; z-index: 1; }
@@ -42,78 +44,70 @@
     .btn-nav { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; border: 1px solid rgba(255,255,255,0.25); color: var(--white); font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; transition: background 0.2s, border-color 0.2s; }
     .btn-nav:hover { background: var(--red); border-color: var(--red); }
 
-    /* HERO — carousel background, tag top, title bottom */
-    .hero {
-      height: 100vh; min-height: 640px;
-      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-      text-align: center; padding: 88px 56px 60px;
-      position: relative; overflow: hidden;
+    /* HERO — FULL CINEMATIC */
+    .hero { position: relative; height: 100vh; min-height: 640px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
     }
-    .carousel-track {
-      position: absolute; inset: 0;
-      display: flex; width: 300%;
-      animation: carouselSlide 18s infinite;
-      z-index: 0;
+    .hero-bg img { width: 100%; height: 100%; object-fit: cover; transform-origin: center; animation: heroZoom 16s ease-out forwards; }
+    @keyframes heroZoom {
+      from { transform: scale(1.06); }
+      to { transform: scale(1.0); }
     }
-    .carousel-slide {
-      flex: 0 0 33.333%;
-      background-size: cover; background-position: center;
+    .hero-overlay-1 { position: absolute; inset: 0; background: linear-gradient(to top, rgba(9,9,9,0.96) 0%, rgba(9,9,9,0.5) 40%, rgba(9,9,9,0.15) 70%, transparent 100%); }
+    .hero-overlay-2 { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(9,9,9,0.7) 0%, transparent 60%); }
+    .hero-content { position: relative; z-index: 2; padding: 0 80px 80px; max-width: 960px; }
+    .hero-eyebrow {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
     }
-    .carousel-slide:nth-child(1) { background-image: url('/ndoc1.jpg'); }
-    .carousel-slide:nth-child(2) { background-image: url('/ndoc2.jpg'); }
-    .carousel-slide:nth-child(3) { background-image: url('/ndoc3.jpg'); }
-    .hero::before {
-      content: ''; position: absolute; inset: 0; z-index: 1;
-      background: rgba(9,9,9,0.78); pointer-events: none;
+    .hero-eyebrow-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--red); padding: 5px 12px;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.14em; color: var(--white);
     }
-    .hero::after {
-      content: ''; position: absolute; inset: 0; z-index: 1;
-      background: radial-gradient(ellipse 70% 60% at 50% 55%, rgba(212,43,43,0.07) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    @keyframes carouselSlide {
-      0%   { transform: translateX(0); }
-      28%  { transform: translateX(0); }
-      33%  { transform: translateX(-33.333%); }
-      61%  { transform: translateX(-33.333%); }
-      66%  { transform: translateX(-66.666%); }
-      94%  { transform: translateX(-66.666%); }
-      100% { transform: translateX(0); }
-    }
-    .hero-tag {
-      position: relative; z-index: 2;
-      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-      font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600;
-      letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.4);
-    }
-    .hero-tag-line { width: 28px; height: 1px; background: var(--red); }
-    .hero-bottom {
-      position: relative; z-index: 2;
-      width: 100%; text-align: center; padding-bottom: 20px;
-    }
+    .hero-eyebrow-line { width: 40px; height: 1px; background: rgba(255,255,255,0.2); }
+    .hero-eyebrow-text { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(255,255,255,0.35); }
     .hero-title {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: clamp(72px, 11vw, 160px); font-weight: 900;
-      line-height: 0.9; color: var(--white);
-      text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 20px;
+      font-size: clamp(72px, 11vw, 160px);
+      font-weight: 900; line-height: 0.9;
+      color: var(--white); text-transform: uppercase;
+      letter-spacing: -0.01em;
+      margin-bottom: 28px;
     }
-    .hero-title .red { color: var(--red); }
-    .hero-tagline-bottom {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: clamp(13px, 1.4vw, 16px); font-weight: 500;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: rgba(255,255,255,0.35); margin-top: 8px;
+    .hero-title .accent { color: var(--red); display: block; }
+    .hero-title .italic { font-style: italic; color: rgba(255,255,255,0.7); font-weight: 300; }
+    .hero-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 48px; }
+    .hero-sub { font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.55); line-height: 1.7; max-width: 440px; }
+    .hero-actions { display: flex; gap: 12px; flex-shrink: 0; }
+    .btn-cine-primary {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 16px 36px; background: var(--red); color: var(--white);
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none;
+      transition: background 0.2s;
     }
+    .btn-cine-primary:hover { background: #b82222; }
+    .btn-cine-ghost {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 15px 32px; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-cine-ghost:hover { border-color: rgba(255,255,255,0.5); color: var(--white); }
 
     /* TICKER */
     .ticker { background: var(--red); padding: 12px 0; overflow: hidden; position: relative; }
-    .ticker-inner { display: flex; white-space: nowrap; animation: ticker 20s linear infinite; }
+    .ticker-inner { display: flex; gap: 0; white-space: nowrap; animation: ticker 20s linear infinite; }
     .ticker-item { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.9); padding: 0 28px; display: flex; align-items: center; gap: 16px; }
     .ticker-item::after { content: '·'; color: rgba(255,255,255,0.4); }
     @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
     /* INTRO */
     .intro { background: var(--dark); padding: 96px 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 96px; align-items: center; }
+    .intro-left { position: relative; }
     .intro-img-wrap { position: relative; }
     .intro-img-wrap img { width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block; }
     .intro-img-caption { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(9,9,9,0.85); padding: 20px 24px; }
@@ -124,6 +118,7 @@
       font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.12em; color: var(--white);
     }
+    .intro-right { }
     .kicker-label {
       font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.16em; color: var(--red);
@@ -154,13 +149,13 @@
     .pillars-head h2 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(40px, 5vw, 64px); font-weight: 900; text-transform: uppercase; color: var(--white); line-height: 1; letter-spacing: -0.01em; }
     .pillars-head h2 span { color: var(--red); display: block; }
     .pillars-head p { font-size: 14px; font-weight: 300; color: rgba(255,255,255,0.4); max-width: 280px; line-height: 1.7; text-align: right; }
-    .pillars-list { display: flex; flex-direction: column; }
+    .pillars-list { display: flex; flex-direction: column; gap: 0; }
     .pillar-row {
       display: grid; grid-template-columns: 80px 1fr 1fr auto;
       align-items: center; gap: 32px;
       padding: 24px 0; border-top: 1px solid rgba(255,255,255,0.05);
       text-decoration: none; color: inherit;
-      transition: background 0.2s, padding-left 0.2s; cursor: pointer;
+      transition: background 0.2s; cursor: pointer;
     }
     .pillar-row:last-child { border-bottom: 1px solid rgba(255,255,255,0.05); }
     .pillar-row:hover { background: rgba(255,255,255,0.02); padding-left: 20px; }
@@ -182,10 +177,11 @@
     .impact-bg-img img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(60%); }
     .impact-bg-overlay { position: absolute; inset: 0; background: rgba(9,9,9,0.88); }
     .impact-content { position: relative; z-index: 2; padding: 96px 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+    .impact-l .kicker-label { }
     .impact-l h2 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(40px, 5vw, 60px); font-weight: 900; text-transform: uppercase; color: var(--white); line-height: 1.0; letter-spacing: -0.01em; margin-bottom: 20px; }
     .impact-l h2 em { color: var(--red); font-style: italic; }
     .impact-l p { font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.5); line-height: 1.8; margin-bottom: 36px; }
-    .impact-pts { display: flex; flex-direction: column; }
+    .impact-pts { display: flex; flex-direction: column; gap: 0; }
     .impact-pt { padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.06); display: grid; grid-template-columns: 52px 1fr; gap: 20px; align-items: start; }
     .impact-pt:last-child { border-bottom: 1px solid rgba(255,255,255,0.06); }
     .impact-pt-n { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 900; color: var(--red); line-height: 1; opacity: 0.7; }
@@ -198,11 +194,11 @@
     .impact-stat .l { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); margin-top: 10px; line-height: 1.5; }
 
     /* PARTNERS */
-    .partners { background: var(--dark); padding: 80px; }
+    .partners { background: var(--dark); padding: 80px 80px; }
     .partners-kicker { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--red); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
     .partners-kicker::before { content: ''; width: 28px; height: 2px; background: var(--red); }
     .partners h2 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(32px, 4vw, 50px); font-weight: 900; text-transform: uppercase; color: var(--white); margin-bottom: 8px; letter-spacing: -0.01em; }
-    .partners > p { font-size: 14px; font-weight: 300; color: rgba(255,255,255,0.4); margin-bottom: 40px; max-width: 440px; }
+    .partners p { font-size: 14px; font-weight: 300; color: rgba(255,255,255,0.4); margin-bottom: 40px; max-width: 440px; }
     .partners-grid { display: flex; flex-wrap: wrap; gap: 8px; }
     .partner { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1px solid rgba(255,255,255,0.1); font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,0.6); transition: all 0.2s; }
     .partner:hover { border-color: var(--red); color: var(--white); background: rgba(212,43,43,0.08); }
@@ -221,7 +217,7 @@
     /* FOOTER */
     footer { background: var(--black); padding: 56px 80px 32px; }
     .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .footer-brand-name { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--white); margin: 10px 0 8px; }
+    .footer-brand { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--white); margin: 10px 0 8px; }
     .footer-tag { font-size: 12px; font-weight: 300; color: rgba(255,255,255,0.3); line-height: 1.7; }
     .footer-col h4 { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; font-weight: 700; color: rgba(255,255,255,0.2); margin-bottom: 18px; }
     .footer-col a { display: block; font-size: 13px; font-weight: 300; color: rgba(255,255,255,0.45); text-decoration: none; margin-bottom: 10px; transition: color 0.15s; }
@@ -232,9 +228,9 @@
 
     @media(max-width:900px) {
       nav { padding: 0 24px; }
-      .nav-links { display: none; }
       .intro, .impact-content { grid-template-columns: 1fr; padding: 60px 24px; }
-      .hero { padding: 80px 24px 40px; }
+      .hero-content { padding: 0 32px 60px; }
+      .hero-bottom { flex-direction: column; align-items: flex-start; }
       .stats-row { grid-template-columns: 1fr 1fr; }
       .cta { grid-template-columns: 1fr; padding: 56px 32px; }
       footer { padding: 48px 24px 28px; }
@@ -249,41 +245,46 @@
 <!-- NAV -->
 <nav>
   <div class="nav-bg"></div>
-  <a href="/anticipatory" class="nav-brand">
-    <img src="/NDOC.png" alt="NDOC" style="height:32px;width:auto;object-fit:contain;" />
-    <div class="nav-brand-text">Anticipatory Action<span>National Disaster Operations Center</span></div>
+  <a href="#" class="nav-brand">
+    <img src="/NDOC.png" alt="NDOC" />
+    <div class="nav-brand-text">Anticipatory Action<span>Kenya · NDOC / KRCS</span></div>
   </a>
   <div class="nav-links">
-    <a href="/aa-about" class="nav-link">Who We Are</a>
-    <a href="/aa-early-warning" class="nav-link">Pillars</a>
-    <a href="/aa-activities" class="nav-link">Activities</a>
-    <a href="/aa-reports" class="nav-link">Knowledge</a>
+    <a href="#" class="nav-link">Who We Are</a>
+    <a href="#" class="nav-link">Pillars</a>
+    <a href="#" class="nav-link">Activities</a>
+    <a href="#" class="nav-link">Knowledge</a>
   </div>
   <div class="nav-end">
-    <a href="https://redhive.redcross.or.ke" class="btn-nav">Log In</a>
+    <a href="#" class="btn-nav">Log In</a>
   </div>
 </nav>
 
-<!-- HERO — carousel background, tag top, title + tagline bottom -->
+<!-- HERO -->
 <section class="hero">
-  <div class="carousel-track">
-    <div class="carousel-slide"></div>
-    <div class="carousel-slide"></div>
-    <div class="carousel-slide"></div>
+  <div class="hero-bg">
+    <img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=1920&q=85" alt="Kenya landscape" />
   </div>
-
-  <div class="hero-tag">
-    <span class="hero-tag-line"></span>
-    National Technical Working Group · Kenya
-    <span class="hero-tag-line"></span>
-  </div>
-
-  <div class="hero-bottom">
+  <div class="hero-overlay-1"></div>
+  <div class="hero-overlay-2"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="hero-eyebrow-pill">Kenya · Since 2022</div>
+      <div class="hero-eyebrow-line"></div>
+      <span class="hero-eyebrow-text">National Technical Working Group</span>
+    </div>
     <h1 class="hero-title">
-      Anticipatory<br>
-      <span class="red">Action</span>
+      <span class="italic">Kenya</span>
+      <span class="accent">Anticipatory</span>
+      Action
     </h1>
-    <p class="hero-tagline-bottom">Predict &nbsp;·&nbsp; Prepare &nbsp;·&nbsp; Protect</p>
+    <div class="hero-bottom">
+      <p class="hero-sub">Kenya's national framework for acting before disasters strike — translating early warning into life-saving action across all 47 counties.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn-cine-primary">Learn More →</a>
+        <a href="#" class="btn-cine-ghost">View Reports</a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -312,7 +313,7 @@
   <div class="intro-left">
     <div class="intro-img-wrap">
       <div class="intro-img-label">ASAL Communities</div>
-      <img src="/arid.jpg" alt="Kenya ASAL community" />
+      <img src="https://images.unsplash.com/photo-1567521464027-f127ff144326?auto=format&fit=crop&w=800&q=80" alt="Kenya community" />
       <div class="intro-img-caption">
         <p>Kenya's arid and semi-arid lands are home to pastoralist communities most vulnerable to recurring drought and flood cycles.</p>
       </div>
@@ -362,45 +363,45 @@
     <p>Each pillar addresses a critical component of Kenya's anticipatory action system — from data to delivery.</p>
   </div>
   <div class="pillars-list">
-    <a href="/aa-early-warning" class="pillar-row">
+    <a href="#" class="pillar-row">
       <div class="pillar-num">01</div>
       <div class="pillar-name">Early Warning</div>
       <div class="pillar-desc">Generating timely, localised, and actionable hazard forecasts that drive the AA trigger system.</div>
       <div class="pillar-arrow">→</div>
     </a>
-    <a href="/aa-early-action" class="pillar-row">
+    <a href="#" class="pillar-row">
       <div class="pillar-num">02</div>
       <div class="pillar-name">Early Action</div>
       <div class="pillar-desc">Delivering pre-agreed, pre-funded interventions before hazards reach destructive intensity.</div>
       <div class="pillar-arrow">→</div>
     </a>
-    <a href="/aa-coordination" class="pillar-row">
+    <a href="#" class="pillar-row">
       <div class="pillar-num">03</div>
-      <div class="pillar-name">Coordination &amp; Governance</div>
+      <div class="pillar-name">Coordination & Governance</div>
       <div class="pillar-desc">TWG structures, SOPs, county focal points, and data-sharing protocols.</div>
       <div class="pillar-arrow">→</div>
     </a>
-    <a href="/aa-research" class="pillar-row">
+    <a href="#" class="pillar-row">
       <div class="pillar-num">04</div>
-      <div class="pillar-name">Research, Innovation &amp; Learning</div>
+      <div class="pillar-name">Research, Innovation & Learning</div>
       <div class="pillar-desc">Cost-benefit evidence, technology, academic partnerships, and structured learning cycles.</div>
       <div class="pillar-arrow">→</div>
     </a>
-    <a href="/aa-policy" class="pillar-row">
+    <a href="#" class="pillar-row">
       <div class="pillar-num">05</div>
-      <div class="pillar-name">Policy &amp; Advocacy</div>
+      <div class="pillar-name">Policy & Advocacy</div>
       <div class="pillar-desc">Embedding AA in Kenya's DRM Act, county frameworks, and sector policies.</div>
       <div class="pillar-arrow">→</div>
     </a>
-    <a href="/aa-financing" class="pillar-row">
+    <a href="#" class="pillar-row">
       <div class="pillar-num">06</div>
       <div class="pillar-name">Financing</div>
       <div class="pillar-desc">Forecast-based financing, contingency funds, parametric insurance, and pooled mechanisms.</div>
       <div class="pillar-arrow">→</div>
     </a>
-    <a href="/aa-monitoring" class="pillar-row">
+    <a href="#" class="pillar-row">
       <div class="pillar-num">07</div>
-      <div class="pillar-name">Monitoring &amp; Evaluation</div>
+      <div class="pillar-name">Monitoring & Evaluation</div>
       <div class="pillar-desc">Real-time dashboards, after-action reviews, impact evaluations, and annual learning reviews.</div>
       <div class="pillar-arrow">→</div>
     </a>
@@ -410,7 +411,7 @@
 <!-- IMPACT -->
 <section class="impact">
   <div class="impact-bg-img">
-    <img src="/ndoc2.jpg" alt="Impact background" />
+    <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1920&q=80" alt="Impact background" />
   </div>
   <div class="impact-bg-overlay"></div>
   <div class="impact-content">
@@ -455,10 +456,10 @@
 <section class="partners">
   <div class="partners-kicker">Key Partners</div>
   <h2>The Technical Working Group</h2>
-  <p>A multi-stakeholder body bringing together government, UN agencies, NGOs, and Red Cross/Red Crescent partners under the National Disaster Operations Center leadership.</p>
+  <p>A multi-stakeholder body bringing together government, UN agencies, NGOs, and Red Cross/Red Crescent partners under NDOC and KRCS leadership.</p>
   <div class="partners-grid">
-    <div class="partner">National Disaster Operations Centre (NDOC)</div>
     <div class="partner">Kenya Red Cross Society (KRCS)</div>
+    <div class="partner">National Disaster Operations Centre (NDOC)</div>
     <div class="partner">NDMA</div>
     <div class="partner">Kenya Met. Department</div>
     <div class="partner">OCHA Kenya</div>
@@ -479,8 +480,8 @@
     <p>Whether you are a humanitarian organisation, government agency, researcher, or donor — the Technical Working Group welcomes new members committed to proactive disaster risk management.</p>
   </div>
   <div class="cta-btns">
-    <a href="/aa-membership" class="btn-white">View Membership →</a>
-    <a href="/aa-contact" class="btn-outline-white">Contact Secretariat</a>
+    <a href="#" class="btn-white">View Membership →</a>
+    <a href="#" class="btn-outline-white">Contact Secretariat</a>
   </div>
 </section>
 
@@ -488,34 +489,34 @@
 <footer>
   <div class="footer-top">
     <div>
-      <img src="/NDOC.png" alt="NDOC" style="height:28px;width:auto;object-fit:contain;opacity:0.7;" />
-      <div class="footer-brand-name">Kenya Anticipatory Action</div>
-      <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by National Disaster Operations Center.</p>
+      <img src="/NDOC.png" alt="NDOC" style="height:28px;filter:brightness(0)invert(1);opacity:0.4;" />
+      <div class="footer-brand">Kenya Anticipatory Action</div>
+      <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by NDOC and the Kenya Red Cross Society.</p>
     </div>
     <div class="footer-col">
       <h4>Programme</h4>
-      <a href="/aa-about">About Us</a>
-      <a href="/aa-membership">Membership</a>
-      <a href="/aa-activities">Activities</a>
-      <a href="/aa-reports">Reports</a>
+      <a href="#">About Us</a>
+      <a href="#">Membership</a>
+      <a href="#">Activities</a>
+      <a href="#">Reports</a>
     </div>
     <div class="footer-col">
       <h4>Pillars</h4>
-      <a href="/aa-early-warning">Early Warning</a>
-      <a href="/aa-early-action">Early Action</a>
-      <a href="/aa-coordination">Coordination</a>
-      <a href="/aa-financing">Financing</a>
+      <a href="#">Early Warning</a>
+      <a href="#">Early Action</a>
+      <a href="#">Coordination</a>
+      <a href="#">Financing</a>
     </div>
     <div class="footer-col">
       <h4>Contact</h4>
-
-      <a href="mailto:datateam@redcross.or.ke">datateam@redcross.or.ke</a>
-      <a href="/aa-contact">Send a Message</a>
+      <a href="#">ndoc@redcross.or.ke</a>
+      <a href="#">info@redcross.or.ke</a>
+      <a href="#">Send a Message</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <p class="footer-copy">© 2026 Kenya Anticipatory Action TWG · National Disaster Operations Center</p>
-    <p class="footer-copy">Powered by Kenya Red Cross Society</p>
+    <p class="footer-copy">© 2026 Kenya Anticipatory Action TWG · <a href="#">Kenya Red Cross Society</a> · NDOC</p>
+    <p class="footer-copy">Powered by NDOC / KRCS</p>
   </div>
 </footer>
 
