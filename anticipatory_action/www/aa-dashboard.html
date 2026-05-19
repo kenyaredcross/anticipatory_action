@@ -3,11 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reports &amp; Documents — Kenya Anticipatory Action</title>
+  <title>Results Dashboard — Kenya Anticipatory Action</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    .dashboard-wrap {
+      background: var(--ink);
+      padding: 24px;
+      border: 1px solid var(--line);
+    }
+    .dashboard-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: var(--ink-2);
+      overflow: hidden;
+    }
+    .dashboard-frame iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: 0;
+    }
+    .dash-meta-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; margin-top: 36px;
+      background: var(--line); border: 1px solid var(--line);
+    }
+    .dash-meta-card { background: var(--paper); padding: 28px 24px; }
+    .dash-meta-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 10px;
+    }
+    .dash-meta-val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: var(--text); line-height: 1.3;
+    }
+    @media (max-width: 768px) {
+      .dash-meta-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
 </head>
 <body>
 
@@ -61,79 +100,62 @@
 </nav>
 
 <section class="page-hero">
-  <div class="breadcrumb"><a href="/aa">Home</a><span>›</span>Knowledge Hub<span>›</span>Reports &amp; Documents</div>
-  <div class="page-hero-label">Knowledge Hub</div>
-  <h1 class="page-hero-title">Reports &amp;<br><span class="accent">Documents.</span></h1>
-  <p class="page-hero-sub">Access evaluations, learning products, policy briefs, and technical documents from Kenya's anticipatory action programme.</p>
+  <div class="breadcrumb"><a href="/aa">Home</a><span>›</span>Knowledge Hub<span>›</span>Results Dashboard</div>
+  <div class="page-hero-label">Programme Impact</div>
+  <h1 class="page-hero-title">Results<br><span class="accent">Dashboard.</span></h1>
+  <p class="page-hero-sub">Live tracking of Kenya's anticipatory action programme — activations, people reached, county coverage, and trigger status, refreshed from operational systems.</p>
 </section>
 
 <section class="section">
   <div class="container">
-    {% if reports %}
-    <div class="filter-row">
-      <div class="search-box">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="searchInput" placeholder="Search reports by title or keyword…" oninput="filterReports()" />
+    <div class="dashboard-wrap">
+      <div class="dashboard-frame">
+        <iframe
+          title="Kenya AA Results Dashboard"
+          src="https://app.powerbi.com/view?r=eyJrIjoiMGE3OTBiOGMtYzY5OS00NjUxLThjZTgtYjY1MDMzNzVjMzIxIiwidCI6Ijc4MjE1YjkzLTUwNmQtNGNhOC05ZmMxLTU5ODBhMDQ5MjE2ZCIsImMiOjh9"
+          frameborder="0"
+          allowfullscreen="true"></iframe>
       </div>
-      <select class="filter-select" id="catFilter" onchange="filterReports()">
-        <option value="">All Categories</option>
-        {% for cat in categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}
-      </select>
-      <select class="filter-select" id="yearFilter" onchange="filterReports()">
-        <option value="">All Years</option>
-        {% for yr in years %}<option value="{{ yr }}">{{ yr }}</option>{% endfor %}
-      </select>
     </div>
 
-    <div class="reports-grid" id="reportsGrid">
-      {% for r in reports %}
-      <div class="report-card" data-cat="{{ r.category or '' }}" data-year="{{ r.year or '' }}" data-search="{{ (r.title or '') | lower }} {{ (r.description or '') | lower }} {{ (r.key_words or '') | lower }}">
-        <div class="report-meta">
-          {% if r.category %}<span class="report-cat">{{ r.category }}</span>{% endif %}
-          <span class="report-year">{% if r.month %}{{ r.month }} {% endif %}{% if r.year %}{{ r.year }}{% endif %}</span>
-        </div>
-        <div class="report-title">{{ r.title }}</div>
-        {% if r.description %}<div class="report-desc">{{ r.description }}</div>{% endif %}
-        <div class="report-footer">
-          <span class="report-source">{% if r.source %}{{ r.source }}{% endif %}</span>
-          {% if r.link %}
-          <a href="{{ r.link }}" target="_blank" rel="noopener" class="report-link">
-            Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </a>
-          {% else %}<span class="no-link">Link coming soon</span>{% endif %}
-        </div>
+    <div class="dash-meta-grid">
+      <div class="dash-meta-card">
+        <div class="dash-meta-label">Source</div>
+        <div class="dash-meta-val">NDOC / KRCS Operations</div>
       </div>
-      {% endfor %}
+      <div class="dash-meta-card">
+        <div class="dash-meta-label">Refresh</div>
+        <div class="dash-meta-val">Continuous</div>
+      </div>
+      <div class="dash-meta-card">
+        <div class="dash-meta-label">Coverage</div>
+        <div class="dash-meta-val">47 Counties</div>
+      </div>
+      <div class="dash-meta-card">
+        <div class="dash-meta-label">Powered by</div>
+        <div class="dash-meta-val">Microsoft Power BI</div>
+      </div>
     </div>
-    <div id="noResults" style="display:none" class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <p>No reports match your search.</p>
-    </div>
-    {% else %}
-    <div class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <p>No reports have been published yet.</p>
-    </div>
-    {% endif %}
   </div>
 </section>
 
-<script>
-  function filterReports() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    const cat = document.getElementById('catFilter').value;
-    const yr = document.getElementById('yearFilter').value;
-    const cards = document.querySelectorAll('.report-card');
-    let visible = 0;
-    cards.forEach(c => {
-      const show = (!cat || c.dataset.cat === cat) && (!yr || c.dataset.year === yr) && (!q || c.dataset.search.includes(q));
-      c.style.display = show ? '' : 'none';
-      if (show) visible++;
-    });
-    document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
-    document.getElementById('reportsGrid').style.display = visible === 0 ? 'none' : '';
-  }
-</script>
+<section class="cta-strip">
+  <div class="cta-strip-inner">
+    <div>
+      <div class="kicker on-dark" style="color: rgba(255,255,255,0.85); margin-bottom: 20px;">Go Deeper</div>
+      <h2>Behind the <em>numbers.</em></h2>
+      <p>Read evaluation reports, activation summaries, and learning briefs that contextualise the data shown above.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <a href="/aa-reports" class="btn-white">View Reports
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+      </a>
+      <a href="/aa-activities" class="btn-outline-white">TWG Activities
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
 
 <footer class="aa-footer">
   <div class="footer-top">

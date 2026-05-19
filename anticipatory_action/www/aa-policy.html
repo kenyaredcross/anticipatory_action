@@ -3,178 +3,82 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Policy &amp; Advocacy — Kenya Anticipatory Action</title>
+  <title>Policy & Advocacy — Kenya Anticipatory Action</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
-  <style>
-    :root{--black:#0F0F0F;--dark:#1A1A1A;--dark-2:#252525;--red:#CC0000;--red-dark:#A30000;--red-soft:#FFF3F3;--red-mid:#FFE0E0;--white:#FFFFFF;--off-white:#FAFAF8;--warm:#F3EDE6;--warm-2:#EAE2D9;--mid:#5C5752;--muted:#9A9590;--border:#E8E2DB;--shadow:0 2px 20px rgba(0,0,0,0.08);--shadow-lg:0 8px 48px rgba(0,0,0,0.14);--shadow-r:0 8px 32px rgba(204,0,0,0.18)}
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth}
-    body{font-family:'Poppins',sans-serif;background:var(--off-white);color:var(--dark);overflow-x:hidden}
-    nav{position:fixed;top:0;left:0;right:0;z-index:200;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 56px;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-    .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
-    .nav-logo-text{font-size:13px;font-weight:700;color:var(--dark);letter-spacing:0.01em;line-height:1.2}
-    .nav-logo-text span{display:block;font-size:10px;font-weight:500;color:var(--muted);letter-spacing:0.04em;text-transform:uppercase}
-    .nav-right{display:flex;align-items:center;gap:2px}
-    .nav-link{font-size:13px;font-weight:500;color:var(--mid);text-decoration:none;padding:7px 13px;border-radius:6px;transition:color 0.18s,background 0.18s}
-    .nav-link:hover,.nav-link.active{color:var(--dark);background:var(--warm)}
-    .nav-item{position:relative;display:flex;align-items:center}
-    .nav-link-btn{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:500;color:var(--mid);cursor:pointer;padding:7px 13px;border-radius:6px;transition:color 0.18s,background 0.18s;user-select:none}
-    .nav-link-btn:hover,.nav-item:hover .nav-link-btn{color:var(--dark);background:var(--warm)}
-    .nav-link-btn .chev{transition:transform 0.2s}
-    .nav-item:hover .nav-link-btn .chev{transform:rotate(180deg)}
-    .nav-dropdown{position:absolute;top:100%;left:50%;padding-top:8px;transform:translateX(-50%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity 0.16s,visibility 0.16s;z-index:300}
-    .nav-item:hover .nav-dropdown{opacity:1;visibility:visible;pointer-events:all}
-    .nav-dropdown.align-left{left:0;transform:none}
-    .nav-dropdown-inner{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:6px;box-shadow:0 16px 48px rgba(0,0,0,0.12);min-width:200px}
-    .nav-dropdown-inner a{display:block;padding:8px 13px;font-size:12.5px;font-weight:500;color:var(--dark);text-decoration:none;border-radius:7px;white-space:nowrap;transition:background 0.14s}
-    .nav-dropdown-inner a:hover{background:var(--warm)}
-    .pillar-item{display:flex!important;align-items:center;gap:10px}
-    .pillar-num{font-size:10px;font-weight:700;color:var(--red);background:var(--red-soft);border-radius:4px;padding:2px 6px;letter-spacing:0.06em;flex-shrink:0}
-    .btn-nav{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;background:var(--dark);color:var(--white);border-radius:7px;font-size:12.5px;font-weight:600;text-decoration:none;margin-left:8px;transition:background 0.18s}
-    .btn-nav:hover{background:var(--red)}
-
-    /* HERO */
-    .pillar-hero{min-height:52vh;display:flex;flex-direction:column;justify-content:flex-end;padding:108px 56px 72px;position:relative;overflow:hidden;background:var(--dark)}
-    .pillar-hero::before{content:'';position:absolute;top:0;right:0;bottom:0;width:40%;background:linear-gradient(160deg,rgba(204,0,0,0.07) 0%,transparent 60%);pointer-events:none}
-    .breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:500;color:rgba(255,255,255,0.3);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:28px;position:relative;z-index:1}
-    .breadcrumb a{color:rgba(255,255,255,0.3);text-decoration:none;transition:color 0.18s}
-    .breadcrumb a:hover{color:rgba(255,255,255,0.7)}
-    .breadcrumb span{color:rgba(255,255,255,0.15)}
-    .hero-pillar-num{font-size:clamp(120px,18vw,220px);font-weight:800;line-height:0.85;color:rgba(255,255,255,0.03);position:absolute;right:48px;bottom:16px;letter-spacing:-0.05em;pointer-events:none;font-family:'Playfair Display',serif}
-    .pillar-label{display:inline-flex;align-items:center;gap:10px;font-size:10.5px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:14px;position:relative;z-index:1}
-    .pillar-label::before{content:'';width:28px;height:1.5px;background:var(--red);border-radius:2px}
-    .pillar-title{font-family:'Playfair Display',serif;font-size:clamp(38px,6vw,76px);font-weight:800;line-height:1.04;color:var(--white);margin-bottom:18px;position:relative;z-index:1}
-    .pillar-title .red{color:var(--red)}
-    .pillar-tagline{font-size:clamp(14px,1.5vw,17px);font-weight:400;font-style:italic;color:rgba(255,255,255,0.45);max-width:520px;line-height:1.7;position:relative;z-index:1}
-
-    /* CONTENT */
-    .page-wrap{max-width:1240px;margin:0 auto;padding:88px 56px}
-    .two-col{display:grid;grid-template-columns:1fr 340px;gap:64px;align-items:start}
-    .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
-    .eyebrow::before{content:'';width:20px;height:1.5px;background:var(--red);border-radius:2px}
-    .ov-title{font-family:'Playfair Display',serif;font-size:clamp(24px,2.8vw,34px);font-weight:700;line-height:1.2;color:var(--dark);margin-bottom:20px}
-    .ov-body{font-size:15px;font-weight:400;color:var(--mid);line-height:1.85;margin-bottom:16px}
-    .fact-box{background:var(--dark);border-radius:14px;padding:30px;color:var(--white);position:sticky;top:84px}
-    .fact-box-title{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:20px}
-    .fact-item{padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
-    .fact-item:last-child{border-bottom:none;padding-bottom:0}
-    .fact-val{font-size:32px;font-weight:800;color:var(--white);line-height:1;letter-spacing:-0.02em}
-    .fact-val .u{font-size:18px;color:var(--red)}
-    .fact-lbl{font-size:11px;font-weight:500;color:rgba(255,255,255,0.3);letter-spacing:0.07em;text-transform:uppercase;margin-top:4px}
-
-    /* OBJECTIVES */
-    .content-section{padding:0 56px 88px;max-width:1240px;margin:0 auto}
-    .sec-title{font-family:'Playfair Display',serif;font-size:clamp(24px,2.8vw,34px);font-weight:700;line-height:1.2;color:var(--dark);margin-bottom:40px}
-    .obj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
-    .obj-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:28px 24px;transition:box-shadow 0.22s,transform 0.22s}
-    .obj-card:hover{box-shadow:0 8px 40px rgba(0,0,0,0.1);transform:translateY(-3px)}
-    .obj-icon{width:42px;height:42px;border-radius:10px;background:var(--warm);display:flex;align-items:center;justify-content:center;margin-bottom:14px;transition:background 0.2s}
-    .obj-card:hover .obj-icon{background:var(--red-soft)}
-    .obj-card h4{font-size:13.5px;font-weight:700;color:var(--dark);margin-bottom:8px}
-    .obj-card p{font-size:12.5px;font-weight:400;color:var(--mid);line-height:1.7}
-
-    /* ACTIVITIES BAND */
-    .activities-band{background:var(--dark-2,#252525);padding:88px 56px}
-    .activities-inner{max-width:1240px;margin:0 auto}
-    .activities-band .eyebrow{color:rgba(255,110,110,0.85)}
-    .activities-band .eyebrow::before{background:rgba(255,110,110,0.85)}
-    .activities-band .sec-title{color:var(--white)}
-    .act-list{display:flex;flex-direction:column;gap:0}
-    .act-item{display:flex;align-items:flex-start;gap:24px;padding:22px 20px;border-radius:10px;transition:background 0.18s}
-    .act-item:hover{background:rgba(255,255,255,0.04)}
-    .act-num{font-size:12px;font-weight:700;color:var(--red);min-width:28px;padding-top:2px;letter-spacing:0.06em}
-    .act-item h4{font-size:14px;font-weight:600;color:var(--white);margin-bottom:5px}
-    .act-item p{font-size:12.5px;font-weight:400;color:rgba(255,255,255,0.4);line-height:1.65}
-
-    /* CTA */
-    .cta-strip{background:var(--dark);padding:72px 56px;text-align:center}
-    .cta-strip h2{font-family:'Playfair Display',serif;font-size:clamp(28px,3.2vw,42px);font-weight:700;color:var(--white);margin-bottom:12px}
-    .cta-strip p{font-size:15px;font-weight:400;color:rgba(255,255,255,0.5);margin-bottom:32px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.7}
-    .btn-red{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:var(--red);color:var(--white);border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;transition:background 0.18s,transform 0.18s}
-    .btn-red:hover{background:var(--red-dark);transform:translateY(-2px)}
-
-    /* PILLAR CHIPS */
-    .other-pillars{padding:80px 56px;max-width:1240px;margin:0 auto}
-    .pillar-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
-    .pillar-chip{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:var(--white);border:1px solid var(--border);border-radius:999px;font-size:12px;font-weight:500;color:var(--mid);text-decoration:none;transition:all 0.18s}
-    .pillar-chip:hover{border-color:var(--dark);color:var(--dark);background:var(--warm)}
-    .pillar-chip .pn{font-size:10px;font-weight:700;color:var(--red);background:var(--red-soft);padding:2px 6px;border-radius:4px}
-    .pillar-chip.active{background:var(--dark);border-color:var(--dark);color:var(--white)}
-    .pillar-chip.active .pn{color:rgba(255,150,150,0.9);background:rgba(255,255,255,0.1)}
-
-    /* FOOTER */
-    footer{background:var(--dark);padding:56px 56px 36px}
-    .footer-inner{max-width:1240px;margin:0 auto}
-    .footer-top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:48px;padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,0.07)}
-    .footer-brand-text{font-size:13px;font-weight:700;color:var(--white);margin-top:12px;margin-bottom:8px}
-    .footer-tagline{font-size:12px;color:rgba(255,255,255,0.3);line-height:1.7}
-    .footer-col h4{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:16px}
-    .footer-col a{display:block;font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none;margin-bottom:9px;transition:color 0.18s}
-    .footer-col a:hover{color:var(--white)}
-    .footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:24px;flex-wrap:wrap;gap:12px}
-    .footer-copy{font-size:12px;color:rgba(255,255,255,0.2)}
-    .footer-copy a{color:rgba(204,0,0,0.6);text-decoration:none}
-    .footer-copy a:hover{color:var(--red)}
-
-    @media(max-width:960px){nav{padding:0 24px}.nav-item,.nav-link{display:none}.btn-nav{display:inline-flex}}
-    @media(max-width:768px){.pillar-hero{padding:96px 24px 56px}.page-wrap{padding:56px 24px}.two-col{grid-template-columns:1fr}.fact-box{position:static}.content-section,.other-pillars{padding:56px 24px}.activities-band,.cta-strip{padding:56px 24px}footer{padding:48px 24px 28px}.footer-top{grid-template-columns:1fr 1fr}}
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/aa-base.css" />
 </head>
 <body>
-  <nav>
-    <a href="/anticipatory" class="nav-logo">
-      <img src="/NDOC.png" alt="NDOC Logo" style="height:40px;width:auto;object-fit:contain;" />
-      <div class="nav-logo-text">Anticipatory Action<span>Kenya — NDOC / KRCS</span></div>
-    </a>
-    <div class="nav-right">
-      <div class="nav-item">
-        <span class="nav-link-btn">Who Are We <svg class="chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
-        <div class="nav-dropdown"><div class="nav-dropdown-inner">
-          <a href="/aa-about">About the Programme</a>
-          <a href="/aa-membership">Member Organisations</a>
-          <a href="/aa-contact">Contact Us</a>
-        </div></div>
-      </div>
-      <div class="nav-item">
-        <span class="nav-link-btn">Pillars <svg class="chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
-        <div class="nav-dropdown align-left"><div class="nav-dropdown-inner">
-          <a href="/aa-early-warning" class="pillar-item"><span class="pillar-num">01</span>Early Warning</a>
-          <a href="/aa-early-action" class="pillar-item"><span class="pillar-num">02</span>Early Action</a>
-          <a href="/aa-coordination" class="pillar-item"><span class="pillar-num">03</span>Coordination &amp; Governance</a>
-          <a href="/aa-research" class="pillar-item"><span class="pillar-num">04</span>Research, Innovation &amp; Learning</a>
-          <a href="/aa-policy" class="pillar-item"><span class="pillar-num">05</span>Policy &amp; Advocacy</a>
-          <a href="/aa-financing" class="pillar-item"><span class="pillar-num">06</span>Financing</a>
-          <a href="/aa-monitoring" class="pillar-item"><span class="pillar-num">07</span>Monitoring &amp; Evaluation</a>
-        </div></div>
-      </div>
-      <a href="/aa-activities" class="nav-link">Activities</a>
-      <div class="nav-item">
-        <span class="nav-link-btn">Knowledge <svg class="chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
-        <div class="nav-dropdown"><div class="nav-dropdown-inner">
-          <a href="/aa-reports">Reports &amp; Documents</a>
-        </div></div>
-      </div>
-      <a href="https://redhive.redcross.or.ke" class="btn-nav">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Log In
-      </a>
-    </div>
-  </nav>
-  <div class="pillar-hero">
-    <div class="breadcrumb"><a href="/anticipatory">Home</a><span>›</span><a href="/anticipatory#pillars">Pillars</a><span>›</span>Policy &amp; Advocacy</div>
-    <div class="pillar-label">Pillar 05</div>
-    <h1 class="pillar-title">Policy &amp; <span class="red">Advocacy</span></h1>
-    <p class="pillar-tagline">Embedding anticipatory action into Kenya's legal, institutional, and funding architecture.</p>
-    <div class="hero-pillar-num">05</div>
-  </div>
 
-  <div class="page-wrap">
+<nav class="aa-nav">
+  <a href="/aa" class="nav-brand">
+    <img src="/NDOC.png" alt="NDOC" />
+    <div class="nav-brand-text">Anticipatory Action<span>Kenya · NDOC / KRCS</span></div>
+  </a>
+  <div class="nav-links">
+    <div class="nav-item">
+      <button class="nav-link">Who We Are
+        <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="nav-dropdown"><div class="nav-dropdown-inner">
+        <a href="/aa-about">About the Programme</a>
+        <a href="/aa-membership">Member Organisations</a>
+        <a href="/aa-contact">Contact Us</a>
+      </div></div>
+    </div>
+    <div class="nav-item">
+      <button class="nav-link active">Pillars
+        <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="nav-dropdown"><div class="nav-dropdown-inner">
+        <a href="/aa-early-warning"><span class="pillar-num">01</span>Early Warning</a>
+        <a href="/aa-early-action"><span class="pillar-num">02</span>Early Action</a>
+        <a href="/aa-coordination"><span class="pillar-num">03</span>Coordination &amp; Governance</a>
+        <a href="/aa-research"><span class="pillar-num">04</span>Research &amp; Learning</a>
+        <a href="/aa-policy"><span class="pillar-num">05</span>Policy &amp; Advocacy</a>
+        <a href="/aa-financing"><span class="pillar-num">06</span>Financing</a>
+        <a href="/aa-monitoring"><span class="pillar-num">07</span>Monitoring &amp; Evaluation</a>
+      </div></div>
+    </div>
+    <a href="/aa-activities" class="nav-link">Activities</a>
+    <div class="nav-item">
+      <button class="nav-link">Knowledge Hub
+        <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="nav-dropdown"><div class="nav-dropdown-inner">
+        <a href="/aa-dashboard">Results Dashboard</a>
+        <a href="/aa-reports">Reports &amp; Documents</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="nav-end">
+    <a href="/aa-membership" class="btn-ghost">Get Involved</a>
+    <a href="https://redhive.redcross.or.ke" class="btn-red">Log In
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+    </a>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="breadcrumb"><a href="/aa">Home</a><span>›</span><a href="/aa#pillars">Pillars</a><span>›</span>Policy & Advocacy</div>
+  <div class="page-hero-label">Pillar 05</div>
+  <h1 class="page-hero-title">Policy &amp;<br><span class="accent">Advocacy.</span></h1>
+  <p class="page-hero-sub">Embedding anticipatory action into Kenya's legal, institutional, and funding architecture.</p>
+  <div class="hero-pillar-num">05</div>
+</section>
+
+<section class="section">
+  <div class="container">
     <div class="two-col">
       <div>
-        <div class="eyebrow">Overview</div>
-        <h2 class="ov-title">Mainstreaming AA into Policy and Practice</h2>
-        <p class="ov-body">Effective anticipatory action requires more than operational capacity — it demands a supportive policy environment that mandates, funds, and institutionalises proactive disaster risk management. This pillar works to align Kenya's legislative and regulatory frameworks with global best practices.</p><p class="ov-body">Policy and advocacy efforts target the national Disaster Risk Management Act, devolved county DRM frameworks, sector-specific policies (agriculture, health, WASH), and budget allocation processes to ensure anticipatory action is a recognised and funded approach across government.</p><p class="ov-body">By engaging Parliament, county governments, line ministries, and international partners, this pillar creates the enabling conditions under which all other pillars can scale sustainably and equitably across Kenya's 47 counties.</p>
+        <div class="kicker">Overview</div>
+        <h2 class="h2">Mainstreaming AA into policy and practice.</h2>
+        <div class="body-copy" style="margin-top: 32px;">
+          <p>Effective anticipatory action requires more than operational capacity — it demands a supportive policy environment that mandates, funds, and institutionalises proactive disaster risk management. This pillar works to align Kenya's legislative and regulatory frameworks with global best practices.</p>
+          <p>Policy and advocacy efforts target the national Disaster Risk Management Act, devolved county DRM frameworks, sector-specific policies (agriculture, health, WASH), and budget allocation processes to ensure anticipatory action is a recognised and funded approach across government.</p>
+          <p>By engaging Parliament, county governments, line ministries, and international partners, this pillar creates the enabling conditions under which all other pillars can scale sustainably and equitably across Kenya's 47 counties.</p>
+        </div>
       </div>
       <div class="fact-box">
         <div class="fact-box-title">Key Numbers</div>
@@ -185,85 +89,101 @@
       </div>
     </div>
   </div>
+</section>
 
-  <div class="content-section">
-    <div class="eyebrow">Key Objectives</div>
-    <h2 class="sec-title">What This Pillar Aims to Achieve</h2>
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <div class="kicker">Key Objectives</div>
+    <h2 class="h2">What this pillar <em>aims to achieve.</em></h2>
     <div class="obj-grid">
-      <div class="obj-card">
-        <div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-        <h4>Legal and Regulatory Reform</h4>
-        <p>Advocate for amendments to the Disaster Risk Management Act to explicitly include AA as a mandated government function with defined trigger mechanisms.</p>
-      </div>
-      <div class="obj-card">
-        <div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-        <h4>Devolved County Mainstreaming</h4>
-        <p>Support all 47 county governments to integrate AA triggers and protocols into their County Integrated Development Plans and DRM frameworks.</p>
-      </div>
-      <div class="obj-card">
-        <div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
-        <h4>Government Budget Allocation</h4>
-        <p>Secure dedicated budget lines for AA within NDMA, county DRM budgets, and sector ministries to reduce dependence on humanitarian donor funding.</p>
-      </div>
-      <div class="obj-card">
-        <div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <h4>Multi-Stakeholder Advocacy Coalitions</h4>
-        <p>Build durable advocacy coalitions with civil society, academia, the private sector, and international partners to amplify AA policy change campaigns.</p>
-      </div>
+      <div class="obj-card"><div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><h4>Legal and Regulatory Reform</h4><p>Advocate for amendments to the Disaster Risk Management Act to explicitly include AA as a mandated government function with defined trigger mechanisms.</p></div>
+      <div class="obj-card"><div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><h4>Devolved County Mainstreaming</h4><p>Support all 47 county governments to integrate AA triggers and protocols into their County Integrated Development Plans and DRM frameworks.</p></div>
+      <div class="obj-card"><div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><h4>Government Budget Allocation</h4><p>Secure dedicated budget lines for AA within NDMA, county DRM budgets, and sector ministries to reduce dependence on humanitarian donor funding.</p></div>
+      <div class="obj-card"><div class="obj-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><h4>Multi-Stakeholder Advocacy Coalitions</h4><p>Build durable advocacy coalitions with civil society, academia, the private sector, and international partners to amplify AA policy change campaigns.</p></div>
     </div>
   </div>
+</section>
 
-  <div class="activities-band">
-    <div class="activities-inner">
-      <div class="eyebrow">Key Activities</div>
-      <h2 class="sec-title">How We Are Delivering</h2>
-      <div class="act-list">
+<section class="activities-band">
+  <div class="container">
+    <div class="kicker">Key Activities</div>
+    <h2 class="h2">How we are <em>delivering.</em></h2>
+    <div class="act-list">
         <div class="act-item"><div class="act-num">01</div><div><h4>DRM Act Advocacy and Legislative Engagement</h4><p>Engaging Parliamentary committees, NDMA, and the Ministry of Interior to include AA definitions, funding mandates, and trigger mechanisms in the revised DRM Act.</p></div></div>
         <div class="act-item"><div class="act-num">02</div><div><h4>County DRM Policy Workshops</h4><p>Conducting structured policy dialogues with county governments to integrate AA trigger thresholds and pre-agreed protocols into County Disaster Risk Management Plans.</p></div></div>
         <div class="act-item"><div class="act-num">03</div><div><h4>National Budget Advocacy</h4><p>Presenting evidence to Treasury and sector ministries on the cost-effectiveness of anticipatory action, supporting inclusion of AA budget lines in annual national and county estimates.</p></div></div>
         <div class="act-item"><div class="act-num">04</div><div><h4>Sector Policy Integration</h4><p>Working with the Ministries of Agriculture, Health, and Water to embed AA protocols within sector-specific contingency plans, enabling faster inter-agency activation when triggers are met.</p></div></div>
         <div class="act-item"><div class="act-num">05</div><div><h4>Regional and International Advocacy</h4><p>Representing Kenya's AA experience in IGAD, AU, and UN DRR forums to influence regional policy frameworks and attract technical and financial support for national implementation.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-strip">
+  <div class="cta-strip-inner">
+    <div>
+      <div class="kicker on-dark" style="color: rgba(255,255,255,0.85); margin-bottom: 20px;">Get Involved</div>
+      <h2>Support <em>policy change.</em></h2>
+      <p>Help us build the evidence and coalitions needed to mainstream AA across Kenya's institutions.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <a href="/aa-contact" class="btn-white">Get Involved <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<section class="other-pillars">
+  <div class="container">
+    <div class="kicker">All Pillars</div>
+    <h2 class="h2">Explore the full <em>framework.</em></h2>
+    <div style="margin-top: 32px;">
+      <div class="pillar-chips">
+      <a href="/aa-early-warning" class="pillar-chip"><span class="pn">01</span>Early Warning</a>
+      <a href="/aa-early-action" class="pillar-chip"><span class="pn">02</span>Early Action</a>
+      <a href="/aa-coordination" class="pillar-chip"><span class="pn">03</span>Coordination & Governance</a>
+      <a href="/aa-research" class="pillar-chip"><span class="pn">04</span>Research, Innovation & Learning</a>
+      <a href="/aa-policy" class="pillar-chip active"><span class="pn">05</span>Policy & Advocacy</a>
+      <a href="/aa-financing" class="pillar-chip"><span class="pn">06</span>Financing</a>
+      <a href="/aa-monitoring" class="pillar-chip"><span class="pn">07</span>Monitoring & Evaluation</a>
       </div>
     </div>
   </div>
+</section>
 
-  <div class="cta-strip">
-    <h2>Support Policy Change</h2>
-    <p>Help us build the evidence and coalitions needed to mainstream AA across Kenya's institutions.</p>
-    <a href="/aa-contact" class="btn-red">Get Involved <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
-  </div>
-
-  <div class="other-pillars">
-    <div class="eyebrow">All Pillars</div>
-    <h2 class="sec-title">Explore the Full Framework</h2>
-    <div class="pillar-chips">
-      <a href="/aa-early-warning" class="pillar-chip "><span class="pn">01</span> Early Warning</a>
-      <a href="/aa-early-action" class="pillar-chip "><span class="pn">02</span> Early Action</a>
-      <a href="/aa-coordination" class="pillar-chip "><span class="pn">03</span> Coordination &amp; Governance</a>
-      <a href="/aa-research" class="pillar-chip "><span class="pn">04</span> Research, Innovation &amp; Learning</a>
-      <a href="/aa-policy" class="pillar-chip active"><span class="pn">05</span> Policy &amp; Advocacy</a>
-      <a href="/aa-financing" class="pillar-chip "><span class="pn">06</span> Financing</a>
-      <a href="/aa-monitoring" class="pillar-chip "><span class="pn">07</span> Monitoring &amp; Evaluation</a>
+<footer class="aa-footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-row">
+        <img src="/NDOC.png" alt="NDOC" />
+        <div class="footer-brand-name">Kenya Anticipatory Action</div>
+      </div>
+      <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Operations Centre with the Kenya Red Cross Society.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Programme</h4>
+      <a href="/aa-about">About Us</a>
+      <a href="/aa-membership">Membership</a>
+      <a href="/aa-activities">Activities</a>
+      <a href="/aa-reports">Reports</a>
+    </div>
+    <div class="footer-col">
+      <h4>Pillars</h4>
+      <a href="/aa-early-warning">Early Warning</a>
+      <a href="/aa-early-action">Early Action</a>
+      <a href="/aa-coordination">Coordination</a>
+      <a href="/aa-financing">Financing</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="mailto:ndoc@redcross.or.ke">ndoc@redcross.or.ke</a>
+      <a href="mailto:info@redcross.or.ke">info@redcross.or.ke</a>
+      <a href="/aa-contact">Send a Message</a>
     </div>
   </div>
+  <div class="footer-bottom">
+    <span>© 2026 Kenya Anticipatory Action TWG · National Disaster Operations Centre</span>
+    <span>Powered by <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross Society</a></span>
+  </div>
+</footer>
 
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-top">
-        <div>
-          <img src="/NDOC.png" alt="NDOC" style="height:36px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:0.65;" />
-          <div class="footer-brand-text">Kenya Anticipatory Action</div>
-          <p class="footer-tagline">National Technical Working Group on Anticipatory Action, coordinated by NDOC and the Kenya Red Cross Society.</p>
-        </div>
-        <div class="footer-col"><h4>Programme</h4><a href="/aa-about">About Us</a><a href="/aa-membership">Membership</a><a href="/aa-activities">Activities</a><a href="/aa-reports">Reports</a></div>
-        <div class="footer-col"><h4>Pillars</h4><a href="/aa-early-warning">Early Warning</a><a href="/aa-early-action">Early Action</a><a href="/aa-coordination">Coordination</a><a href="/aa-financing">Financing</a></div>
-        <div class="footer-col"><h4>Contact</h4><a href="mailto:ndoc@redcross.or.ke">ndoc@redcross.or.ke</a><a href="mailto:info@redcross.or.ke">info@redcross.or.ke</a><a href="/aa-contact">Send a Message</a></div>
-      </div>
-      <div class="footer-bottom">
-        <p class="footer-copy">© 2026 Kenya Anticipatory Action TWG · <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross Society</a></p>
-        <p class="footer-copy" style="color:rgba(255,255,255,0.15);">NDOC / KRCS</p>
-      </div>
-    </div>
-  </footer>
 </body>
 </html>

@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kenya Anticipatory Action Programme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* surface */
+    --ink:       #0B0B0E;
+    --ink-2:     #16161A;
+    --paper:     #FFFFFF;
+    --paper-2:   #F5F4EF;     /* warm off-white */
+    --paper-3:   #ECEAE3;     /* tape */
+    --line:      #E2DFD6;
+    --rule:      #D8D4C8;
+
+    /* type */
+    --text:      #14140F;
+    --text-2:    #4A4A44;
+    --muted:     #8A8980;
+
+    /* brand */
+    --red:       #E61832;
+    --red-dark:  #B8142A;
+    --red-tint:  #FBE7EA;
+
+    /* accent set used in charts */
+    --teal:      #00A6B8;
+    --teal-2:    #14D7D3;
+    --gold:      #B58418;
+    --navy:      #000249;
+    --stone:     #B7B3A6;
+
+    --ease: cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  *,*::before,*::after { box-sizing: border-box; margin:0; padding:0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--paper);
+    color: var(--text);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--red); color: #fff; }
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
+  /* ============ NAV ============ */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+    height: 72px; display: flex; align-items: center;
+    padding: 0 48px; gap: 32px;
+    transition: background 0.35s var(--ease), border-color 0.35s var(--ease), backdrop-filter 0.35s var(--ease);
+    border-bottom: 1px solid transparent;
+  }
+  nav.scrolled {
+    background: rgba(255,255,255,0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+  .nav-logo {
+    width: 38px; height: 38px; flex-shrink: 0;
+    background: var(--red);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 18px; letter-spacing: 0;
+    border-radius: 2px;
+  }
+  .nav-brand-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; line-height: 1.1;
+    color: var(--text);
+    transition: color 0.3s;
+  }
+  .nav-brand-text span {
+    display: block; font-family: 'Barlow', sans-serif;
+    font-size: 10px; font-weight: 400; letter-spacing: 0.16em;
+    color: var(--muted); margin-top: 3px;
+  }
+  nav:not(.scrolled) .nav-brand-text { color: #fff; }
+  nav:not(.scrolled) .nav-brand-text span { color: rgba(255,255,255,0.55); }
+
+  .nav-links { display: flex; align-items: center; gap: 4px; margin-left: 32px; }
+  .nav-link {
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px; font-weight: 500;
+    color: var(--text-2); text-decoration: none;
+    padding: 8px 14px; transition: color 0.2s;
+    position: relative;
+  }
+  .nav-link {
+    cursor: pointer;
+    background: transparent; border: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .nav-link:hover { color: var(--red); }
+  .nav-link .chev { transition: transform 0.22s; }
+  nav:not(.scrolled) .nav-link { color: rgba(255,255,255,0.75); }
+  nav:not(.scrolled) .nav-link:hover { color: #fff; }
+
+  .nav-item { position: relative; }
+  .nav-dropdown {
+    position: absolute; top: 100%; left: 0;
+    padding-top: 8px;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity 0.18s, visibility 0.18s;
+    z-index: 350;
+  }
+  .nav-item:hover .nav-dropdown { opacity: 1; visibility: visible; pointer-events: all; }
+  .nav-item:hover .chev { transform: rotate(180deg); }
+  .nav-dropdown-inner {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 8px;
+    min-width: 240px;
+    box-shadow: 0 24px 60px rgba(11,11,14,0.18);
+  }
+  .nav-dropdown-inner a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13.5px; font-weight: 500;
+    color: var(--text); text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .nav-dropdown-inner a:hover { background: var(--paper-2); color: var(--red); }
+  .nav-dropdown-inner .pillar-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+    color: var(--red); background: var(--red-tint);
+    padding: 3px 7px; flex-shrink: 0;
+  }
+
+  .nav-end { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 10px 18px;
+    font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+    color: var(--text); text-decoration: none;
+    border: 1px solid var(--line);
+    transition: all 0.2s;
+    background: transparent;
+  }
+  .btn-ghost:hover { background: var(--text); color: #fff; border-color: var(--text); }
+  nav:not(.scrolled) .btn-ghost { color: #fff; border-color: rgba(255,255,255,0.25); }
+  nav:not(.scrolled) .btn-ghost:hover { background: #fff; color: var(--text); border-color: #fff; }
+
+  .btn-red {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 11px 18px; background: var(--red); color: #fff;
+    font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+    text-decoration: none; transition: background 0.2s;
+    border: 1px solid var(--red);
+  }
+  .btn-red:hover { background: var(--red-dark); border-color: var(--red-dark); }
+  .btn-red svg { transition: transform 0.25s var(--ease); }
+  .btn-red:hover svg { transform: translate(2px, -2px); }
+
+  /* ============ HERO ============ */
+  .hero {
+    height: 100vh; min-height: 720px;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 88px 56px 60px;
+    position: relative; overflow: hidden;
+    background: var(--ink);
+  }
+  .hero-carousel {
+    position: absolute; inset: 0;
+    display: flex; width: 300%;
+    animation: heroSlide 21s infinite;
+    z-index: 0;
+  }
+  .hero-slide {
+    flex: 0 0 33.333%;
+    background-size: cover; background-position: center;
+    filter: brightness(0.45) contrast(1.05) saturate(0.85);
+  }
+  .hero-slide:nth-child(1) { background-image: url('/ndoc1.jpg'); }
+  .hero-slide:nth-child(2) { background-image: url('/ndoc2.jpg'); }
+  .hero-slide:nth-child(3) { background-image: url('/ndoc3.jpg'); }
+  @keyframes heroSlide {
+    0%,28%  { transform: translateX(0); }
+    33%,61% { transform: translateX(-33.333%); }
+    66%,94% { transform: translateX(-66.666%); }
+    100%    { transform: translateX(0); }
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0; z-index: 1;
+    background:
+      radial-gradient(ellipse 70% 90% at 50% 50%, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%),
+      linear-gradient(to bottom, rgba(11,11,14,0.4) 0%, rgba(11,11,14,0.2) 50%, rgba(11,11,14,0.85) 100%);
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 1280px; width: 100%; }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 40px;
+    padding: 10px 22px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .hero-eyebrow-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; box-shadow: 0 0 12px var(--red); }
+
+  .hero-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(80px, 14vw, 220px);
+    font-weight: 900;
+    line-height: 0.84;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
+  .hero-title-row { display: block; }
+  .hero-title .accent {
+    color: var(--red);
+    font-style: italic;
+    font-weight: 700;
+  }
+
+  .hero-sub {
+    margin-top: 36px;
+    display: flex; align-items: center; justify-content: center; gap: 24px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(14px, 1.3vw, 17px);
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+  }
+  .hero-sub-dot { width: 4px; height: 4px; background: var(--red); border-radius: 50%; flex-shrink: 0; }
+
+  .hero-scroll {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    z-index: 3;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .hero-scroll-line { width: 1px; height: 32px; background: rgba(255,255,255,0.3); position: relative; overflow: hidden; }
+  .hero-scroll-line::after {
+    content: ''; position: absolute; left: 0; top: -32px;
+    width: 1px; height: 32px; background: var(--red);
+    animation: scrollLine 2s infinite var(--ease);
+  }
+  @keyframes scrollLine { to { top: 32px; } }
+
+  /* ============ TICKER ============ */
+  .ticker {
+    background: var(--red); padding: 14px 0; overflow: hidden;
+    border-top: 1px solid var(--red-dark);
+    border-bottom: 1px solid var(--red-dark);
+  }
+  .ticker-inner { display: flex; white-space: nowrap; animation: ticker 35s linear infinite; }
+  .ticker:hover .ticker-inner { animation-play-state: paused; }
+  .ticker-item {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.95);
+    padding: 0 24px;
+    display: flex; align-items: center; gap: 24px;
+  }
+  .ticker-item::after { content: '◆'; color: rgba(255,255,255,0.5); font-size: 8px; }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ============ SHARED ============ */
+  .section { padding: 120px 80px; }
+  .container { max-width: 1440px; margin: 0 auto; }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.22em;
+    color: var(--red);
+    margin-bottom: 28px;
+  }
+  .kicker::before { content: ''; width: 32px; height: 2px; background: var(--red); }
+  .kicker.on-dark { color: #fff; }
+  .kicker.on-dark::before { background: var(--red); }
+
+  .h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(44px, 5.6vw, 80px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: none;
+    color: var(--text);
+  }
+  .h2 em { font-style: italic; font-weight: 700; color: var(--red); }
+  .h2 .block { display: block; }
+  .h2.on-dark { color: #fff; }
+
+  .lede {
+    font-size: 19px; font-weight: 300;
+    color: var(--text-2); line-height: 1.65;
+    max-width: 60ch;
+  }
+
+  /* ============ INTRO ============ */
+  .intro {
+    background: var(--paper);
+    display: grid; grid-template-columns: 1fr 1.1fr;
+    gap: 96px; align-items: center;
+    padding: 140px 80px;
+  }
+  .intro-img-wrap {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+  }
+  .intro-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .intro-img-label {
+    position: absolute; top: 24px; left: 24px;
+    background: var(--red); color: #fff;
+    padding: 8px 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.18em;
+  }
+  .intro-img-caption {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+    padding: 80px 28px 24px;
+    color: rgba(255,255,255,0.85);
+    font-size: 12.5px; font-weight: 300;
+    line-height: 1.55; font-style: italic;
+  }
+  .intro-img-stat {
+    position: absolute; bottom: 24px; right: 24px;
+    background: var(--paper); padding: 20px 24px;
+    text-align: right;
+  }
+  .intro-img-stat .n {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 44px; font-weight: 900; line-height: 1; color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .intro-img-stat .n span { color: var(--red); }
+  .intro-img-stat .l {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--muted); margin-top: 4px;
+  }
+
+  .intro-body p {
+    font-size: 16px; font-weight: 400;
+    color: var(--text-2); line-height: 1.75;
+    margin-bottom: 16px;
+  }
+  .intro-body p:first-of-type {
+    font-size: 19px; font-weight: 400;
+    color: var(--text); line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .intro-body p:first-of-type::first-letter {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 56px; font-weight: 900;
+    float: left; line-height: 0.9;
+    padding: 4px 14px 0 0;
+    color: var(--red);
+  }
+  .intro-cards {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; margin-top: 44px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .intro-card {
+    background: var(--paper); padding: 24px;
+    transition: background 0.2s;
+  }
+  .intro-card:hover { background: var(--paper-2); }
+  .intro-card-n {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700;
+    color: var(--red); letter-spacing: 0.18em;
+    margin-bottom: 8px;
+  }
+  .intro-card h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.02em;
+    color: var(--text); margin-bottom: 8px;
+  }
+  .intro-card p {
+    font-size: 13.5px; font-weight: 400;
+    color: var(--text-2); line-height: 1.6;
+  }
+
+  /* ============ 2024 RESULTS ============ */
+  .results {
+    background: var(--ink);
+    padding: 120px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .results-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background-image: url('https://images.unsplash.com/photo-1559825481-12a05cc00344?w=2000&q=80');
+    background-size: cover; background-position: center;
+    opacity: 0.12;
+    mix-blend-mode: lighten;
+  }
+  .results-content { position: relative; z-index: 1; }
+  .results-head { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end; margin-bottom: 60px; }
+  .results-head p { font-size: 16px; color: rgba(255,255,255,0.55); line-height: 1.7; max-width: 50ch; }
+
+  .results-tabs { display: flex; gap: 4px; margin-bottom: 40px; flex-wrap: wrap; }
+  .results-tab {
+    padding: 14px 22px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .results-tab .dot { width: 7px; height: 7px; background: currentColor; border-radius: 50%; opacity: 0.6; }
+  .results-tab:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+  .results-tab.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .results-tab.active .dot { background: #fff; opacity: 1; }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .result-card {
+    background: var(--ink-2);
+    padding: 32px;
+    position: relative;
+  }
+  .result-card-row1 { grid-column: span 1; grid-row: 1 / span 2; }
+  .result-card-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 20px;
+  }
+  .result-card .big {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 88px; font-weight: 900; line-height: 1;
+    color: #fff;
+    letter-spacing: -0.03em;
+  }
+  .result-card .big sub {
+    font-size: 36px; color: var(--red); vertical-align: baseline;
+  }
+  .result-card .desc {
+    font-size: 13.5px; color: rgba(255,255,255,0.55);
+    margin-top: 14px; line-height: 1.6; max-width: 28ch;
+  }
+  .result-card .small {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 48px; font-weight: 900; line-height: 1;
+    color: #fff;
+  }
+  .result-card .small sub { font-size: 22px; color: var(--red); vertical-align: baseline; }
+
+  .chart-wrap { width: 100%; height: 180px; margin-top: 8px; }
+  .pie-wrap { display: flex; gap: 24px; align-items: center; margin-top: 12px; }
+  .pie-legend { display: grid; gap: 7px; flex: 1; }
+  .pie-legend-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: rgba(255,255,255,0.7); }
+  .pie-legend-swatch { width: 10px; height: 10px; flex-shrink: 0; }
+
+  /* ============ PILLARS ============ */
+  .pillars {
+    background: var(--paper-2);
+    padding: 140px 80px;
+  }
+  .pillars-head {
+    display: grid; grid-template-columns: 1.4fr 1fr;
+    gap: 80px; margin-bottom: 80px; align-items: end;
+  }
+  .pillars-head p { font-size: 16px; color: var(--text-2); line-height: 1.7; max-width: 44ch; }
+
+  .pillars-list {
+    background: var(--paper); border: 1px solid var(--line);
+  }
+  .pillar-row {
+    display: grid;
+    grid-template-columns: 110px 1.4fr 2fr auto;
+    align-items: center;
+    gap: 36px;
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none; color: inherit;
+    transition: background 0.3s var(--ease), padding 0.3s var(--ease);
+    position: relative;
+  }
+  .pillar-row:last-child { border-bottom: none; }
+  .pillar-row::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+    background: var(--red);
+    transition: width 0.3s var(--ease);
+  }
+  .pillar-row:hover { background: var(--paper-2); padding-left: 44px; }
+  .pillar-row:hover::before { width: 4px; }
+  .pillar-row:hover .pillar-name { color: var(--red); }
+  .pillar-row:hover .pillar-arrow { transform: translate(4px, -4px); color: var(--red); }
+  .pillar-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 56px; font-weight: 900; line-height: 1;
+    color: var(--red);
+    letter-spacing: -0.02em;
+  }
+  .pillar-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px; font-weight: 700;
+    color: var(--text); letter-spacing: -0.01em;
+    line-height: 1.1;
+    transition: color 0.2s;
+  }
+  .pillar-desc {
+    font-size: 14.5px; font-weight: 400;
+    color: var(--text-2); line-height: 1.6;
+  }
+  .pillar-arrow {
+    color: var(--text); transition: all 0.25s var(--ease);
+  }
+
+  /* ============ KNOWLEDGE HUB CARDS ============ */
+  .khub {
+    background: var(--paper);
+    padding: 140px 80px;
+  }
+  .khub-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 80px; align-items: start;
+  }
+  .khub-cards {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .khub-card {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    padding: 32px 28px 28px;
+    display: flex; flex-direction: column;
+    text-decoration: none; color: inherit;
+    min-height: 280px;
+    transition: all 0.3s var(--ease);
+    position: relative;
+    overflow: hidden;
+  }
+  .khub-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; background: var(--red);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s var(--ease);
+  }
+  .khub-card:hover { background: var(--paper); border-color: var(--text); transform: translateY(-4px); }
+  .khub-card:hover::after { transform: scaleX(1); }
+  .khub-card-n {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700;
+    color: var(--red); letter-spacing: 0.18em;
+    margin-bottom: 16px;
+  }
+  .khub-card h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px; font-weight: 700;
+    color: var(--text); line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+  }
+  .khub-card p {
+    font-size: 14px; color: var(--text-2);
+    line-height: 1.6; flex: 1;
+  }
+  .khub-card-arrow {
+    margin-top: 24px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 700;
+    color: var(--text); letter-spacing: 0.18em;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .khub-card:hover .khub-card-arrow { color: var(--red); }
+
+  /* ============ MAP BANNER ============ */
+  .map-banner {
+    padding: 0 80px;
+    background: var(--paper);
+    padding-bottom: 120px;
+  }
+  .map-banner-inner {
+    position: relative;
+    aspect-ratio: 21 / 9;
+    background: var(--ink);
+    overflow: hidden;
+  }
+  .map-banner-inner::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 78% 50%, rgba(230,24,50,0.10) 0%, transparent 55%),
+      linear-gradient(110deg, rgba(11,11,14,0.95) 0%, rgba(11,11,14,0.55) 50%, rgba(22,22,26,0.7) 100%);
+    z-index: 1;
+  }
+  .map-svg {
+    position: absolute;
+    top: 50%; right: 4%;
+    transform: translateY(-50%);
+    height: 92%; width: auto;
+    z-index: 1;
+    color: rgba(255,255,255,0.18);
+  }
+  .map-svg .map-outline { fill: rgba(255,255,255,0.05); stroke: currentColor; stroke-width: 6; stroke-linejoin: round; }
+  .map-svg .map-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    fill: rgba(255,255,255,0.55);
+  }
+  .map-svg .map-county-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    fill: rgba(255,255,255,0.85);
+  }
+  .map-svg .map-capital { fill: #fff; }
+  .map-banner-content {
+    position: absolute; inset: 0;
+    padding: 64px;
+    display: flex; flex-direction: column; justify-content: center;
+    max-width: 620px;
+    z-index: 2;
+  }
+  .map-banner-content h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(36px, 4.5vw, 64px); font-weight: 800;
+    color: #fff; line-height: 1; letter-spacing: -0.01em;
+    margin-bottom: 16px;
+  }
+  .map-banner-content p {
+    color: rgba(255,255,255,0.75); font-size: 17px; line-height: 1.6;
+    margin-bottom: 32px; max-width: 50ch;
+  }
+  .map-pin-svg {
+    fill: var(--red);
+    transform-origin: center;
+  }
+  .map-pin-ring {
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 4;
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: pingSvg 2.4s infinite;
+    opacity: 0;
+  }
+  @keyframes pingSvg {
+    0%   { transform: scale(0.4); opacity: 0.8; }
+    70%  { transform: scale(3.0); opacity: 0; }
+    100% { transform: scale(3.0); opacity: 0; }
+  }
+
+  /* ============ PARTNERS ============ */
+  .partners {
+    background: var(--paper-2);
+    padding: 100px 80px;
+  }
+  .partners-head { text-align: center; margin-bottom: 64px; }
+  .partners-head .kicker { justify-content: center; }
+  .partners-head .h2 { font-size: clamp(36px, 4vw, 56px); }
+  .partners-head p {
+    font-size: 15px; color: var(--text-2);
+    max-width: 50ch; margin: 16px auto 0;
+    line-height: 1.7;
+  }
+
+  .partners-marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  }
+  .partners-track {
+    display: flex; gap: 24px;
+    animation: partnerSlide 60s linear infinite;
+    width: max-content;
+  }
+  .partners:hover .partners-track { animation-play-state: paused; }
+  @keyframes partnerSlide { to { transform: translateX(-50%); } }
+  .partner {
+    flex-shrink: 0;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 22px 28px;
+    min-width: 220px;
+    display: flex; flex-direction: column;
+    transition: all 0.2s;
+  }
+  .partner:hover { border-color: var(--red); transform: translateY(-2px); }
+  .partner-mark {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--paper-2);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; font-size: 14px;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+  .partner-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--text); letter-spacing: 0;
+    line-height: 1.2;
+  }
+  .partner-type {
+    font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    margin-top: 4px;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 500;
+  }
+
+  /* ============ NEWS ============ */
+  .news {
+    background: var(--paper);
+    padding: 140px 80px;
+  }
+  .news-head {
+    display: flex; align-items: end; justify-content: space-between;
+    margin-bottom: 56px;
+    flex-wrap: wrap; gap: 24px;
+  }
+  .news-grid {
+    display: grid; grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 24px;
+  }
+  .news-card {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    transition: all 0.3s var(--ease);
+  }
+  .news-card:hover { border-color: var(--text); transform: translateY(-4px); }
+  .news-card-img {
+    aspect-ratio: 16 / 10;
+    background-size: cover; background-position: center;
+    position: relative;
+  }
+  .news-card-img.large { aspect-ratio: 4 / 3; }
+  .news-card-badge {
+    position: absolute; top: 16px; left: 16px;
+    background: var(--paper); color: var(--text);
+    padding: 6px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.16em;
+  }
+  .news-card-body { padding: 24px; }
+  .news-card-meta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 600;
+    color: var(--red); letter-spacing: 0.18em;
+    text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .news-card-meta .sep { color: var(--rule); }
+  .news-card-meta .date { color: var(--muted); }
+  .news-card h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--text); line-height: 1.15;
+    letter-spacing: -0.005em;
+    margin-bottom: 12px;
+  }
+  .news-card.feature h3 { font-size: 30px; }
+  .news-card p {
+    font-size: 14px; color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  /* ============ CTA ============ */
+  .cta {
+    background: var(--red);
+    padding: 110px 80px;
+    color: #fff;
+    position: relative; overflow: hidden;
+  }
+  .cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08), transparent 50%);
+    pointer-events: none;
+  }
+  .cta-inner {
+    display: grid; grid-template-columns: 1.4fr 1fr;
+    gap: 64px; align-items: center;
+    max-width: 1440px; margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+  .cta h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(40px, 5vw, 72px); font-weight: 800;
+    line-height: 0.95; letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .cta h2 em { font-style: italic; opacity: 0.6; font-weight: 700; }
+  .cta p {
+    font-size: 17px; font-weight: 300;
+    line-height: 1.7; max-width: 60ch;
+    color: rgba(255,255,255,0.85);
+  }
+  .cta-btns { display: flex; flex-direction: column; gap: 12px; }
+  .btn-white {
+    display: inline-flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 18px 28px; background: var(--paper); color: var(--red);
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    text-decoration: none;
+    transition: all 0.2s;
+    min-width: 280px;
+  }
+  .btn-white:hover { background: var(--ink); color: #fff; }
+  .btn-white svg { transition: transform 0.25s var(--ease); }
+  .btn-white:hover svg { transform: translate(3px, -3px); }
+  .btn-outline-white {
+    display: inline-flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 18px 28px;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-outline-white:hover { background: #fff; color: var(--red); border-color: #fff; }
+
+  /* ============ FOOTER ============ */
+  footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.5);
+    padding: 80px 80px 36px;
+  }
+  .footer-top {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 56px; padding-bottom: 56px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .footer-brand-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .footer-brand-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.02em; color: #fff;
+    line-height: 1;
+  }
+  .footer-tag {
+    font-size: 13.5px; font-weight: 300;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.7; max-width: 38ch;
+  }
+  .footer-newsletter {
+    margin-top: 24px;
+    display: flex; max-width: 320px;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .footer-newsletter input {
+    flex: 1; padding: 12px 14px;
+    background: transparent; border: none; color: #fff;
+    font-family: 'Barlow', sans-serif; font-size: 13px;
+  }
+  .footer-newsletter input::placeholder { color: rgba(255,255,255,0.3); }
+  .footer-newsletter button {
+    background: var(--red); color: #fff; border: none;
+    padding: 0 18px; cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .footer-newsletter button:hover { background: var(--red-dark); }
+
+  .footer-col h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.2em; font-weight: 700;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 22px;
+  }
+  .footer-col a {
+    display: block;
+    font-size: 14px; font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    margin-bottom: 12px;
+    transition: color 0.15s;
+  }
+  .footer-col a:hover { color: var(--red); }
+  .footer-bottom {
+    padding-top: 28px;
+    display: flex; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+    font-size: 12px; color: rgba(255,255,255,0.3);
+  }
+  .footer-bottom a { color: var(--red); text-decoration: none; opacity: 0.7; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1024px) {
+    .section, .intro, .pillars, .khub, .news, .results, .partners, .cta { padding-left: 32px; padding-right: 32px; }
+    .map-banner { padding: 0 32px 80px; }
+    footer { padding-left: 32px; padding-right: 32px; }
+    nav { padding: 0 24px; }
+    .intro, .results-head, .pillars-head, .khub-grid, .cta-inner { grid-template-columns: 1fr; gap: 48px; }
+    .results-grid { grid-template-columns: 1fr 1fr; }
+    .result-card-row1 { grid-column: span 2; grid-row: auto; }
+    .news-grid { grid-template-columns: 1fr 1fr; }
+    .news-card.feature { grid-column: span 2; }
+    .footer-top { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 700px) {
+    .nav-links { display: none; }
+    .hero { padding: 80px 24px 60px; min-height: 600px; }
+    .results-grid { grid-template-columns: 1fr; }
+    .result-card-row1 { grid-column: auto; }
+    .pillar-row { grid-template-columns: 60px 1fr; gap: 16px; }
+    .pillar-row .pillar-desc, .pillar-row .pillar-arrow { display: none; }
+    .pillar-num { font-size: 36px; }
+    .pillar-name { font-size: 20px; }
+    .khub-cards { grid-template-columns: 1fr; }
+    .news-grid { grid-template-columns: 1fr; }
+    .news-card.feature { grid-column: auto; }
+    .news-card.feature h3 { font-size: 24px; }
+    .footer-top { grid-template-columns: 1fr; gap: 36px; }
+    .map-banner-content { padding: 32px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .hero-carousel { animation: none; transform: translateX(-33.333%); }
+    .partners-track, .ticker-inner { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav id="nav" data-screen-label="Nav">
+  <a href="#top" class="nav-brand">
+    <img src="/NDOC.png" alt="NDOC" class="nav-logo" style="height:38px;width:auto;object-fit:contain;background:transparent;" />
+    <div class="nav-brand-text">
+      Anticipatory Action
+      <span>Kenya · National Technical Working Group</span>
+    </div>
+  </a>
+  <div class="nav-links">
+    <div class="nav-item">
+      <button class="nav-link">Who We Are
+        <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="nav-dropdown"><div class="nav-dropdown-inner">
+        <a href="/aa-about">About the Programme</a>
+        <a href="/aa-membership">Member Organisations</a>
+        <a href="/aa-contact">Contact Us</a>
+      </div></div>
+    </div>
+    <div class="nav-item">
+      <button class="nav-link">Pillars
+        <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="nav-dropdown"><div class="nav-dropdown-inner">
+        <a href="/aa-early-warning"><span class="pillar-num">01</span>Early Warning</a>
+        <a href="/aa-early-action"><span class="pillar-num">02</span>Early Action</a>
+        <a href="/aa-coordination"><span class="pillar-num">03</span>Coordination &amp; Governance</a>
+        <a href="/aa-research"><span class="pillar-num">04</span>Research &amp; Learning</a>
+        <a href="/aa-policy"><span class="pillar-num">05</span>Policy &amp; Advocacy</a>
+        <a href="/aa-financing"><span class="pillar-num">06</span>Financing</a>
+        <a href="/aa-monitoring"><span class="pillar-num">07</span>Monitoring &amp; Evaluation</a>
+      </div></div>
+    </div>
+    <a href="/aa-activities" class="nav-link">Activities</a>
+    <div class="nav-item">
+      <button class="nav-link">Knowledge Hub
+        <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="nav-dropdown"><div class="nav-dropdown-inner">
+        <a href="/aa-dashboard">Results Dashboard</a>
+        <a href="/aa-reports">Reports &amp; Documents</a>
+      </div></div>
+    </div>
+  </div>
+  <div class="nav-end">
+    <a href="/aa-membership" class="btn-ghost">Get Involved</a>
+    <a href="/login" class="btn-red">
+      Log In
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+    </a>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top" data-screen-label="01 Hero">
+  <div class="hero-carousel">
+    <div class="hero-slide"></div>
+    <div class="hero-slide"></div>
+    <div class="hero-slide"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-dot"></span>
+      National Technical Working Group · Kenya
+    </div>
+
+    <h1 class="hero-title">
+      <span class="hero-title-row">Anticipatory</span>
+      <span class="hero-title-row"><span class="accent">Action.</span></span>
+    </h1>
+
+    <div class="hero-sub">
+      <span>Predict</span>
+      <span class="hero-sub-dot"></span>
+      <span>Prepare</span>
+      <span class="hero-sub-dot"></span>
+      <span>Protect</span>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+
+<!-- ============ TICKER ============ -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">40% Reduction in Livestock Loss</span>
+    <span class="ticker-item">15+ Active Action Protocols</span>
+    <span class="ticker-item">30+ Partner Organisations</span>
+    <span class="ticker-item">$1 : $7 Return on Investment</span>
+    <span class="ticker-item">72h Trigger-to-Cash</span>
+    <span class="ticker-item">47 Counties Covered</span>
+    <span class="ticker-item">TWG Established 2022</span>
+    <span class="ticker-item">40% Reduction in Livestock Loss</span>
+    <span class="ticker-item">15+ Active Action Protocols</span>
+    <span class="ticker-item">30+ Partner Organisations</span>
+    <span class="ticker-item">$1 : $7 Return on Investment</span>
+    <span class="ticker-item">72h Trigger-to-Cash</span>
+    <span class="ticker-item">47 Counties Covered</span>
+    <span class="ticker-item">TWG Established 2022</span>
+  </div>
+</div>
+
+<!-- ============ INTRO ============ -->
+<section class="intro" id="about" data-screen-label="02 About">
+  <div class="intro-img-wrap">
+    <div class="intro-img-label">ASAL Communities</div>
+    <img src="/arid.jpg" alt="Pastoralist community in Kenya's arid lands" loading="lazy" />
+    <div class="intro-img-caption">Kenya's arid and semi-arid lands are home to pastoralist communities most vulnerable to recurring drought and flood cycles.</div>
+    <div class="intro-img-stat">
+      <div class="n">23<span>M</span></div>
+      <div class="l">People in ASAL Counties</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="kicker">What We Do</div>
+    <h2 class="h2"><span class="block">Act <em>before</em></span><span class="block">the crisis hits.</span></h2>
+
+    <div class="intro-body" style="margin-top: 36px;">
+      <p>Anticipatory Action delivers targeted interventions — cash, livestock support, health services — based on hazard forecasts <em>before</em> a disaster fully unfolds. When triggers are met, action is immediate, pre-agreed, and funded.</p>
+      <p>Kenya's AA programme, coordinated by NDOC and KRCS through a national Technical Working Group, has proven this approach is not only feasible — it's far more cost-effective than emergency response after the fact.</p>
+    </div>
+
+    <div class="intro-cards">
+      <div class="intro-card">
+        <div class="intro-card-n">01</div>
+        <h4>Forecast Triggers</h4>
+        <p>Linked to KMD, NDMA and ICPAC probability thresholds. No political delay.</p>
+      </div>
+      <div class="intro-card">
+        <div class="intro-card-n">02</div>
+        <h4>Pre-Agreed Protocols</h4>
+        <p>Every intervention defined in advance — who, what, when, and funded by what.</p>
+      </div>
+      <div class="intro-card">
+        <div class="intro-card-n">03</div>
+        <h4>7-Pillar Framework</h4>
+        <p>Full-cycle coverage from early warning to monitoring and evaluation.</p>
+      </div>
+      <div class="intro-card">
+        <div class="intro-card-n">04</div>
+        <h4>47 Counties</h4>
+        <p>National scope with county-level focal points and coordination.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2024 RESULTS ============ -->
+<section class="results" id="results" data-screen-label="03 Results">
+  <div class="results-bg"></div>
+  <div class="results-content container">
+    <div class="results-head">
+      <div>
+        <div class="kicker on-dark">Programme Impact</div>
+        <h2 class="h2 on-dark">Anticipation in action<br>2024 results.</h2>
+      </div>
+      <p>Kenya's AA programme consistently demonstrates that pre-emptive action is more humane, more equitable, and significantly cheaper than emergency response. Filter by hazard to see the breakdown.</p>
+    </div>
+
+    <div class="results-tabs" id="resultsTabs">
+      <button class="results-tab active" data-tab="total"><span class="dot"></span>Total</button>
+      <button class="results-tab" data-tab="drought"><span class="dot"></span>Drought</button>
+      <button class="results-tab" data-tab="flood"><span class="dot"></span>Flood</button>
+      <button class="results-tab" data-tab="heat"><span class="dot"></span>Heat Wave</button>
+      <button class="results-tab" data-tab="conflict"><span class="dot"></span>Conflict-Linked</button>
+    </div>
+
+    <div class="results-grid">
+      <!-- Line chart (big) -->
+      <div class="result-card result-card-row1">
+        <div class="result-card-title">People Reached (cumulative)</div>
+        <svg class="chart-wrap" viewBox="0 0 480 200" preserveAspectRatio="none" aria-label="Line chart">
+          <!-- gridlines -->
+          <line x1="0" y1="180" x2="480" y2="180" stroke="rgba(255,255,255,0.06)" />
+          <line x1="0" y1="130" x2="480" y2="130" stroke="rgba(255,255,255,0.06)" />
+          <line x1="0" y1="80" x2="480" y2="80" stroke="rgba(255,255,255,0.06)" />
+          <line x1="0" y1="30" x2="480" y2="30" stroke="rgba(255,255,255,0.06)" />
+          <!-- area -->
+          <path id="chartArea" d="M40,160 L240,90 L440,40 L440,180 L40,180 Z" fill="url(#chartGrad)" opacity="0.4"/>
+          <!-- line -->
+          <path id="chartLine" d="M40,160 L240,90 L440,40" fill="none" stroke="#E61832" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- dots + labels -->
+          <g id="chartPoints">
+            <g><circle cx="40" cy="160" r="5" fill="#E61832"/><text x="40" y="138" fill="#fff" font-family="Barlow Condensed" font-size="16" font-weight="700" text-anchor="middle">189K</text></g>
+            <g><circle cx="240" cy="90" r="5" fill="#E61832"/><text x="240" y="68" fill="#fff" font-family="Barlow Condensed" font-size="16" font-weight="700" text-anchor="middle">1.4M</text></g>
+            <g><circle cx="440" cy="40" r="5" fill="#E61832"/><text x="440" y="22" fill="#fff" font-family="Barlow Condensed" font-size="16" font-weight="700" text-anchor="middle">2.1M</text></g>
+          </g>
+          <!-- x labels -->
+          <text x="40" y="198" fill="rgba(255,255,255,0.5)" font-family="Barlow Condensed" font-size="11" text-anchor="middle">2022</text>
+          <text x="240" y="198" fill="rgba(255,255,255,0.5)" font-family="Barlow Condensed" font-size="11" text-anchor="middle">2023</text>
+          <text x="440" y="198" fill="rgba(255,255,255,0.5)" font-family="Barlow Condensed" font-size="11" text-anchor="middle">2024</text>
+          <defs>
+            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#E61832"/>
+              <stop offset="100%" stop-color="#E61832" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- Big number 1 -->
+      <div class="result-card">
+        <div class="result-card-title">People Reached</div>
+        <div class="big" id="bigPeople">2.1<sub>M</sub></div>
+        <div class="desc">People supported through anticipatory action protocols in 2024.</div>
+      </div>
+
+      <!-- Big number 2 -->
+      <div class="result-card">
+        <div class="result-card-title">Activations</div>
+        <div class="big" id="bigActivations">15<sub>+</sub></div>
+        <div class="desc">Live protocols activated across drought, flood and conflict-linked triggers.</div>
+      </div>
+
+      <!-- Small stat -->
+      <div class="result-card">
+        <div class="result-card-title">Counties Reached</div>
+        <div class="small" id="bigCounties">47</div>
+        <div class="desc" style="margin-top: 18px;">National coverage with county focal points.</div>
+      </div>
+
+      <!-- Pie chart -->
+      <div class="result-card" style="grid-column: span 2;">
+        <div class="result-card-title">Activations by Region</div>
+        <div class="pie-wrap">
+          <svg width="140" height="140" viewBox="0 0 42 42">
+            <!-- Donut segments -->
+            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#00A6B8" stroke-width="6" stroke-dasharray="36 64" stroke-dashoffset="25" />
+            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#E61832" stroke-width="6" stroke-dasharray="28 72" stroke-dashoffset="-11" />
+            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#B58418" stroke-width="6" stroke-dasharray="18 82" stroke-dashoffset="-39" />
+            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#14D7D3" stroke-width="6" stroke-dasharray="12 88" stroke-dashoffset="-57" />
+            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#B7B3A6" stroke-width="6" stroke-dasharray="6 94" stroke-dashoffset="-69" />
+            <text x="21" y="22" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-family="Barlow Condensed" font-size="6" font-weight="800">47</text>
+            <text x="21" y="26" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="Barlow Condensed" font-size="2.4">COUNTIES</text>
+          </svg>
+          <div class="pie-legend">
+            <div class="pie-legend-item"><span class="pie-legend-swatch" style="background:#00A6B8"></span>Northern (Turkana, Marsabit) · 36%</div>
+            <div class="pie-legend-item"><span class="pie-legend-swatch" style="background:#E61832"></span>North-Eastern (Wajir, Mandera) · 28%</div>
+            <div class="pie-legend-item"><span class="pie-legend-swatch" style="background:#B58418"></span>Eastern (Isiolo, Garissa) · 18%</div>
+            <div class="pie-legend-item"><span class="pie-legend-swatch" style="background:#14D7D3"></span>Coastal (Tana River, Kilifi) · 12%</div>
+            <div class="pie-legend-item"><span class="pie-legend-swatch" style="background:#B7B3A6"></span>Rift Valley · 6%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px;">
+      <a href="/aa-reports" class="btn-red">
+        View Full 2024 Overview Report
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PILLARS ============ -->
+<section class="pillars" id="pillars" data-screen-label="04 Pillars">
+  <div class="container">
+    <div class="pillars-head">
+      <div>
+        <div class="kicker">Strategic Framework</div>
+        <h2 class="h2"><span class="block">Seven</span><span class="block"><em>pillars.</em></span></h2>
+      </div>
+      <p>Each pillar addresses a critical component of Kenya's anticipatory action system — from generating forecasts to delivering pre-funded interventions and learning from every cycle.</p>
+    </div>
+
+    <div class="pillars-list">
+      <a href="/aa-early-warning" class="pillar-row">
+        <div class="pillar-num">01</div>
+        <div class="pillar-name">Early Warning</div>
+        <div class="pillar-desc">Generating timely, localised and actionable hazard forecasts that drive the AA trigger system.</div>
+        <div class="pillar-arrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></div>
+      </a>
+      <a href="/aa-early-action" class="pillar-row">
+        <div class="pillar-num">02</div>
+        <div class="pillar-name">Early Action</div>
+        <div class="pillar-desc">Delivering pre-agreed, pre-funded interventions before hazards reach destructive intensity.</div>
+        <div class="pillar-arrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></div>
+      </a>
+      <a href="/aa-coordination" class="pillar-row">
+        <div class="pillar-num">03</div>
+        <div class="pillar-name">Coordination &amp; Governance</div>
+        <div class="pillar-desc">TWG structures, SOPs, county focal points, and data-sharing protocols.</div>
+        <div class="pillar-arrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></div>
+      </a>
+      <a href="/aa-research" class="pillar-row">
+        <div class="pillar-num">04</div>
+        <div class="pillar-name">Research, Innovation &amp; Learning</div>
+        <div class="pillar-desc">Cost-benefit evidence, technology, academic partnerships, and structured learning cycles.</div>
+        <div class="pillar-arrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></div>
+      </a>
+      <a href="/aa-policy" class="pillar-row">
+        <div class="pillar-num">05</div>
+        <div class="pillar-name">Policy &amp; Advocacy</div>
+        <div class="pillar-desc">Embedding AA in Kenya's DRM Act, county frameworks, and sector policies.</div>
+        <div class="pillar-arrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></div>
+      </a>
+      <a href="/aa-financing" class="pillar-row">
+        <div class="pillar-num">06</div>
+        <div class="pillar-name">Financing</div>
+        <div class="pillar-desc">Forecast-based financing, contingency funds, parametric insurance, and pooled mechanisms.</div>
+        <div class="pillar-arrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></div>
+      </a>
+      <a href="/aa-monitoring" class="pillar-row">
+        <div class="pillar-num">07</div>
+        <div class="pillar-name">Monitoring &amp; Evaluation</div>
+        <div class="pillar-desc">Real-time dashboards, after-action reviews, impact evaluations and annual learning reviews.</div>
+        <div class="pillar-arrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ KNOWLEDGE HUB ============ -->
+<section class="khub" id="knowledge" data-screen-label="05 Knowledge">
+  <div class="container">
+    <div class="khub-grid">
+      <div>
+        <div class="kicker">Resources</div>
+        <h2 class="h2"><span class="block">Expand your</span><span class="block"><em>knowledge.</em></span></h2>
+        <p style="margin-top: 24px; font-size: 16px; color: var(--text-2); line-height: 1.7; max-width: 40ch;">Materials, training resources, advocacy briefs and thematic guidance for practitioners, researchers and county teams.</p>
+      </div>
+      <div class="khub-cards">
+        <a href="/aa-about" class="khub-card">
+          <div class="khub-card-n">01 · Fundamentals</div>
+          <h3>What is anticipatory action?</h3>
+          <p>Core concepts and methodologies that explain what anticipatory action is and how it works in practice.</p>
+          <div class="khub-card-arrow">Learn more
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+          </div>
+        </a>
+        <a href="/aa-policy" class="khub-card">
+          <div class="khub-card-n">02 · Advocacy &amp; Policy</div>
+          <h3>Policy &amp; key messages</h3>
+          <p>Briefs to support promotion of AA, influence decision-making and strengthen cross-sector coordination.</p>
+          <div class="khub-card-arrow">Learn more
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+          </div>
+        </a>
+        <a href="/aa-reports" class="khub-card">
+          <div class="khub-card-n">03 · Resources</div>
+          <h3>Guidelines &amp; case studies</h3>
+          <p>Practical insights, tools and training materials for implementing anticipatory action in Kenyan contexts.</p>
+          <div class="khub-card-arrow">Learn more
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MAP BANNER ============ -->
+<section class="map-banner" data-screen-label="06 Map Banner">
+  <div class="map-banner-inner">
+    <svg class="map-svg" viewBox="80 -20 770 1010" xmlns="http://www.w3.org/2000/svg" aria-label="Map of Kenya">
+      <!-- Real Kenya outline (source: mapsicon / potrace, public domain) -->
+      <g transform="translate(0,1024) scale(0.1,-0.1)">
+        <path class="map-outline" d="M1097 10096 c-76 -80 -165 -180 -198 -223 -51 -67 -57 -79 -45 -92 46 -53 75 -154 81 -280 3 -61 20 -81 66 -81 34 0 59 -9 59 -21 0 -5 -7 -9 -15 -9 -8 0 -19 -8 -24 -18 -14 -26 8 -49 61 -62 39 -10 47 -17 55 -43 9 -31 10 -32 64 -29 50 3 56 1 85 -30 28 -29 32 -42 37 -106 6 -70 5 -74 -24 -106 -36 -41 -40 -106 -9 -165 10 -21 29 -78 41 -126 20 -79 25 -88 55 -102 34 -16 43 -42 70 -193 4 -22 22 -51 47 -77 38 -40 45 -43 93 -43 50 0 53 -1 62 -32 6 -18 13 -64 17 -102 7 -86 27 -122 71 -131 28 -5 38 -15 59 -56 14 -28 34 -63 45 -77 l21 -26 -44 -27 c-24 -15 -47 -34 -50 -42 -3 -8 21 -86 54 -174 55 -143 60 -164 56 -218 -4 -56 -2 -63 30 -101 l33 -41 -21 -19 c-19 -17 -20 -28 -18 -150 l3 -131 -33 -42 c-18 -22 -46 -49 -62 -58 -23 -14 -29 -24 -29 -51 0 -45 -24 -88 -59 -106 -37 -19 -50 -85 -26 -123 9 -13 15 -36 13 -51 -3 -25 -8 -28 -70 -37 -61 -9 -73 -15 -128 -63 -33 -29 -60 -60 -60 -69 0 -9 -6 -13 -14 -10 -8 3 -30 9 -49 12 -32 6 -35 5 -46 -26 -6 -17 -11 -59 -11 -91 0 -56 -4 -65 -50 -131 -27 -38 -69 -83 -92 -98 -47 -32 -56 -47 -57 -100 -1 -45 -26 -69 -74 -69 -28 0 -40 -6 -57 -29 -42 -60 -71 -139 -77 -212 l-6 -72 -104 -119 c-56 -65 -103 -120 -103 -122 0 -1 27 0 60 2 57 4 60 3 60 -19 0 -12 -10 -33 -22 -46 -21 -22 -21 -26 -7 -51 11 -21 24 -28 52 -30 23 -2 41 -10 47 -21 5 -10 27 -26 50 -35 37 -14 39 -18 29 -39 -8 -18 -7 -33 5 -62 9 -20 16 -46 16 -56 0 -32 49 -25 61 9 5 15 23 36 39 46 17 9 33 28 36 42 6 21 4 36 -8 109 -3 17 6 21 87 31 82 10 172 39 248 79 35 18 47 12 110 -50 109 -107 157 -199 94 -181 -71 21 -82 19 -97 -16 -18 -40 -49 -46 -157 -28 -93 16 -158 7 -179 -25 -15 -23 -14 -27 11 -71 l27 -46 -29 -36 c-16 -20 -34 -37 -40 -39 -6 -2 -18 14 -27 37 -12 31 -21 40 -39 40 -13 0 -27 -3 -31 -7 -15 -15 -91 -1 -116 22 -44 40 -65 40 -95 1 -21 -27 -26 -44 -23 -71 4 -33 2 -35 -24 -35 -38 0 -99 -42 -87 -61 14 -22 10 -52 -11 -79 -46 -58 -2 -176 82 -220 27 -14 48 -31 48 -38 0 -7 -13 -33 -30 -57 -16 -24 -30 -55 -30 -69 0 -22 -4 -26 -30 -26 -30 0 -34 -7 -31 -55 1 -11 -10 -36 -24 -55 -23 -32 -24 -35 -8 -42 10 -3 35 -7 55 -7 27 -1 40 -7 48 -21 6 -11 21 -20 33 -20 20 0 990 -536 3347 -1849 l616 -342 22 -157 22 -157 -45 -40 c-40 -36 -45 -45 -51 -97 l-7 -58 34 0 c19 0 53 -9 77 -20 39 -18 42 -22 42 -58 0 -24 7 -48 18 -60 29 -33 802 -611 1199 -896 l373 -267 37 26 c43 29 69 32 94 9 12 -11 27 -13 53 -9 32 6 36 11 36 37 0 16 10 42 22 59 l22 30 17 -33 17 -33 7 50 c9 58 41 122 66 130 12 4 21 24 29 63 20 109 54 187 132 306 125 192 163 273 181 396 16 104 54 210 104 290 12 19 26 46 31 60 7 17 38 41 96 73 l87 49 -2 71 c-2 68 1 77 50 176 46 91 50 105 38 120 -34 39 -38 58 -27 151 6 51 16 106 24 124 34 83 266 186 417 186 l76 0 41 44 c23 24 51 47 64 51 62 19 95 85 67 136 -12 22 8 60 21 39 4 -7 16 -7 39 1 29 10 32 15 29 40 l-5 29 24 -22 c17 -16 22 -29 18 -45 -4 -18 -1 -23 15 -23 40 0 60 19 60 55 0 48 -9 65 -35 65 -21 0 -25 8 -40 72 -9 40 -29 96 -45 124 -16 29 -26 55 -23 58 25 24 76 -19 88 -75 11 -47 23 -25 30 55 10 109 45 104 45 -6 0 -40 20 -43 83 -14 31 15 72 26 97 26 40 0 42 1 36 25 -5 21 -3 25 14 25 11 0 23 -6 26 -14 10 -25 75 5 139 66 86 80 225 277 225 318 0 27 -51 97 -311 428 l-311 396 7 2045 7 2046 213 210 213 210 280 379 c155 209 279 383 276 387 -2 4 -15 10 -29 13 -14 4 -47 20 -74 36 -55 34 -113 39 -179 16 -27 -10 -115 -17 -280 -22 l-241 -7 -90 83 c-50 46 -93 92 -97 102 -3 12 -15 18 -34 18 -46 0 -60 10 -60 41 0 24 -11 37 -60 73 l-61 44 -226 -99 c-124 -54 -231 -103 -237 -108 -6 -5 -38 -16 -71 -25 -33 -9 -153 -62 -267 -118 l-207 -102 -43 -95 c-36 -80 -61 -116 -159 -229 -64 -74 -121 -148 -126 -166 -13 -45 -54 -49 -79 -7 -18 31 -42 40 -156 56 -27 4 -48 11 -48 16 0 14 -26 11 -39 -4 -19 -24 -118 -9 -174 26 -48 29 -50 30 -147 23 -133 -9 -224 11 -297 66 -49 37 -55 39 -84 29 -47 -16 -76 -13 -109 11 -29 21 -31 21 -65 5 -30 -14 -68 -17 -224 -17 -175 0 -189 1 -206 20 -10 11 -23 20 -30 20 -7 0 -19 8 -28 18 -9 9 -248 168 -531 352 -425 276 -515 339 -516 358 0 16 -6 22 -23 22 -16 0 -28 9 -35 25 -9 18 -19 25 -41 25 -16 0 -56 15 -88 34 l-58 34 -434 11 -434 12 -127 89 -128 90 -819 6 -818 5 -138 -145z"/>
+      </g>
+
+      <!-- Capital marker (Nairobi) — central south -->
+      <circle class="map-capital" cx="500" cy="700" r="14" />
+      <text class="map-county-label" x="525" y="708" style="fill: rgba(255,255,255,1); font-size: 24px;">Nairobi</text>
+
+      <!-- Active activation pings — ASAL counties -->
+      <!-- Turkana (NW) -->
+      <g transform="translate(265, 195)">
+        <circle class="map-pin-ring" cx="0" cy="0" r="14" style="animation-delay: 0s;" />
+        <circle class="map-pin-svg" cx="0" cy="0" r="12" />
+        <text class="map-county-label" x="-22" y="-22" text-anchor="end">Turkana</text>
+      </g>
+      <!-- Marsabit (N) -->
+      <g transform="translate(530, 215)">
+        <circle class="map-pin-ring" cx="0" cy="0" r="14" style="animation-delay: 0.5s;" />
+        <circle class="map-pin-svg" cx="0" cy="0" r="12" />
+        <text class="map-county-label" x="22" y="-22">Marsabit</text>
+      </g>
+      <!-- Mandera (NE corner) -->
+      <g transform="translate(820, 105)">
+        <circle class="map-pin-ring" cx="0" cy="0" r="14" style="animation-delay: 1s;" />
+        <circle class="map-pin-svg" cx="0" cy="0" r="12" />
+        <text class="map-county-label" x="-22" y="-22" text-anchor="end">Mandera</text>
+      </g>
+      <!-- Wajir (E) -->
+      <g transform="translate(760, 400)">
+        <circle class="map-pin-ring" cx="0" cy="0" r="14" style="animation-delay: 1.5s;" />
+        <circle class="map-pin-svg" cx="0" cy="0" r="12" />
+        <text class="map-county-label" x="22" y="6">Wajir</text>
+      </g>
+      <!-- Garissa (E coast bulge) -->
+      <g transform="translate(720, 600)">
+        <circle class="map-pin-ring" cx="0" cy="0" r="14" style="animation-delay: 2s;" />
+        <circle class="map-pin-svg" cx="0" cy="0" r="12" />
+        <text class="map-county-label" x="22" y="6">Garissa</text>
+      </g>
+    </svg>
+    <div class="map-banner-content">
+      <div class="kicker on-dark" style="color: #fff;">Live Data</div>
+      <h2>Results across<br>47 counties.</h2>
+      <p>Live tracking of activations, people reached, county coverage and trigger status on Kenya's anticipatory action results dashboard.</p>
+      <a href="/aa-dashboard" class="btn-red" style="align-self: flex-start;">
+        Open the AA Dashboard
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PARTNERS ============ -->
+<section class="partners" id="partners" data-screen-label="07 Partners">
+  <div class="partners-head">
+    <div class="kicker">The Technical Working Group</div>
+    <h2 class="h2">Our partners.</h2>
+    <p>A multi-stakeholder body bringing government, UN agencies, NGOs and Red Cross/Red Crescent partners together under NDOC leadership.</p>
+  </div>
+  <div class="partners-marquee">
+    <div class="partners-track">
+      <!-- Row of partner cards (duplicated for seamless loop) -->
+      <div class="partner"><div class="partner-mark">N</div><div class="partner-name">NDOC</div><div class="partner-type">Government · Lead</div></div>
+      <div class="partner"><div class="partner-mark">K+</div><div class="partner-name">Kenya Red Cross</div><div class="partner-type">RC/RC Movement</div></div>
+      <div class="partner"><div class="partner-mark">ND</div><div class="partner-name">NDMA</div><div class="partner-type">Government</div></div>
+      <div class="partner"><div class="partner-mark">KM</div><div class="partner-name">Kenya Met. Department</div><div class="partner-type">Government</div></div>
+      <div class="partner"><div class="partner-mark">UN</div><div class="partner-name">OCHA Kenya</div><div class="partner-type">UN Agency</div></div>
+      <div class="partner"><div class="partner-mark">IF</div><div class="partner-name">IFRC / ICRC</div><div class="partner-type">RC/RC Movement</div></div>
+      <div class="partner"><div class="partner-mark">WF</div><div class="partner-name">WFP Kenya</div><div class="partner-type">UN Agency</div></div>
+      <div class="partner"><div class="partner-mark">UC</div><div class="partner-name">UNICEF Kenya</div><div class="partner-type">UN Agency</div></div>
+      <div class="partner"><div class="partner-mark">FA</div><div class="partner-name">FAO Kenya</div><div class="partner-type">UN Agency</div></div>
+      <div class="partner"><div class="partner-mark">CG</div><div class="partner-name">County Governments</div><div class="partner-type">Government</div></div>
+      <div class="partner"><div class="partner-mark">SN</div><div class="partner-name">Start Network</div><div class="partner-type">NGO Network</div></div>
+      <div class="partner"><div class="partner-mark">IC</div><div class="partner-name">ICPAC</div><div class="partner-type">Regional</div></div>
+      <!-- duplicate -->
+      <div class="partner"><div class="partner-mark">N</div><div class="partner-name">NDOC</div><div class="partner-type">Government · Lead</div></div>
+      <div class="partner"><div class="partner-mark">K+</div><div class="partner-name">Kenya Red Cross</div><div class="partner-type">RC/RC Movement</div></div>
+      <div class="partner"><div class="partner-mark">ND</div><div class="partner-name">NDMA</div><div class="partner-type">Government</div></div>
+      <div class="partner"><div class="partner-mark">KM</div><div class="partner-name">Kenya Met. Department</div><div class="partner-type">Government</div></div>
+      <div class="partner"><div class="partner-mark">UN</div><div class="partner-name">OCHA Kenya</div><div class="partner-type">UN Agency</div></div>
+      <div class="partner"><div class="partner-mark">IF</div><div class="partner-name">IFRC / ICRC</div><div class="partner-type">RC/RC Movement</div></div>
+      <div class="partner"><div class="partner-mark">WF</div><div class="partner-name">WFP Kenya</div><div class="partner-type">UN Agency</div></div>
+      <div class="partner"><div class="partner-mark">UC</div><div class="partner-name">UNICEF Kenya</div><div class="partner-type">UN Agency</div></div>
+      <div class="partner"><div class="partner-mark">FA</div><div class="partner-name">FAO Kenya</div><div class="partner-type">UN Agency</div></div>
+      <div class="partner"><div class="partner-mark">CG</div><div class="partner-name">County Governments</div><div class="partner-type">Government</div></div>
+      <div class="partner"><div class="partner-mark">SN</div><div class="partner-name">Start Network</div><div class="partner-type">NGO Network</div></div>
+      <div class="partner"><div class="partner-mark">IC</div><div class="partner-name">ICPAC</div><div class="partner-type">Regional</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NEWS ============ -->
+<section class="news" id="news" data-screen-label="08 News">
+  <div class="container">
+    <div class="news-head">
+      <div>
+        <div class="kicker">From the Field</div>
+        <h2 class="h2">Latest news <em>&amp; insights.</em></h2>
+      </div>
+      <a href="/aa-activities" class="btn-ghost">View All News
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+
+    <div class="news-grid">
+      <a href="/aa-activities" class="news-card feature">
+        <div class="news-card-img large" style="background-image: url('https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=1400&q=80');">
+          <div class="news-card-badge">Drought · Field Report</div>
+        </div>
+        <div class="news-card-body">
+          <div class="news-card-meta">
+            <span>Programme Update</span>
+            <span class="sep">/</span>
+            <span class="date">12 May 2026</span>
+          </div>
+          <h3>Wajir activation reaches 38,000 households in 72 hours</h3>
+          <p>The first protocol triggered under the new short-rains framework delivered cash transfers and livestock feed before forage stress reached critical levels — a turnaround unimaginable under traditional response timelines.</p>
+        </div>
+      </a>
+
+      <a href="/aa-activities" class="news-card">
+        <div class="news-card-img" style="background-image: url('https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=900&q=80');">
+          <div class="news-card-badge">Evidence</div>
+        </div>
+        <div class="news-card-body">
+          <div class="news-card-meta">
+            <span>Research</span>
+            <span class="sep">/</span>
+            <span class="date">04 May 2026</span>
+          </div>
+          <h3>What we learned from the 2024 short-rains cycle</h3>
+          <p>Three priorities for scaling AA across additional ASAL counties in 2026.</p>
+        </div>
+      </a>
+
+      <a href="/aa-activities" class="news-card">
+        <div class="news-card-img" style="background-image: url('https://images.unsplash.com/photo-1521120098171-c109d6e5d75c?w=900&q=80');">
+          <div class="news-card-badge">Policy</div>
+        </div>
+        <div class="news-card-body">
+          <div class="news-card-meta">
+            <span>Advocacy</span>
+            <span class="sep">/</span>
+            <span class="date">28 April 2026</span>
+          </div>
+          <h3>AA enters the next phase of Kenya's DRM Act</h3>
+          <p>What changes for county governments and how the TWG is supporting transition.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta" id="cta" data-screen-label="09 CTA">
+  <div class="cta-inner">
+    <div>
+      <div class="kicker on-dark" style="color: rgba(255,255,255,0.85); margin-bottom: 20px;">Join the movement</div>
+      <h2>Get involved with<br><em>Kenya's AA programme.</em></h2>
+      <p>Whether you're a humanitarian organisation, government agency, researcher or donor — the Technical Working Group welcomes new members committed to proactive disaster risk management.</p>
+    </div>
+    <div class="cta-btns">
+      <a href="/aa-membership" class="btn-white">
+        View Membership
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+      </a>
+      <a href="/aa-contact" class="btn-outline-white">
+        Contact Secretariat
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer data-screen-label="10 Footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-row">
+        <img src="/NDOC.png" alt="NDOC" style="height:32px;width:auto;object-fit:contain;opacity:0.85;" />
+        <div class="footer-brand-name">Kenya Anticipatory Action</div>
+      </div>
+      <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Operations Centre with the Kenya Red Cross Society.</p>
+      <form class="footer-newsletter" onsubmit="event.preventDefault(); alert('Thanks — we\'ll be in touch.');">
+        <input type="email" placeholder="Subscribe to updates" />
+        <button type="submit">Join</button>
+      </form>
+    </div>
+    <div class="footer-col">
+      <h4>Programme</h4>
+      <a href="/aa-about">About Us</a>
+      <a href="#pillars">Pillars</a>
+      <a href="#results">Results</a>
+      <a href="/aa-membership">Membership</a>
+    </div>
+    <div class="footer-col">
+      <h4>Knowledge</h4>
+      <a href="/aa-about">Fundamentals</a>
+      <a href="/aa-reports">Guidelines</a>
+      <a href="/aa-activities">News &amp; Blog</a>
+      <a href="/aa-reports">Reports</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="mailto:datateam@redcross.or.ke">datateam@redcross.or.ke</a>
+      <a href="/aa-contact">Send a Message</a>
+      <a href="/aa-contact">NDOC HQ · Nairobi</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Kenya Anticipatory Action TWG · National Disaster Operations Centre</span>
+    <span>Powered by <a href="#">Kenya Red Cross Society</a></span>
+  </div>
+</footer>
+
+<script>
+  // Nav scroll state
+  const navEl = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 60) navEl.classList.add('scrolled');
+    else navEl.classList.remove('scrolled');
+  };
+  document.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // 2024 results tab switching
+  const tabData = {
+    total:    { people: '2.1<sub>M</sub>',  activations: '15<sub>+</sub>', counties: '47',
+                line: 'M40,160 L240,90 L440,40',  area: 'M40,160 L240,90 L440,40 L440,180 L40,180 Z',
+                pts: [['189K',40,160],['1.4M',240,90],['2.1M',440,40]] },
+    drought:  { people: '1.2<sub>M</sub>',  activations: '8',              counties: '21',
+                line: 'M40,170 L240,110 L440,55',  area: 'M40,170 L240,110 L440,55 L440,180 L40,180 Z',
+                pts: [['98K',40,170],['720K',240,110],['1.2M',440,55]] },
+    flood:    { people: '740<sub>K</sub>',  activations: '4',              counties: '14',
+                line: 'M40,175 L240,130 L440,75',  area: 'M40,175 L240,130 L440,75 L440,180 L40,180 Z',
+                pts: [['54K',40,175],['410K',240,130],['740K',440,75]] },
+    heat:     { people: '110<sub>K</sub>',  activations: '2',              counties: '6',
+                line: 'M40,178 L240,160 L440,130', area: 'M40,178 L240,160 L440,130 L440,180 L40,180 Z',
+                pts: [['12K',40,178],['62K',240,160],['110K',440,130]] },
+    conflict: { people: '85<sub>K</sub>',   activations: '1',              counties: '3',
+                line: 'M40,179 L240,168 L440,145', area: 'M40,179 L240,168 L440,145 L440,180 L40,180 Z',
+                pts: [['—',40,179],['18K',240,168],['85K',440,145]] }
+  };
+  const tabs = document.querySelectorAll('#resultsTabs .results-tab');
+  const elPeople = document.getElementById('bigPeople');
+  const elActiv = document.getElementById('bigActivations');
+  const elCounties = document.getElementById('bigCounties');
+  const elLine = document.getElementById('chartLine');
+  const elArea = document.getElementById('chartArea');
+  const elPoints = document.getElementById('chartPoints');
+
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    const d = tabData[t.dataset.tab];
+    if (!d) return;
+    elPeople.innerHTML = d.people;
+    elActiv.innerHTML = d.activations;
+    elCounties.textContent = d.counties;
+    elLine.setAttribute('d', d.line);
+    elArea.setAttribute('d', d.area);
+    elPoints.innerHTML = d.pts.map(([label,x,y]) => `
+      <g><circle cx="${x}" cy="${y}" r="5" fill="#E61832"/>
+      <text x="${x}" y="${y-22}" fill="#fff" font-family="Barlow Condensed" font-size="16" font-weight="700" text-anchor="middle">${label}</text></g>
+    `).join('');
+  }));
+</script>
+
+</body>
+</html>
