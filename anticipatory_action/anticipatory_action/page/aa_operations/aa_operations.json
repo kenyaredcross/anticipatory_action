@@ -1,0 +1,26 @@
+{
+ "creation": "2026-06-05 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Page",
+ "icon": "fa fa-bolt",
+ "idx": 0,
+ "modified": "2026-06-05 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Anticipatory Action",
+ "name": "aa-operations",
+ "owner": "Administrator",
+ "page_name": "aa-operations",
+ "roles": [
+  {
+   "role": "Anticipatory Action Admin"
+  },
+  {
+   "role": "Anticipatory Action User"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
+ "standard": "Yes",
+ "title": "AA Operations Centre"
+}
