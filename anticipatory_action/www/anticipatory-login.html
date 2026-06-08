@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — Kenya Anticipatory Action</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    body { background: var(--ink); }
+
+    .login-shell {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      min-height: 100vh;
+    }
+
+    /* ---------- brand panel ---------- */
+    .login-brand {
+      position: relative; overflow: hidden;
+      background: var(--ink); color: #fff;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 56px 60px;
+    }
+    .login-brand::before {
+      content: ''; position: absolute; inset: 0;
+      background: url('/ndoc1.jpg') center/cover no-repeat;
+      opacity: 0.16; filter: grayscale(0.3);
+    }
+    .login-brand::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 80% at 80% 15%, rgba(230,24,50,0.30), transparent 60%);
+      pointer-events: none;
+    }
+    .login-brand > * { position: relative; z-index: 1; }
+
+    .lb-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+    .lb-brand img { height: 44px; width: auto; object-fit: contain; }
+    .lb-brand-text {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; line-height: 1.1; color: #fff;
+    }
+    .lb-brand-text span {
+      display: block; font-family: 'Barlow', sans-serif;
+      font-size: 10px; font-weight: 400; letter-spacing: 0.16em;
+      color: rgba(255,255,255,0.55); margin-top: 3px;
+    }
+
+    .lb-kicker {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: #fff; margin-bottom: 24px;
+    }
+    .lb-kicker::before { content: ''; width: 32px; height: 2px; background: var(--red); }
+    .lb-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(44px, 5vw, 78px);
+      font-weight: 900; line-height: 0.9;
+      text-transform: uppercase; letter-spacing: -0.022em;
+      color: #fff; margin-bottom: 20px;
+    }
+    .lb-title .accent { color: var(--red); font-style: italic; font-weight: 700; }
+    .lb-sub {
+      font-family: 'Barlow', sans-serif;
+      font-size: 16px; font-weight: 300; line-height: 1.65;
+      color: rgba(255,255,255,0.7); max-width: 44ch;
+    }
+    .lb-foot {
+      display: flex; align-items: center; gap: 16px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.18em;
+      text-transform: uppercase; color: rgba(255,255,255,0.45);
+    }
+    .lb-foot .dot { width: 4px; height: 4px; background: var(--red); border-radius: 50%; }
+
+    /* ---------- form panel ---------- */
+    .login-main {
+      background: var(--paper);
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px 40px;
+    }
+    .login-card { width: 100%; max-width: 408px; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--muted); text-decoration: none;
+      margin-bottom: 40px; transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--red); }
+    .back-link svg { transition: transform 0.2s var(--ease); }
+    .back-link:hover svg { transform: translateX(-3px); }
+
+    .login-mobile-brand { display: none; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .login-mobile-brand img { height: 38px; width: auto; }
+    .login-mobile-brand .t {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; color: var(--text); line-height: 1.1;
+    }
+
+    .login-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 42px; font-weight: 900; line-height: 0.95;
+      text-transform: uppercase; letter-spacing: -0.02em;
+      color: var(--text); margin-bottom: 10px;
+    }
+    .login-intro {
+      font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 400;
+      color: var(--text-2); line-height: 1.6; margin-bottom: 30px;
+    }
+
+    .login-alert {
+      display: none;
+      font-family: 'Barlow', sans-serif; font-size: 13.5px; line-height: 1.5;
+      padding: 12px 16px; margin-bottom: 22px;
+      border-left: 3px solid;
+    }
+    .login-alert.err  { display: block; background: var(--red-tint); border-color: var(--red); color: var(--red-dark); }
+    .login-alert.info { display: block; background: rgba(0,166,184,0.10); border-color: var(--teal); color: #0a7884; }
+
+    .login-field { margin-bottom: 20px; }
+    .login-field label {
+      display: block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 9px;
+    }
+    .login-field input {
+      width: 100%; padding: 14px 16px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      font-family: 'Barlow', sans-serif; font-size: 15px;
+      color: var(--text); outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-field input:focus { border-color: var(--red); }
+    .login-field input::placeholder { color: var(--muted); }
+
+    .login-pass { position: relative; }
+    .login-pass input { padding-right: 64px; }
+    .pass-toggle {
+      position: absolute; top: 50%; right: 12px; transform: translateY(-50%);
+      background: transparent; border: none; cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted);
+      padding: 4px 6px; transition: color 0.2s;
+    }
+    .pass-toggle:hover { color: var(--red); }
+
+    .login-row {
+      display: flex; justify-content: flex-end;
+      margin: -4px 0 24px;
+    }
+    .forgot-link {
+      font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--text-2); text-decoration: none; transition: color 0.2s;
+    }
+    .forgot-link:hover { color: var(--red); }
+
+    .login-submit {
+      width: 100%;
+      display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+      padding: 16px 24px;
+      background: var(--red); color: #fff;
+      border: 1px solid var(--red);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .login-submit:hover:not(:disabled) { background: var(--red-dark); border-color: var(--red-dark); }
+    .login-submit:disabled { background: var(--muted); border-color: var(--muted); cursor: not-allowed; }
+    .login-submit svg { transition: transform 0.25s var(--ease); }
+    .login-submit:hover:not(:disabled) svg { transform: translate(2px, -2px); }
+
+    .login-divider {
+      display: flex; align-items: center; gap: 16px;
+      margin: 32px 0 24px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .login-divider::before, .login-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--line);
+    }
+    .login-help {
+      font-family: 'Barlow', sans-serif; font-size: 14px;
+      color: var(--text-2); text-align: center; line-height: 1.6;
+    }
+    .login-help a { color: var(--red); text-decoration: none; font-weight: 600; }
+    .login-help a:hover { text-decoration: underline; }
+
+    .login-legal {
+      margin-top: 40px; padding-top: 22px;
+      border-top: 1px solid var(--line);
+      font-family: 'Barlow', sans-serif; font-size: 12px;
+      color: var(--muted); line-height: 1.6;
+    }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 920px) {
+      .login-shell { grid-template-columns: 1fr; }
+      .login-brand { display: none; }
+      .login-main { padding: 40px 24px; min-height: 100vh; }
+      .login-mobile-brand { display: flex; }
+      .back-link { margin-bottom: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-shell">
+
+  <!-- ============ BRAND PANEL ============ -->
+  <aside class="login-brand">
+    <a href="/aa" class="lb-brand">
+      <img src="/NDOC.png" alt="NDOC" />
+      <div class="lb-brand-text">Anticipatory Action<span>Kenya · NDOC / KRCS</span></div>
+    </a>
+
+    <div>
+      <div class="lb-kicker">Secure Access</div>
+      <h1 class="lb-title">Predict.<br>Prepare.<br><span class="accent">Protect.</span></h1>
+      <p class="lb-sub">Sign in to the Kenya Anticipatory Action platform to coordinate early warning, early action and response across the National Technical Working Group.</p>
+    </div>
+
+    <div class="lb-foot">
+      <span>Predict</span><span class="dot"></span>
+      <span>Prepare</span><span class="dot"></span>
+      <span>Protect</span>
+    </div>
+  </aside>
+
+  <!-- ============ FORM PANEL ============ -->
+  <main class="login-main">
+    <div class="login-card">
+
+      <a href="/aa" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to website
+      </a>
+
+      <div class="login-mobile-brand">
+        <img src="/NDOC.png" alt="NDOC" />
+        <div class="t">Anticipatory Action</div>
+      </div>
+
+      <h2 class="login-title">Sign In</h2>
+      <p class="login-intro">Welcome back. Enter your credentials to access the Anticipatory Action platform.</p>
+
+      <div class="login-alert" id="alert" role="alert"></div>
+
+      <form id="loginForm" data-redirect-to="{{ redirect_to or '' }}" novalidate>
+        <div class="login-field">
+          <label for="usr">Email Address</label>
+          <input type="email" id="usr" name="usr" placeholder="you@organisation.org" autocomplete="username" autofocus required />
+        </div>
+
+        <div class="login-field">
+          <label for="pwd">Password</label>
+          <div class="login-pass">
+            <input type="password" id="pwd" name="pwd" placeholder="••••••••" autocomplete="current-password" required />
+            <button type="button" class="pass-toggle" id="passToggle" aria-label="Show password">Show</button>
+          </div>
+        </div>
+
+        <div class="login-row">
+          <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="login-submit" id="submitBtn">
+          <span id="submitLabel">Sign In</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+        </button>
+      </form>
+
+      <div class="login-divider">Need access?</div>
+      <p class="login-help">Accounts are provisioned by the TWG Secretariat. <a href="/aa-contact">Request access &rsaquo;</a></p>
+
+      <p class="login-legal">© 2026 Kenya Anticipatory Action TWG · National Disaster Operations Centre. Powered by the Kenya Red Cross Society.</p>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  (function () {
+    var form = document.getElementById('loginForm');
+    var alertEl = document.getElementById('alert');
+    var btn = document.getElementById('submitBtn');
+    var btnLabel = document.getElementById('submitLabel');
+    var usrEl = document.getElementById('usr');
+    var pwdEl = document.getElementById('pwd');
+
+    var csrf = (window.frappe && frappe.csrf_token) || '';
+
+    function showAlert(msg, type) {
+      alertEl.textContent = msg;
+      alertEl.className = 'login-alert ' + type;
+    }
+    function clearAlert() { alertEl.className = 'login-alert'; alertEl.textContent = ''; }
+
+    function setLoading(on) {
+      btn.disabled = on;
+      btnLabel.textContent = on ? 'Signing in…' : 'Sign In';
+    }
+
+    // Only allow same-origin relative redirects (defence in depth).
+    function safeRedirect(value) {
+      if (!value) return '';
+      if (value.charAt(0) === '/' && value.charAt(1) !== '/') return value;
+      return '';
+    }
+
+    // Show / hide password
+    document.getElementById('passToggle').addEventListener('click', function () {
+      var showing = pwdEl.type === 'text';
+      pwdEl.type = showing ? 'password' : 'text';
+      this.textContent = showing ? 'Show' : 'Hide';
+      this.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    });
+
+    // Sign in
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      clearAlert();
+      var usr = usrEl.value.trim();
+      var pwd = pwdEl.value;
+      if (!usr || !pwd) {
+        showAlert('Please enter your email address and password.', 'err');
+        return;
+      }
+      setLoading(true);
+      try {
+        var res = await fetch('/api/method/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf },
+          body: JSON.stringify({ usr: usr, pwd: pwd })
+        });
+
+        if (res.ok) {
+          var data = await res.json();
+          var target = safeRedirect(form.dataset.redirectTo) || data.home_page || '/app';
+          window.location.href = target;
+          return;
+        }
+
+        var msg = 'Invalid email or password. Please try again.';
+        try {
+          var d = await res.json();
+          if (d && typeof d.message === 'string' && d.message) { msg = d.message; }
+        } catch (_) {}
+        showAlert(msg, 'err');
+        setLoading(false);
+      } catch (err) {
+        showAlert('Could not reach the server. Check your connection and try again.', 'err');
+        setLoading(false);
+      }
+    });
+
+    // Forgot password — uses Frappe's reset endpoint, privacy-preserving message
+    document.getElementById('forgotLink').addEventListener('click', async function (e) {
+      e.preventDefault();
+      clearAlert();
+      var usr = usrEl.value.trim();
+      if (!usr) {
+        showAlert('Enter your email address above, then click “Forgot password?” to receive a reset link.', 'info');
+        usrEl.focus();
+        return;
+      }
+      try {
+        await fetch('/api/method/frappe.core.doctype.user.user.reset_password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf },
+          body: JSON.stringify({ user: usr })
+        });
+      } catch (_) {}
+      showAlert('If an account exists for ' + usr + ', a password reset link has been sent to that email.', 'info');
+    });
+  })();
+</script>
+
+</body>
+</html>
