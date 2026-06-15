@@ -103,6 +103,19 @@
   </div>
 </div>
 
+<!-- Full-screen read-only review of a submission, laid out like the public form -->
+<div class="review-overlay" id="review">
+  <div class="review-bar">
+    <div class="rv-h">
+      <h2 class="rv-title" id="review-title">Submission</h2>
+      <span class="rv-sub" id="review-sub"></span>
+    </div>
+    <button class="review-close" id="review-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="review-scroll"><div class="review-doc" id="review-body"></div></div>
+  <div class="review-foot" id="review-foot"></div>
+</div>
+
 <script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }};</script>
 <script src="/aa-portal-ui.js"></script>
 <script>
@@ -333,7 +346,7 @@
     try {
       var r = await AA.call(P + 'list_submissions', status ? { status: status } : {});
       var rows = (r && r.data) || [];
-      var filterSel = '<select class="filter-select" id="sub-filter" style="min-width:170px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Barlow,sans-serif">' +
+      var filterSel = '<select class="filter-select" id="sub-filter" style="min-width:170px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' +
         ['', 'Pending', 'Approved', 'Not Approved'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
       var html = toolbar('<div class="grow"></div>' + filterSel);
       if (!rows.length) {
@@ -386,55 +399,116 @@
     }, 'Reject Submission');
   }
 
+  // ---------- full-screen, form-style submission review ----------
+  function rvField(label, value, opts) {
+    opts = opts || {};
+    var blank = (value === null || value === undefined || value === '');
+    var val = blank ? '—' : value;
+    return '<div class="rv-field' + (opts.full ? ' full' : '') + '">' +
+      '<div class="rv-label">' + AA.esc(label) + '</div>' +
+      '<div class="rv-value">' + (opts.html && !blank ? val : AA.esc(val)) + '</div></div>';
+  }
+  function rvSection(num, title, inner) {
+    return '<div class="rv-section"><div class="rv-section-head"><span class="rv-num">' + num + '</span><h3>' + AA.esc(title) + '</h3></div>' +
+      '<div class="rv-section-body">' + inner + '</div></div>';
+  }
+  function closeReview() { document.getElementById('review').classList.remove('open'); }
+  document.getElementById('review-close').addEventListener('click', closeReview);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !document.getElementById('modal').classList.contains('open')) closeReview();
+  });
+
   async function submissionDetail(name) {
     try {
       var r = await AA.call(P + 'get_submission', { name: name });
       var d = (r && r.data) || {};
-      var badge = d.status === 'Approved' ? '<span class="badge approved">Approved</span>'
-        : d.status === 'Not Approved' ? '<span class="badge rejected">Not Approved</span>'
-        : '<span class="badge pending">Pending Review</span>';
+      var statusLabel = d.status === 'Approved' ? 'Approved' : (d.status === 'Not Approved' ? 'Not Approved' : 'Pending Review');
+      var statusCls = d.status === 'Approved' ? 'approved' : (d.status === 'Not Approved' ? 'rejected' : 'pending');
+
+      var orgType = d.entity_or_organization_type || '';
+      if (d.other_organization_entity) orgType += ' — ' + d.other_organization_entity;
+      var hazard = d.anticipated_hazard || '';
+      if (d.other_anticipated_hazards) hazard += ' — ' + d.other_anticipated_hazards;
+      var partners = d.implementing_partners || '';
+      if (d.other_implementing_partners) partners += ': ' + d.other_implementing_partners;
+
+      var sec1 = '<div class="rv-grid">' +
+        rvField('Implementing Organisation', d.implementing_organization) +
+        rvField('Organisation Type', orgType) +
+        rvField('Funding Source', d.funding_source) +
+        rvField('Reporting Person', d.reporting_person) +
+        rvField('Email Address', d.reporter_email) +
+        rvField('Phone Number', d.reporter_phone_number) +
+      '</div>';
+
+      var sec2 = '<div class="rv-grid">' +
+        rvField('Hazard Being Anticipated', hazard) +
+        rvField('Implementing Partners', partners) +
+        rvField('Activation Start Date', d.activation_start_date) +
+        rvField('Proposed End Date', d.activation_end_date) +
+      '</div>';
+
       var dets = d.anticipatory_action_details || [];
-      var detTable = dets.length ?
-        ('<h3 class="card-title" style="margin-top:20px">Intervention Details</h3>' +
-         tableHead(['County', 'Sector', 'People', 'Amount (KES)', 'Early Action']) +
-         dets.map(function (x) {
-           return '<tr><td class="strong">' + AA.esc(x.county || '—') + '</td><td>' + AA.esc(x.sector || '—') +
-             '</td><td>' + AA.fmtNum(x.number_of_people_targeted) + '</td><td>' + AA.fmtNum(x.amount_for_anticipatory_action_kes) +
-             '</td><td>' + AA.esc(x.status_of_the_early_action || '—') + '</td></tr>';
-         }).join('') + '</tbody></table></div>') : '';
-      var docUrl = d.supporting_materials;
-      var body =
-        '<div style="margin-bottom:16px">' + badge + '</div>' +
-        (d.status === 'Not Approved' && d.reason_for_rejection ? '<div class="alert show err" style="margin-bottom:16px"><b>Rejection reason:</b> ' + AA.esc(d.reason_for_rejection) + '</div>' : '') +
-        '<div class="kv-grid">' +
-          kv('Reference', d.name) + kv('Submitted by', d.owner) +
-          kv('Implementing Organisation', d.implementing_organization) + kv('Organisation Type', d.entity_or_organization_type) +
-          kv('Hazard', d.anticipated_hazard) + kv('Funding Source', d.funding_source) +
-          kv('Reporting Person', d.reporting_person) + kv('Reporter Email', d.reporter_email) +
-          kv('Reporter Phone', d.reporter_phone_number) + kv('Implementing Partners', d.implementing_partners) +
-          kv('Activation Start', d.activation_start_date) + kv('Activation End', d.activation_end_date) +
-          (docUrl ? kv('Supporting Materials', '<a href="' + AA.esc(docUrl) + '" target="_blank" rel="noopener">Open file ↗</a>', { full: true, html: true }) : '') +
-          kv('Triggers & Thresholds', d.triggers_and_thresholds, { full: true }) +
-          kv('Lessons Learnt', d.lessons_learnt, { full: true }) +
-          kv('Challenges', d.challenges, { full: true }) +
-          kv('Recommendations', d.recommendations, { full: true }) +
-        '</div>' + detTable +
-        '<div class="form-actions">' +
-          (d.status !== 'Approved' ? '<button class="btn ok" id="d-approve">Approve</button>' : '') +
-          (d.status !== 'Not Approved' ? '<button class="btn danger" id="d-reject">Reject</button>' : '') +
-          '<button class="btn ghost" id="d-close">Close</button>' +
-        '</div>';
-      detailModal('Submission · ' + name, body);
-      var ap = document.getElementById('d-approve');
+      var sec3 = dets.length ? ('<div class="rv-cards">' + dets.map(function (x) {
+        var s = (x.status_of_the_early_action || 'Planned').toLowerCase();
+        var pill = s.indexOf('complete') === 0 ? 'complete' : (s.indexOf('ongoing') === 0 ? 'ongoing' : 'planned');
+        return '<div class="rv-card"><div class="rv-card-main">' +
+            '<div class="rv-card-loc">' + AA.esc(x.county || '—') + (x.subcounty ? ' · ' + AA.esc(x.subcounty) : '') + '</div>' +
+            '<div class="rv-card-sector">' + AA.esc(x.sector || '—') + '</div>' +
+            (x.describe_the_anticipatory_action_intervention ? '<div class="rv-card-desc">' + AA.esc(x.describe_the_anticipatory_action_intervention) + '</div>' : '') +
+          '</div><div class="rv-card-meta">' +
+            '<div><div class="rv-meta-l">Budget</div><div class="rv-meta-v">' + (x.amount_for_anticipatory_action_kes ? 'KES ' + AA.fmtNum(x.amount_for_anticipatory_action_kes) : '—') + '</div></div>' +
+            '<div><div class="rv-meta-l">People</div><div class="rv-meta-v">' + AA.fmtNum(x.number_of_people_targeted) + '</div></div>' +
+            '<span class="rv-pill ' + pill + '">' + AA.esc(x.status_of_the_early_action || 'Planned') + '</span>' +
+          '</div></div>';
+      }).join('') + '</div>') : '<div class="rv-value">No intervention details were recorded.</div>';
+
+      var add = '';
+      if (d.triggers_and_thresholds) add += rvField('Triggers & Thresholds', d.triggers_and_thresholds, { full: true });
+      if (d.lessons_learnt) add += rvField('Key Lessons Learnt', d.lessons_learnt, { full: true });
+      if (d.challenges) add += rvField('Challenges Faced', d.challenges, { full: true });
+      if (d.recommendations) add += rvField('Recommendations', d.recommendations, { full: true });
+      if (d.supporting_materials) add += rvField('Supporting Materials', '<a href="' + AA.esc(d.supporting_materials) + '" target="_blank" rel="noopener">Open file ↗</a>', { full: true, html: true });
+
+      var html =
+        (d.status === 'Not Approved' && d.reason_for_rejection ? '<div class="review-alert"><b>Rejection reason:</b> ' + AA.esc(d.reason_for_rejection) + '</div>' : '') +
+        rvSection(1, 'Implementing Organization', sec1) +
+        rvSection(2, 'Hazard & Anticipatory Actions', sec2) +
+        rvSection(3, 'Anticipatory Action Details', sec3) +
+        (add ? rvSection(4, 'Additional Information', '<div class="rv-grid">' + add + '</div>') : '');
+
+      document.getElementById('review-title').textContent = 'Submission ' + d.name;
+      document.getElementById('review-sub').innerHTML = 'Submitted by ' + AA.esc(d.owner || '—') + ' &nbsp;·&nbsp; <span class="badge ' + statusCls + '">' + AA.esc(statusLabel) + '</span>';
+      document.getElementById('review-body').innerHTML = html;
+
+      var foot = '';
+      if (d.status !== 'Approved') foot += '<button class="btn ok" id="rv-approve">Approve</button>';
+      if (d.status !== 'Not Approved') foot += '<button class="btn danger" id="rv-reject">Reject</button>';
+      foot += '<button class="btn ghost" id="rv-cancel">Close</button>';
+      document.getElementById('review-foot').innerHTML = foot;
+
+      document.getElementById('review').classList.add('open');
+      document.querySelector('.review-scroll').scrollTop = 0;
+      document.getElementById('rv-cancel').addEventListener('click', closeReview);
+      var ap = document.getElementById('rv-approve');
       if (ap) ap.addEventListener('click', async function () {
         if (!confirm('Approve this submission? It will be locked and published to the dashboards.')) return;
-        try { await AA.call(P + 'set_submission_status', { name: name, status: 'Approved' }); closeModal(); AA.toast('Submission approved.', true); loadSubmissions(curSubFilter()); }
+        try { await AA.call(P + 'set_submission_status', { name: name, status: 'Approved' }); closeReview(); AA.toast('Submission approved.', true); loadSubmissions(curSubFilter()); loaded.overview = false; }
         catch (e) { AA.toast(e.message); }
       });
-      var rj = document.getElementById('d-reject');
-      if (rj) rj.addEventListener('click', function () { rejectSubmission(name); });
-      document.getElementById('d-close').addEventListener('click', closeModal);
+      var rj = document.getElementById('rv-reject');
+      if (rj) rj.addEventListener('click', function () { reviewReject(name); });
     } catch (e) { AA.toast(e.message); }
+  }
+
+  // Reject from the review screen — reason required, then both layers close.
+  function reviewReject(name) {
+    openModal('Reject Submission', field({ label: 'Reason for rejection', id: 'rej_reason', type: 'textarea', required: true, full: true, hint: 'Shared with the reporter so they can revise and resubmit.' }), async function () {
+      var reason = v('rej_reason');
+      if (!reason) { modalErr('Please give a reason.'); return; }
+      await AA.call(P + 'set_submission_status', { name: name, status: 'Not Approved', reason: reason });
+      closeModal(); closeReview(); AA.toast('Submission rejected.', true); loadSubmissions(curSubFilter()); loaded.overview = false;
+    }, 'Reject Submission');
   }
 
   // ===================== REPORTS =====================
@@ -698,7 +772,7 @@
     try {
       var r = await AA.call(P + 'list_messages', status ? { status: status } : {});
       var rows = (r && r.data) || [];
-      var filterSel = '<select class="filter-select" id="msg-filter" style="min-width:160px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Barlow,sans-serif">' +
+      var filterSel = '<select class="filter-select" id="msg-filter" style="min-width:160px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' +
         ['', 'New', 'Read', 'Replied', 'Closed'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
       var html = toolbar('<div class="grow"></div>' + filterSel);
       if (!rows.length) { html += '<div class="empty"><p>No messages.</p></div>'; }
@@ -751,7 +825,7 @@
     try {
       var r = await AA.call(P + 'list_requests', status ? { status: status } : {});
       var rows = (r && r.data) || [];
-      var filterSel = '<select class="filter-select" id="req-filter" style="min-width:160px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Barlow,sans-serif">' +
+      var filterSel = '<select class="filter-select" id="req-filter" style="min-width:160px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' +
         ['', 'Pending', 'Approved', 'Rejected'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
       var html = toolbar('<div class="grow"></div>' + filterSel);
       if (!rows.length) { html += '<div class="empty"><p>No sign-up requests.</p></div>'; }
@@ -759,13 +833,18 @@
         html += tableHead(['Name', 'Email', 'Organisation', 'Requested', 'Status', '']);
         html += rows.map(function (q) {
           var sb = q.status === 'Approved' ? 'approved' : (q.status === 'Rejected' ? 'rejected' : 'pending');
+          var acts = '<button class="btn sm ghost" data-view-req="' + AA.esc(q.name) + '">Review</button>';
+          if (q.status === 'Pending') {
+            acts += '<button class="btn sm ok" data-approve-req="' + AA.esc(q.name) + '">Approve</button>' +
+                    '<button class="btn sm danger" data-reject-req="' + AA.esc(q.name) + '">Reject</button>';
+          }
           return '<tr>' +
             '<td class="strong">' + AA.esc(q.full_name || '—') + '</td>' +
             '<td>' + AA.esc(q.email) + '</td>' +
             '<td>' + AA.esc(q.organization || '—') + '</td>' +
             '<td>' + AA.esc((q.creation || '').slice(0, 10)) + '</td>' +
             '<td><span class="badge ' + sb + '">' + AA.esc(q.status) + '</span></td>' +
-            '<td class="row-actions"><button class="btn sm ghost" data-view-req="' + AA.esc(q.name) + '">Review</button></td></tr>';
+            '<td class="row-actions">' + acts + '</td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
@@ -774,7 +853,51 @@
       document.querySelectorAll('[data-view-req]').forEach(function (b) {
         b.addEventListener('click', function () { requestDetail(b.dataset.viewReq); });
       });
+      document.querySelectorAll('[data-approve-req]').forEach(function (b) {
+        b.addEventListener('click', function () { approveRequestModal(b.dataset.approveReq); });
+      });
+      document.querySelectorAll('[data-reject-req]').forEach(function (b) {
+        b.addEventListener('click', function () { rejectRequestModal(b.dataset.rejectReq); });
+      });
     } catch (e) { errPanel('requests', e.message); }
+  }
+
+  // Approve a sign-up directly from the list: pick org/role, create the account.
+  async function approveRequestModal(name) {
+    try {
+      var r = await AA.call(P + 'get_request', { name: name });
+      var d = (r && r.data) || {};
+      if (d.status === 'Approved') { AA.toast('This request is already approved.'); return; }
+      var orgs = (await ensureOrgs()).map(function (o) { return { value: o.name, label: o.name_of_organization }; });
+      var roleField = IS_SM
+        ? field({ label: 'Role', id: 'q_role', type: 'select', options: META.roles.map(function (rl) { return { value: rl, label: rl.replace('Anticipatory Action ', 'AA ') }; }), value: d.role || 'Anticipatory Action User', placeholder: false })
+        : field({ label: 'Role', id: 'q_role_ro', value: (d.role || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA '), readonly: true, hint: 'Set by a System Manager.' });
+      var f =
+        '<div class="alert show info" style="grid-column:1/-1;margin-bottom:2px">Approving creates an Anticipatory Action account for <b>' + AA.esc(d.full_name || d.email) + '</b> and emails them a link to set a password and sign in.</div>' +
+        field({ label: 'Assign Organisation', id: 'q_org', type: 'select', options: orgs, value: '', required: true, full: true, hint: 'Add it under Organizations first if it is missing.' }) +
+        roleField +
+        field({ label: 'Notes (optional)', id: 'q_notes', type: 'textarea', full: true });
+      openModal('Approve · ' + (d.full_name || name), f, async function () {
+        var org = v('q_org');
+        if (!org) { modalErr('Choose an organisation to assign.'); return; }
+        var args = { name: name, organization: org, notes: v('q_notes') };
+        if (IS_SM) args.role = v('q_role');
+        await AA.call(P + 'approve_request', args);
+        closeModal(); AA.toast('Approved — account created, welcome email sent.', true);
+        loadRequests(curReqFilter()); loaded.users = false; loaded.overview = false;
+      }, 'Approve & Create Account');
+    } catch (e) { AA.toast(e.message); }
+  }
+
+  // Reject a sign-up: a reason is required and is emailed to the applicant.
+  function rejectRequestModal(name) {
+    openModal('Reject Sign-up Request', field({ label: 'Reason for rejection', id: 'rej_req_reason', type: 'textarea', required: true, full: true, hint: 'Emailed to the applicant so they know why.' }), async function () {
+      var reason = v('rej_req_reason');
+      if (!reason) { modalErr('Please give a reason — it is emailed to the applicant.'); return; }
+      await AA.call(P + 'reject_request', { name: name, notes: reason });
+      closeModal(); AA.toast('Request rejected — applicant emailed.', true);
+      loadRequests(curReqFilter()); loaded.overview = false;
+    }, 'Reject & Email Applicant');
   }
 
   async function requestDetail(name) {
@@ -826,14 +949,7 @@
             loadRequests(curReqFilter()); loaded.users = false; loaded.overview = false;
           } catch (e) { AA.toast(e.message); this.disabled = false; }
         });
-        document.getElementById('q-reject').addEventListener('click', async function () {
-          if (!confirm('Reject this sign-up request?')) return;
-          this.disabled = true;
-          try {
-            await AA.call(P + 'reject_request', { name: name, notes: v('q_notes') });
-            closeModal(); AA.toast('Request rejected.', true); loadRequests(curReqFilter()); loaded.overview = false;
-          } catch (e) { AA.toast(e.message); this.disabled = false; }
-        });
+        document.getElementById('q-reject').addEventListener('click', function () { rejectRequestModal(name); });
       }
     } catch (e) { AA.toast(e.message); }
   }

@@ -91,7 +91,7 @@
             <td>{% if a.pillar %}<span class="pillar-tag">{{ a.pillar }}</span>{% else %}—{% endif %}</td>
             <td class="bold">
               {{ a.activity or '—' }}
-              {% if a.activity_reference %}<br><span style="font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 400; color: var(--muted);">Ref: {{ a.activity_reference }}</span>{% endif %}
+              {% if a.activity_reference %}<br><span style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 400; color: var(--muted);">Ref: {{ a.activity_reference }}</span>{% endif %}
             </td>
             <td>{{ a.milestone or '—' }}</td>
             <td>
@@ -165,5 +165,6 @@
   </div>
 </footer>
 
+<script src="/aa-nav.js" defer></script>
 </body>
 </html>
