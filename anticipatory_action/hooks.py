@@ -154,6 +154,12 @@ fixtures = [
 	{"dt": "Role", "filters": [["name", "in", ["Anticipatory Action User", "Anticipatory Action Admin"]]]},
 ]
 
+# Send AA members/admins to their portal after login (any login path), without
+# affecting where other users of the site land.
+on_session_creation = [
+	"anticipatory_action.api.permissions.route_aa_user_after_login",
+]
+
 # Document Events
 # ---------------
 # Hook on document methods and events

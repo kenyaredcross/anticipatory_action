@@ -103,12 +103,13 @@
   </div>
 </div>
 
-<script>window.AA_CSRF = "{{ csrf_token or '' }}";</script>
+<script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }};</script>
 <script src="/aa-portal-ui.js"></script>
 <script>
 (function () {
   'use strict';
   var P = 'anticipatory_action.api.portal.';
+  var IS_SM = !!window.AA_IS_SM;  // System Manager — only they may set/change roles
   var loaded = {};
   // Select options are loaded live from the server (get_admin_meta) so they
   // never drift from the doctype schema. These are just fallbacks.
@@ -301,15 +302,19 @@
     var orgs = (meta.organizations || []).map(function (o) { return { value: o.name, label: o.name_of_organization }; });
     var roles = (meta.roles || []).map(function (rl) { return { value: rl, label: rl.replace('Anticipatory Action ', 'AA ') }; });
     var editing = !!u;
+    var roleField = IS_SM
+      ? field({ label: 'Role', id: 'u_role', type: 'select', options: roles, value: (u && u.role) || 'Anticipatory Action User', required: true, placeholder: false, full: true })
+      : field({ label: 'Role', id: 'u_role_ro', value: ((u && u.role) || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA '), readonly: true, full: true, hint: 'Only a System Manager can change the role.' });
     var f =
       field({ label: 'First Name', id: 'u_first', value: u && u.first_name, required: true }) +
       field({ label: 'Last Name', id: 'u_last', value: u && u.last_name, required: true }) +
       field({ label: 'Email', id: 'u_email', type: 'email', value: u && u.email, required: true, readonly: editing, hint: editing ? 'Email is the account identity and cannot be changed.' : 'A welcome email with a set-password link is sent on creation.' }) +
       field({ label: 'Phone', id: 'u_phone', value: u && u.phone }) +
       field({ label: 'Organization', id: 'u_org', type: 'select', options: orgs, value: u && u.organization, required: true, full: true }) +
-      field({ label: 'Role', id: 'u_role', type: 'select', options: roles, value: (u && u.role) || 'Anticipatory Action User', required: true, placeholder: false, full: true });
+      roleField;
     openModal(editing ? 'Edit User' : 'Add User', f, async function () {
-      var payload = { first_name: v('u_first'), last_name: v('u_last'), phone: v('u_phone'), organization: v('u_org'), role: v('u_role') };
+      var payload = { first_name: v('u_first'), last_name: v('u_last'), phone: v('u_phone'), organization: v('u_org') };
+      if (IS_SM) payload.role = v('u_role');
       if (!payload.first_name || !payload.organization) { modalErr('First name and organization are required.'); return; }
       if (editing) {
         await AA.call(P + 'update_aa_user', Object.assign({ name: u.name }, payload));
@@ -784,14 +789,18 @@
           kv('Name', d.full_name) + kv('Email', d.email) +
           kv('Phone', d.phone) + kv('Organisation (stated)', d.organization) +
           kv('Position', d.position) + kv('Requested', (d.creation || '').slice(0, 10)) +
+          kv('Role to Assign', (d.role || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA ')) +
           kv('Message', d.message, { full: true }) +
           (d.review_notes ? kv('Review Notes', d.review_notes, { full: true }) : '') +
         '</div>';
       if (pending) {
+        var roleQ = IS_SM
+          ? field({ label: 'Role', id: 'q_role', type: 'select', options: META.roles.map(function (rl) { return { value: rl, label: rl.replace('Anticipatory Action ', 'AA ') }; }), value: d.role || 'Anticipatory Action User', placeholder: false })
+          : field({ label: 'Role', id: 'q_role_ro', value: (d.role || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA '), readonly: true, hint: 'Set by a System Manager.' });
         body += '<h3 class="card-title" style="margin-top:22px">Decision</h3>' +
           '<div class="form-grid">' +
             field({ label: 'Assign Organisation', id: 'q_org', type: 'select', options: orgs, required: true, full: true, hint: 'The member will be linked to this organisation. Add it under Organizations first if it is missing.' }) +
-            field({ label: 'Role', id: 'q_role', type: 'select', options: META.roles.map(function (rl) { return { value: rl, label: rl.replace('Anticipatory Action ', 'AA ') }; }), value: 'Anticipatory Action User', placeholder: false }) +
+            roleQ +
             field({ label: 'Notes (optional)', id: 'q_notes', type: 'textarea', full: true }) +
           '</div>' +
           '<div class="form-actions">' +
@@ -810,7 +819,9 @@
           if (!org) { AA.toast('Choose an organisation to assign.'); return; }
           this.disabled = true;
           try {
-            await AA.call(P + 'approve_request', { name: name, organization: org, role: v('q_role'), notes: v('q_notes') });
+            var args = { name: name, organization: org, notes: v('q_notes') };
+            if (IS_SM) args.role = v('q_role');
+            await AA.call(P + 'approve_request', args);
             closeModal(); AA.toast('Approved — account created, welcome email sent.', true);
             loadRequests(curReqFilter()); loaded.users = false; loaded.overview = false;
           } catch (e) { AA.toast(e.message); this.disabled = false; }

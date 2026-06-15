@@ -167,6 +167,37 @@
   .btn-red svg { transition: transform 0.25s var(--ease); }
   .btn-red:hover svg { transform: translate(2px, -2px); }
 
+  /* ---- hero report CTA ---- */
+  .hero-cta { margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .hero-cta-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+  .hero-cta-btn {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 18px 36px; background: var(--red); color: #fff; border: 1px solid var(--red);
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px;
+    letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
+    box-shadow: 0 10px 34px rgba(230,24,50,0.38);
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  }
+  .hero-cta-btn:hover { background: var(--red-dark); border-color: var(--red-dark); transform: translateY(-2px); }
+  .hero-cta-btn svg { transition: transform 0.25s var(--ease); }
+  .hero-cta-btn:hover svg { transform: translate(2px, -2px); }
+  .hero-cta-btn.ghost {
+    background: transparent; color: #fff; border-color: rgba(255,255,255,0.45);
+    box-shadow: none;
+  }
+  .hero-cta-btn.ghost:hover { background: #fff; color: var(--charcoal, #1a1a1a); border-color: #fff; }
+  .hero-cta-btn.ghost:hover svg { transform: translate(3px, 0); }
+  .hero-cta-note {
+    font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 400;
+    letter-spacing: 0.02em; color: rgba(255,255,255,0.62);
+  }
+  @media (max-width: 640px) {
+    .hero-cta { margin-top: 30px; width: 100%; }
+    .hero-cta-row { flex-direction: column; align-items: center; width: 100%; gap: 12px; }
+    .hero-cta-btn { width: 100%; max-width: 360px; justify-content: center; padding: 16px 22px; font-size: 16px; letter-spacing: 0.04em; }
+    .hero-cta-note { font-size: 12px; text-align: center; padding: 0 18px; line-height: 1.5; }
+  }
+
   /* ============ HERO ============ */
   .hero {
     height: 100vh; min-height: 720px;
@@ -1049,6 +1080,20 @@
       <span>Prepare</span>
       <span class="hero-sub-dot"></span>
       <span>Protect</span>
+    </div>
+
+    <div class="hero-cta">
+      <div class="hero-cta-row">
+        <a href="/anticipatory-action" class="hero-cta-btn">
+          Report an Anticipatory Action
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+        </a>
+        <a href="/aa-portal" class="hero-cta-btn ghost">
+          Go to Dashboard
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+      <span class="hero-cta-note">Sign in to record interventions or open your dashboard</span>
     </div>
   </div>
 
