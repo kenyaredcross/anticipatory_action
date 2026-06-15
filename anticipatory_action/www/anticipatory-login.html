@@ -316,9 +316,16 @@
       btnLabel.textContent = on ? 'Signing in…' : 'Sign In';
     }
 
-    // Only allow same-origin relative redirects (defence in depth).
+    // Only allow same-origin redirects (defence in depth) — accept both a
+    // relative path and a same-origin absolute URL (Frappe may return either).
     function safeRedirect(value) {
       if (!value) return '';
+      if (/^https?:\/\//i.test(value)) {
+        try {
+          var u = new URL(value);
+          return u.origin === window.location.origin ? (u.pathname + u.search + u.hash) : '';
+        } catch (e) { return ''; }
+      }
       if (value.charAt(0) === '/' && value.charAt(1) !== '/') return value;
       return '';
     }

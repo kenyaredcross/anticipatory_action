@@ -517,7 +517,7 @@ select.aa-input {
   <p class="ref">Reference: <strong id="success-ref"></strong></p>
   <p style="margin-top:20px;font-size:13px;color:#6B7280">Redirecting you in <strong id="redirect-countdown">5</strong> seconds…</p>
   <br/>
-  <a href="https://redhive.redcross.or.ke/anticipatory" class="aa-btn-outline" style="margin-top:8px;display:inline-flex">Go now &rarr;</a>
+  <a href="/aa-portal" class="aa-btn-outline" style="margin-top:8px;display:inline-flex">Go to my dashboard &rarr;</a>
 </div>
 
 <!-- ── Detail modal ── -->
@@ -1047,9 +1047,9 @@ select.aa-input {
           window.scrollTo({ top: 0, behavior: 'smooth' });
 
           // Members go back to their dashboard; guests to the public site.
-          var REDIR = IS_LOGGED_IN ? PORTAL_HOME : 'https://redhive.redcross.or.ke/anticipatory';
+          var REDIR = PORTAL_HOME;
           var goNow = successBox.querySelector('a.aa-btn-outline');
-          if (goNow) { goNow.setAttribute('href', REDIR); if (IS_LOGGED_IN) goNow.textContent = 'Go to my dashboard →'; }
+          if (goNow) { goNow.setAttribute('href', REDIR); goNow.textContent = 'Go to my dashboard →'; }
 
           // Replace this history entry so the back button skips the filled form
           history.replaceState(null, '', window.location.href);
