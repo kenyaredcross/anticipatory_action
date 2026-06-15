@@ -1,0 +1,113 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"mHdr1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Anticipatory Action</b></span>\",\"col\":12}},{\"id\":\"mSc1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"My Submissions\",\"col\":4}},{\"id\":\"mSc2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Member Portal\",\"col\":4}},{\"id\":\"mSc3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Knowledge Library\",\"col\":4}},{\"id\":\"mSpc1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"mCard1\",\"type\":\"card\",\"data\":{\"card_name\":\"My Work\",\"col\":6}},{\"id\":\"mCard2\",\"type\":\"card\",\"data\":{\"card_name\":\"Knowledge\",\"col\":6}}]",
+ "creation": "2026-06-15 00:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "users",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Anticipatory Action",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "My Work",
+   "link_count": 1,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "My Submissions",
+   "link_count": 0,
+   "link_to": "Anticipatory Action",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Knowledge",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 0,
+   "link_to": "Anticipatory Report",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Activities",
+   "link_count": 0,
+   "link_to": "Anticipatory Activity",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Publications",
+   "link_count": 0,
+   "link_to": "Anticipatory Action Reference Documents",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-06-15 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Anticipatory Action",
+ "name": "Anticipatory Action",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "Anticipatory Action User"
+  }
+ ],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "label": "My Submissions",
+   "link_to": "Anticipatory Action",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "label": "Member Portal",
+   "type": "URL",
+   "url": "/aa-portal"
+  },
+  {
+   "color": "Grey",
+   "label": "Knowledge Library",
+   "type": "URL",
+   "url": "/aa-reports"
+  }
+ ],
+ "title": "Anticipatory Action"
+}

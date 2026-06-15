@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request Access — Kenya Anticipatory Action</title>
+  <link rel="preload" as="image" href="/ndoc1.webp" type="image/webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { background: var(--ink); margin: 0; font-family: 'Barlow', sans-serif; }
+    .su-shell { display: grid; grid-template-columns: 0.9fr 1.1fr; min-height: 100vh; }
+
+    .su-brand { position: relative; overflow: hidden; background: var(--ink); color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 56px 56px; }
+    .su-brand::before { content: ''; position: absolute; inset: 0; background: url('/ndoc1-opt.jpg') center/cover no-repeat; background-image: -webkit-image-set(url('/ndoc1.webp') type('image/webp'), url('/ndoc1-opt.jpg') type('image/jpeg')); background-image: image-set(url('/ndoc1.webp') type('image/webp'), url('/ndoc1-opt.jpg') type('image/jpeg')); opacity: 0.16; filter: grayscale(0.3); }
+    .su-brand::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 80% 15%, rgba(230,24,50,0.30), transparent 60%); }
+    .su-brand > * { position: relative; z-index: 1; }
+    .su-logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+    .su-logo img { height: 44px; }
+    .su-logo div { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; line-height: 1.1; }
+    .su-logo div span { display: block; font-family: 'Barlow', sans-serif; font-size: 10px; font-weight: 400; letter-spacing: 0.16em; color: rgba(255,255,255,0.55); margin-top: 3px; }
+    .su-kicker { display: inline-flex; align-items: center; gap: 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #fff; margin-bottom: 22px; }
+    .su-kicker::before { content: ''; width: 32px; height: 2px; background: var(--red); }
+    .su-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(40px, 4.6vw, 68px); font-weight: 900; line-height: 0.92; text-transform: uppercase; letter-spacing: -0.022em; color: #fff; margin: 0 0 18px; }
+    .su-title .accent { color: var(--red); font-style: italic; font-weight: 700; }
+    .su-sub { font-size: 15.5px; font-weight: 300; line-height: 1.65; color: rgba(255,255,255,0.72); max-width: 44ch; }
+    .su-foot { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+
+    .su-main { background: var(--paper); display: flex; align-items: center; justify-content: center; padding: 44px 40px; overflow-y: auto; }
+    .su-card { width: 100%; max-width: 560px; }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; margin-bottom: 30px; }
+    .back-link:hover { color: var(--red); }
+    .su-h { font-family: 'Barlow Condensed', sans-serif; font-size: 38px; font-weight: 900; line-height: 0.95; text-transform: uppercase; letter-spacing: -0.02em; color: var(--text); margin: 0 0 8px; }
+    .su-intro { font-size: 14.5px; color: var(--text-2); line-height: 1.6; margin-bottom: 26px; }
+
+    .su-alert { display: none; font-size: 13.5px; line-height: 1.5; padding: 12px 16px; margin-bottom: 20px; border-left: 3px solid; }
+    .su-alert.show.err { display: block; background: var(--red-tint); border-color: var(--red); color: var(--red-dark); }
+    .su-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+    .su-field { display: flex; flex-direction: column; }
+    .su-field.full { grid-column: 1 / -1; }
+    .su-field label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .su-field input, .su-field textarea { width: 100%; padding: 13px 15px; background: var(--paper); border: 1px solid var(--line); font-family: 'Barlow', sans-serif; font-size: 15px; color: var(--text); outline: none; transition: border-color 0.2s; }
+    .su-field textarea { resize: vertical; min-height: 84px; }
+    .su-field input:focus, .su-field textarea:focus { border-color: var(--red); }
+    .su-submit { width: 100%; margin-top: 24px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 16px 24px; background: var(--red); color: #fff; border: 1px solid var(--red); font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+    .su-submit:hover:not(:disabled) { background: var(--red-dark); }
+    .su-submit:disabled { background: var(--muted); border-color: var(--muted); cursor: not-allowed; }
+    .su-help { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 14px; color: var(--text-2); }
+    .su-help a { color: var(--red); text-decoration: none; font-weight: 600; }
+
+    .su-success { display: none; text-align: center; padding: 24px 0; }
+    .su-success.show { display: block; }
+    .su-success .ic { width: 64px; height: 64px; border-radius: 50%; background: rgba(10,122,74,0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 22px; }
+    .su-success h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 800; text-transform: uppercase; color: var(--text); margin: 0 0 12px; }
+    .su-success p { font-size: 15px; color: var(--text-2); line-height: 1.6; max-width: 42ch; margin: 0 auto 24px; }
+
+    @media (max-width: 940px) { .su-shell { grid-template-columns: 1fr; } .su-brand { display: none; } .su-grid { grid-template-columns: 1fr; } .su-main { padding: 36px 22px; } }
+  </style>
+</head>
+<body>
+
+<div class="su-shell">
+  <aside class="su-brand">
+    <a href="/aa" class="su-logo">
+      <img src="/NDOC.png" alt="NDOC" />
+      <div>Anticipatory Action<span>Kenya · NDOC / KRCS</span></div>
+    </a>
+    <div>
+      <div class="su-kicker">Join the Platform</div>
+      <h1 class="su-title">Request<br><span class="accent">Access.</span></h1>
+      <p class="su-sub">Apply for an account on the Kenya Anticipatory Action platform. The TWG Secretariat reviews every request and activates approved accounts.</p>
+    </div>
+    <div class="su-foot">Predict · Prepare · Protect</div>
+  </aside>
+
+  <main class="su-main">
+    <div class="su-card">
+      <a href="/anticipatory-login" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to sign in
+      </a>
+
+      <div id="formWrap">
+        <h2 class="su-h">Create an account</h2>
+        <p class="su-intro">Tell us a little about yourself. We'll review your request and email you when your account is ready.</p>
+
+        <div class="su-alert" id="alert" role="alert"></div>
+
+        <form id="signupForm" novalidate>
+          <div class="su-grid">
+            <div class="su-field"><label for="first_name">First Name *</label><input id="first_name" autocomplete="given-name" required /></div>
+            <div class="su-field"><label for="last_name">Last Name</label><input id="last_name" autocomplete="family-name" /></div>
+            <div class="su-field"><label for="email">Email *</label><input type="email" id="email" autocomplete="email" required /></div>
+            <div class="su-field"><label for="phone">Phone *</label><input id="phone" placeholder="254700000000" autocomplete="tel" required /></div>
+            <div class="su-field"><label for="organization">Organisation</label><input id="organization" autocomplete="organization" /></div>
+            <div class="su-field"><label for="position">Position / Role</label><input id="position" /></div>
+            <div class="su-field full"><label for="message">Why would you like access?</label><textarea id="message" rows="3"></textarea></div>
+          </div>
+          <button type="submit" class="su-submit" id="submitBtn">
+            <span id="submitLabel">Submit Request</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+          </button>
+        </form>
+
+        <p class="su-help">Already have an account? <a href="/anticipatory-login">Sign in &rsaquo;</a></p>
+      </div>
+
+      <div class="su-success" id="success">
+        <div class="ic">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0a7a4a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2>Request Received</h2>
+        <p>Thank you. The TWG Secretariat will review your request and email you at <strong id="sentTo"></strong> once your account is activated.</p>
+        <a href="/aa" class="su-submit" style="display:inline-flex;width:auto;text-decoration:none">Back to website</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  var csrf = (window.frappe && frappe.csrf_token) || '';
+  var form = document.getElementById('signupForm');
+  var alertEl = document.getElementById('alert');
+  var btn = document.getElementById('submitBtn');
+  var label = document.getElementById('submitLabel');
+
+  function showErr(msg) { alertEl.textContent = msg; alertEl.className = 'su-alert show err'; }
+  function clearErr() { alertEl.className = 'su-alert'; }
+  function val(id) { return document.getElementById(id).value.trim(); }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault(); clearErr();
+    if (!val('first_name') || !val('email') || !val('phone')) { showErr('Please fill in your name, email and phone.'); return; }
+    btn.disabled = true; label.textContent = 'Submitting…';
+    try {
+      var res = await fetch('/api/method/anticipatory_action.api.portal.submit_membership_request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf },
+        body: JSON.stringify({
+          first_name: val('first_name'), last_name: val('last_name'), email: val('email'),
+          phone: val('phone'), organization: val('organization'), position: val('position'), message: val('message')
+        })
+      });
+      var data = {};
+      try { data = await res.json(); } catch (_) {}
+      var out = data && data.message;
+      if (res.ok && out && out.success) {
+        document.getElementById('sentTo').textContent = val('email');
+        document.getElementById('formWrap').style.display = 'none';
+        document.getElementById('success').className = 'su-success show';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      showErr((out && out.error) || 'Could not submit your request. Please try again.');
+    } catch (_) {
+      showErr('Could not reach the server. Check your connection and try again.');
+    }
+    btn.disabled = false; label.textContent = 'Submit Request';
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -644,6 +644,13 @@ select.aa-input {
   const details = [];        // array of row objects
   let editingIdx = null;     // null = new row, number = editing existing
 
+  // Portal context: when a member opens this form with ?name=AA-… they are
+  // editing one of their own drafts; logged-in users return to their dashboard.
+  const EDIT_NAME = new URLSearchParams(window.location.search).get('name') || null;
+  const IS_LOGGED_IN = {{ "true" if is_logged_in else "false" }};
+  const PORTAL_HOME = '/aa-portal';
+  let EDIT_MODE = false;
+
   // ── DOM refs ───────────────────────────────────────────────────────────────
   const form         = document.getElementById('aa-form');
   const detailsList  = document.getElementById('details-list');
@@ -712,9 +719,69 @@ select.aa-input {
           if (!opts) return;
           populateSelect(el, opts, placeholders[key]);
         });
+
+        // Once the select options exist we can safely prefill an edited draft.
+        if (EDIT_NAME) loadForEdit();
       }
     });
   });
+
+  // ── Edit mode: load one of the member's own drafts ────────────────────────
+  function syncConditionalFields() {
+    var et = form.elements['entity_or_organization_type'];
+    document.getElementById('f-other-org').style.display = et && et.value === 'Other' ? '' : 'none';
+    var hz = form.elements['anticipated_hazard'];
+    document.getElementById('f-other-hazard').style.display = hz && hz.value === 'Other' ? '' : 'none';
+    var ip = form.elements['implementing_partners'];
+    document.getElementById('f-other-partners').style.display = ip && ip.value === 'Yes' ? '' : 'none';
+  }
+
+  function showEditBanner() {
+    if (document.getElementById('edit-banner')) return;
+    var b = document.createElement('div');
+    b.id = 'edit-banner';
+    b.className = 'aa-intro';
+    b.style.borderLeftColor = '#B58418';
+    b.innerHTML = '<strong>Editing submission ' + EDIT_NAME + '.</strong> Saving will return it to ' +
+      '<em>Pending review</em>. &nbsp;<a href="/aa-portal">&larr; Back to my dashboard</a>';
+    form.parentNode.insertBefore(b, form);
+  }
+
+  function loadForEdit() {
+    frappe.call({
+      method: 'anticipatory_action.api.portal.get_my_submission',
+      args: { name: EDIT_NAME },
+      callback: function (r) {
+        var res = r.message;
+        if (!res || !res.success) return;
+        var d = res.data || {};
+
+        Object.keys(d).forEach(function (k) {
+          var el = form.elements[k];
+          if (!el || el.length === undefined && el.tagName === undefined) return;
+          if (el.type === 'checkbox') { el.checked = !!d[k]; }
+          else if (el.value !== undefined) { el.value = (d[k] === null || d[k] === undefined) ? '' : d[k]; }
+        });
+        syncConditionalFields();
+
+        details.length = 0;
+        (d.anticipatory_action_details || []).forEach(function (row) { details.push(row); });
+        renderDetails();
+
+        EDIT_MODE = true;
+        submitBtn.innerHTML = 'Save Changes <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+        showEditBanner();
+
+        if (!d.can_edit) {
+          frappe.msgprint({ title: 'Locked', message: 'This submission has been finalised and can no longer be edited.', indicator: 'orange' });
+          submitBtn.disabled = true;
+        }
+      },
+      error: function () {
+        frappe.msgprint({ title: 'Cannot edit', message: 'This submission could not be loaded for editing. It may not be yours, or no longer exists.', indicator: 'red' });
+      }
+    });
+  }
 
   // ── Conditional visibility on main form ───────────────────────────────────
   document.querySelector('[name="entity_or_organization_type"]').addEventListener('change', function () {
@@ -938,6 +1005,30 @@ select.aa-input {
       </svg>
       Submitting…`;
 
+    // Editing an existing draft → update in place and return to the dashboard.
+    if (EDIT_MODE) {
+      frappe.call({
+        method: 'anticipatory_action.api.portal.update_my_submission',
+        args: { name: EDIT_NAME, data: JSON.stringify(data) },
+        callback: function (r) {
+          var res = r.message;
+          if (res && res.success) {
+            window.location.href = PORTAL_HOME;
+          } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Save Changes';
+            frappe.msgprint({ title: 'Update failed', message: (res && res.error) || 'Please try again.', indicator: 'red' });
+          }
+        },
+        error: function () {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Save Changes';
+          frappe.msgprint({ title: 'Error', message: 'Could not save your changes. Please try again.', indicator: 'red' });
+        }
+      });
+      return;
+    }
+
     frappe.call({
       method: 'anticipatory_action.api.anticipatory_action.submit_anticipatory_action',
       headers: { 'X-Frappe-CSRF-Token': frappe.csrf_token || 'Guest' },
@@ -955,6 +1046,11 @@ select.aa-input {
           successRef.textContent = res.name;
           window.scrollTo({ top: 0, behavior: 'smooth' });
 
+          // Members go back to their dashboard; guests to the public site.
+          var REDIR = IS_LOGGED_IN ? PORTAL_HOME : 'https://redhive.redcross.or.ke/anticipatory';
+          var goNow = successBox.querySelector('a.aa-btn-outline');
+          if (goNow) { goNow.setAttribute('href', REDIR); if (IS_LOGGED_IN) goNow.textContent = 'Go to my dashboard →'; }
+
           // Replace this history entry so the back button skips the filled form
           history.replaceState(null, '', window.location.href);
           // Countdown redirect
@@ -966,7 +1062,7 @@ select.aa-input {
             if (countEl) countEl.textContent = secs;
             if (secs <= 0) {
               clearInterval(timer);
-              window.location.replace('https://redhive.redcross.or.ke/anticipatory');
+              window.location.replace(REDIR);
             }
           }, 1000);
         } else {

@@ -45,8 +45,8 @@ def get_summary():
 		"counties_active": int(t.get("counties") or 0),
 		"organizations": frappe.db.count("Anticipatory Action Organization"),
 		"documents": frappe.db.count("Anticipatory Action Reference Documents"),
-		"activities": frappe.db.count("AA TWG Activities Table"),
-		"reports": frappe.db.count("Anticipatory Reports Table"),
+		"activities": frappe.db.count("Anticipatory Activity"),
+		"reports": frappe.db.count("Anticipatory Report"),
 		"hazards": _hazard_breakdown(),
 		"recent": _recent_activations(),
 	}
@@ -54,6 +54,7 @@ def get_summary():
 	if is_admin:
 		data["messages_new"] = frappe.db.count("AA Contact Message", {"status": "New"})
 		data["users"] = frappe.db.count("Anticipatory Action User")
+		data["requests_new"] = frappe.db.count("AA Membership Request", {"status": "Pending"})
 
 	return data
 
@@ -222,7 +223,7 @@ def get_events():
 	operations calendar.
 	"""
 	rows = frappe.get_all(
-		"AA TWG Activities Table",
+		"Anticipatory Activity",
 		fields=["name", "date", "pillar", "activity", "activity_reference", "milestone", "status"],
 		order_by="date desc",
 		limit=300,
@@ -249,19 +250,21 @@ def get_reports():
 	library = []
 
 	for r in frappe.get_all(
-		"Anticipatory Reports Table",
-		fields=["title", "description", "category", "source", "key_words", "link", "year", "month"],
+		"Anticipatory Report",
+		filters={"published": 1},
+		fields=["name", "title", "description", "category", "source", "key_words", "link", "attachment", "year", "month"],
 		limit=500,
 	):
 		library.append(
 			{
 				"kind": "report",
+				"name": r.name,
 				"title": r.title or "Untitled report",
 				"description": r.description,
 				"category": r.category or "Report",
 				"source": r.source,
 				"keywords": r.key_words,
-				"url": r.link,
+				"url": r.link or r.attachment,
 				"year": r.year,
 				"month": r.month,
 				"sort": r.year or 0,

@@ -53,3 +53,9 @@ jspm_packages/
 
 # Aider AI Chat
 .aider*
+
+# Claude Code / agent workspaces and local design notes
+.impeccable/
+skills-lock.json
+DESIGN.md
+PRODUCT.md

@@ -15,7 +15,11 @@
   "section_break_jrer",
   "organization",
   "column_break_wijw",
-  "role"
+  "role",
+  "account_section",
+  "user",
+  "column_break_acct",
+  "enabled"
  ],
  "fields": [
   {
@@ -80,6 +84,31 @@
   {
    "fieldname": "column_break_wijw",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "account_section",
+   "fieldtype": "Section Break",
+   "label": "Login Account"
+  },
+  {
+   "description": "The Frappe login account created for this person. Set automatically.",
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User Account",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_acct",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "Uncheck to deactivate this person's login without deleting their record.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
   }
  ],
  "grid_page_length": 50,

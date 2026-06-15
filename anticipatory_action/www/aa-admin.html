@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Console — Kenya Anticipatory Action</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/aa-base.css" />
+  <link rel="stylesheet" href="/aa-portal-ui.css" />
+</head>
+<body class="portal">
+
+<header class="portal-bar">
+  <a href="/aa-portal" class="pb-brand">
+    <img src="/NDOC.png" alt="NDOC" />
+    <div class="pb-name">Anticipatory Action<span>Admin Console</span></div>
+  </a>
+  <nav class="pb-links" id="pbLinks">
+    <a href="/aa-portal">Dashboard</a>
+    <a href="/aa-admin" class="active">Admin Console</a>
+    <a href="/anticipatory-action">New Submission</a>
+    <a href="/aa-profile">Profile</a>
+    <a href="/app" title="Open the Frappe desk">Desk ↗</a>
+  </nav>
+  <div class="pb-end">
+    <span class="pb-user">{{ full_name }}</span>
+    <button class="pb-logout" id="logoutBtn">Log Out</button>
+    <button class="pb-toggle" id="navToggle" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="portal-wrap admin-wrap">
+  <div class="portal-head"><div>
+    <div class="portal-kicker">Secretariat</div>
+    <h1 class="portal-title">Admin Console</h1>
+    <p class="portal-sub">Manage Anticipatory Action members, review submissions, and curate the programme's activities, reports and publications — all in one place.</p>
+  </div></div>
+
+  <div class="admin-shell">
+    <aside class="admin-side">
+      <nav class="side-tabs" id="tabs">
+        <button class="tab active" data-tab="overview">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Overview</span>
+        </button>
+        <button class="tab" data-tab="users">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Users</span><span class="count" id="cnt-users" style="display:none"></span>
+        </button>
+        <button class="tab" data-tab="requests">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="11" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          <span>Requests</span><span class="count" id="cnt-reqs" style="display:none"></span>
+        </button>
+        <button class="tab" data-tab="submissions">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+          <span>Submissions</span>
+        </button>
+        <button class="tab" data-tab="reports">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Reports</span>
+        </button>
+        <button class="tab" data-tab="activities">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Activities</span>
+        </button>
+        <button class="tab" data-tab="orgs">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><line x1="9" y1="8" x2="9" y2="8"/><line x1="9" y1="12" x2="9" y2="12"/><line x1="15" y1="8" x2="15" y2="8"/><line x1="15" y1="12" x2="15" y2="12"/></svg>
+          <span>Organizations</span>
+        </button>
+        <button class="tab" data-tab="pubs">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>Publications</span>
+        </button>
+        <button class="tab" data-tab="messages">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+          <span>Messages</span><span class="count" id="cnt-msgs" style="display:none"></span>
+        </button>
+      </nav>
+    </aside>
+
+    <div class="admin-content">
+      <section class="tab-panel active" id="panel-overview"><div class="loading">Loading…</div></section>
+      <section class="tab-panel" id="panel-users"></section>
+      <section class="tab-panel" id="panel-requests"></section>
+      <section class="tab-panel" id="panel-submissions"></section>
+      <section class="tab-panel" id="panel-reports"></section>
+      <section class="tab-panel" id="panel-activities"></section>
+      <section class="tab-panel" id="panel-orgs"></section>
+      <section class="tab-panel" id="panel-pubs"></section>
+      <section class="tab-panel" id="panel-messages"></section>
+    </div>
+  </div>
+</main>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal-card">
+    <div class="modal-head"><h3 id="modal-title"></h3><button class="modal-close" id="modal-x" aria-label="Close">&times;</button></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>window.AA_CSRF = "{{ csrf_token or '' }}";</script>
+<script src="/aa-portal-ui.js"></script>
+<script>
+(function () {
+  'use strict';
+  var P = 'anticipatory_action.api.portal.';
+  var loaded = {};
+  // Select options are loaded live from the server (get_admin_meta) so they
+  // never drift from the doctype schema. These are just fallbacks.
+  var META = {
+    organization_types: [], publication_types: [],
+    report_categories: ['Report', 'Workshop Report'],
+    pillars: ['Pillar 1', 'Pillar 2', 'Pillar 3', 'Pillar 4', 'Pillar 5'],
+  };
+  var orgCache = [];
+
+  // ---------- tabs ----------
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (x) { x.classList.remove('active'); });
+      t.classList.add('active');
+      document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+      loadTab(t.dataset.tab);
+    });
+  });
+
+  function loadTab(tab, force) {
+    if (loaded[tab] && !force) return;
+    loaded[tab] = true;
+    ({ overview: loadOverview, users: loadUsers, requests: loadRequests, submissions: loadSubmissions,
+       reports: loadReports, activities: loadActivities, orgs: loadOrgs,
+       pubs: loadPubs, messages: loadMessages }[tab] || function () {})();
+  }
+
+  // ---------- modal helpers ----------
+  function openModal(title, fields, onSubmit, submitLabel) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML =
+      '<div id="modal-alert" class="alert"></div>' +
+      '<form id="modal-form" novalidate><div class="form-grid">' + fields + '</div>' +
+      '<div class="form-actions"><button type="submit" class="btn" id="modal-submit">' + (submitLabel || 'Save') + '</button>' +
+      '<button type="button" class="btn ghost" id="modal-cancel">Cancel</button></div></form>';
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('modal-cancel').addEventListener('click', closeModal);
+    document.getElementById('modal-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var btn = document.getElementById('modal-submit'); btn.disabled = true;
+      Promise.resolve(onSubmit()).catch(function (err) { modalErr(err.message); }).then(function () { btn.disabled = false; });
+    });
+  }
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+  function modalErr(msg) { var a = document.getElementById('modal-alert'); a.textContent = msg; a.className = 'alert show err'; }
+  document.getElementById('modal-x').addEventListener('click', closeModal);
+  document.getElementById('modal').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
+
+  function field(o) {
+    var lab = '<label for="' + o.id + '">' + AA.esc(o.label) + (o.required ? ' *' : '') + '</label>';
+    var input;
+    if (o.type === 'select') {
+      input = '<select id="' + o.id + '"' + (o.required ? ' required' : '') + '>' +
+        (o.placeholder === false ? '' : '<option value="">' + AA.esc(o.placeholder || 'Select…') + '</option>');
+      (o.options || []).forEach(function (opt) {
+        var v = (opt.value !== undefined) ? opt.value : opt;
+        var t = (opt.label !== undefined) ? opt.label : opt;
+        input += '<option value="' + AA.esc(v) + '"' + (String(o.value) === String(v) ? ' selected' : '') + '>' + AA.esc(t) + '</option>';
+      });
+      input += '</select>';
+    } else if (o.type === 'textarea') {
+      input = '<textarea id="' + o.id + '"' + (o.required ? ' required' : '') + '>' + AA.esc(o.value || '') + '</textarea>';
+    } else if (o.type === 'file') {
+      input = '<input type="file" id="' + o.id + '"' + (o.accept ? ' accept="' + o.accept + '"' : '') + ' />';
+    } else {
+      input = '<input type="' + (o.type || 'text') + '" id="' + o.id + '" value="' + AA.esc(o.value == null ? '' : o.value) + '"' +
+        (o.required ? ' required' : '') + (o.readonly ? ' readonly' : '') + (o.placeholder ? ' placeholder="' + AA.esc(o.placeholder) + '"' : '') + ' />';
+    }
+    return '<div class="field' + (o.full ? ' full' : '') + '">' + lab + input + (o.hint ? '<div class="hint">' + AA.esc(o.hint) + '</div>' : '') + '</div>';
+  }
+  function v(id) { var e = document.getElementById(id); return e ? String(e.value).trim() : ''; }
+
+  // read-only detail modal (no form)
+  function kv(label, value, opts) {
+    opts = opts || {};
+    var blank = (value === null || value === undefined || value === '');
+    var val = blank ? '—' : value;
+    return '<div class="kv' + (opts.full ? ' full' : '') + '"><div class="kv-l">' + AA.esc(label) + '</div>' +
+      '<div class="kv-v">' + (opts.html && !blank ? val : AA.esc(val)) + '</div></div>';
+  }
+  function detailModal(title, bodyHTML) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML = bodyHTML;
+    document.getElementById('modal').classList.add('open');
+  }
+  function curSubFilter() { var f = document.getElementById('sub-filter'); return f ? f.value : ''; }
+  function curReqFilter() { var f = document.getElementById('req-filter'); return f ? f.value : ''; }
+
+  function panelHTML(id, html) { document.getElementById('panel-' + id).innerHTML = html; }
+  function errPanel(id, msg) { panelHTML(id, '<div class="empty"><p>' + AA.esc(msg) + '</p></div>'); }
+  function tableHead(cols) { return '<div class="table-wrap"><table class="data"><thead><tr>' + cols.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>'; }
+  function toolbar(html) { return '<div class="toolbar">' + html + '</div>'; }
+
+  async function ensureOrgs() {
+    if (orgCache.length) return orgCache;
+    var r = await AA.call(P + 'list_organizations');
+    orgCache = (r && r.data) || [];
+    return orgCache;
+  }
+
+  // ===================== OVERVIEW =====================
+  async function loadOverview() {
+    try {
+      var r = await AA.call(P + 'get_admin_overview');
+      var d = (r && r.data) || {};
+      if (typeof d.users === 'number') { var c = document.getElementById('cnt-users'); c.textContent = d.users; c.style.display = ''; }
+      if (d.messages_new) { var m = document.getElementById('cnt-msgs'); m.textContent = d.messages_new; m.style.display = ''; }
+      if (d.requests_new) { var rq = document.getElementById('cnt-reqs'); rq.textContent = d.requests_new; rq.style.display = ''; }
+      function stat(val, label, accent) { return '<div class="stat' + (accent ? ' accent' : '') + '"><div class="v">' + val + '</div><div class="l">' + label + '</div></div>'; }
+      var html =
+        '<div class="stat-grid">' +
+          stat(d.activations_pending || 0, 'Pending Review', true) +
+          stat(d.activations_approved || 0, 'Approved') +
+          stat(d.activations_total || 0, 'Total Submissions') +
+          stat(AA.fmtNum(d.people_reached), 'People Targeted') +
+          stat(AA.fmtNum(d.households), 'Households') +
+          stat('KES ' + AA.fmtNum(d.funds_kes), 'Funds Mobilised') +
+          stat(d.counties_active || 0, 'Counties Active') +
+          stat(d.organizations || 0, 'Organizations') +
+        '</div>' +
+        '<div class="stat-grid">' +
+          stat(d.requests_new || 0, 'Sign-up Requests', !!d.requests_new) +
+          stat(d.users || 0, 'AA Users') +
+          stat(d.reports || 0, 'Reports') +
+          stat(d.activities || 0, 'TWG Activities') +
+          stat(d.documents || 0, 'Publications') +
+          stat(d.messages_new || 0, 'New Messages', !!d.messages_new) +
+        '</div>';
+      if (d.hazards && d.hazards.length) {
+        html += '<div class="card"><h3 class="card-title">Approved Activations by Hazard</h3>' +
+          tableHead(['Hazard', 'Activations', 'People Targeted']) +
+          d.hazards.map(function (h) { return '<tr><td class="strong">' + AA.esc(h.hazard) + '</td><td>' + h.activations + '</td><td>' + AA.fmtNum(h.people) + '</td></tr>'; }).join('') +
+          '</tbody></table></div></div>';
+      }
+      panelHTML('overview', html);
+    } catch (e) { errPanel('overview', e.message); }
+  }
+
+  // ===================== USERS =====================
+  async function loadUsers() {
+    panelHTML('users', '<div class="loading">Loading users…</div>');
+    try {
+      var r = await AA.call(P + 'list_aa_users');
+      var rows = (r && r.data) || [];
+      var html = toolbar('<button class="btn" id="add-user"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add User</button>');
+      if (!rows.length) {
+        html += '<div class="empty"><p>No Anticipatory Action users yet.</p></div>';
+      } else {
+        html += tableHead(['Name', 'Email', 'Phone', 'Organization', 'Role', 'Status', '']);
+        html += rows.map(function (u) {
+          var role = (u.role || '').replace('Anticipatory Action ', 'AA ');
+          var status = u.enabled ? '<span class="badge approved">Active</span>' : '<span class="badge off">Disabled</span>';
+          return '<tr>' +
+            '<td class="strong">' + AA.esc(u.full_name || '—') + '</td>' +
+            '<td>' + AA.esc(u.email) + '</td>' +
+            '<td>' + AA.esc(u.phone || '—') + '</td>' +
+            '<td>' + AA.esc(u.organization || '—') + '</td>' +
+            '<td>' + AA.esc(role) + '</td>' +
+            '<td>' + status + '</td>' +
+            '<td class="row-actions">' +
+              '<button class="btn sm ghost" data-edit-user="' + AA.esc(u.name) + '">Edit</button>' +
+              '<button class="btn sm ' + (u.enabled ? 'danger' : 'ok') + '" data-toggle-user="' + AA.esc(u.name) + '" data-enabled="' + (u.enabled ? 1 : 0) + '">' + (u.enabled ? 'Disable' : 'Enable') + '</button>' +
+            '</td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('users', html);
+      document.getElementById('add-user').addEventListener('click', function () { userModal(null); });
+      document.querySelectorAll('[data-edit-user]').forEach(function (b) {
+        b.addEventListener('click', function () { userModal(rows.find(function (x) { return x.name === b.dataset.editUser; })); });
+      });
+      document.querySelectorAll('[data-toggle-user]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          var on = b.dataset.enabled === '1';
+          if (on && !confirm('Disable this user? They will be unable to sign in.')) return;
+          try {
+            await AA.call(P + 'set_aa_user_active', { name: b.dataset.toggleUser, enabled: on ? 0 : 1 });
+            AA.toast('User ' + (on ? 'disabled' : 'enabled') + '.', true);
+            loadUsers();
+          } catch (e) { AA.toast(e.message); }
+        });
+      });
+    } catch (e) { errPanel('users', e.message); }
+  }
+
+  async function userModal(u) {
+    var meta = await AA.call(P + 'get_user_form_meta');
+    var orgs = (meta.organizations || []).map(function (o) { return { value: o.name, label: o.name_of_organization }; });
+    var roles = (meta.roles || []).map(function (rl) { return { value: rl, label: rl.replace('Anticipatory Action ', 'AA ') }; });
+    var editing = !!u;
+    var f =
+      field({ label: 'First Name', id: 'u_first', value: u && u.first_name, required: true }) +
+      field({ label: 'Last Name', id: 'u_last', value: u && u.last_name, required: true }) +
+      field({ label: 'Email', id: 'u_email', type: 'email', value: u && u.email, required: true, readonly: editing, hint: editing ? 'Email is the account identity and cannot be changed.' : 'A welcome email with a set-password link is sent on creation.' }) +
+      field({ label: 'Phone', id: 'u_phone', value: u && u.phone }) +
+      field({ label: 'Organization', id: 'u_org', type: 'select', options: orgs, value: u && u.organization, required: true, full: true }) +
+      field({ label: 'Role', id: 'u_role', type: 'select', options: roles, value: (u && u.role) || 'Anticipatory Action User', required: true, placeholder: false, full: true });
+    openModal(editing ? 'Edit User' : 'Add User', f, async function () {
+      var payload = { first_name: v('u_first'), last_name: v('u_last'), phone: v('u_phone'), organization: v('u_org'), role: v('u_role') };
+      if (!payload.first_name || !payload.organization) { modalErr('First name and organization are required.'); return; }
+      if (editing) {
+        await AA.call(P + 'update_aa_user', Object.assign({ name: u.name }, payload));
+      } else {
+        payload.email = v('u_email');
+        if (!payload.email) { modalErr('Email is required.'); return; }
+        await AA.call(P + 'create_aa_user', payload);
+      }
+      closeModal(); AA.toast(editing ? 'User updated.' : 'User created — welcome email sent.', true); loadUsers();
+    }, editing ? 'Save Changes' : 'Create User');
+  }
+
+  // ===================== SUBMISSIONS =====================
+  async function loadSubmissions(status) {
+    panelHTML('submissions', '<div class="loading">Loading submissions…</div>');
+    try {
+      var r = await AA.call(P + 'list_submissions', status ? { status: status } : {});
+      var rows = (r && r.data) || [];
+      var filterSel = '<select class="filter-select" id="sub-filter" style="min-width:170px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Barlow,sans-serif">' +
+        ['', 'Pending', 'Approved', 'Not Approved'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
+      var html = toolbar('<div class="grow"></div>' + filterSel);
+      if (!rows.length) {
+        html += '<div class="empty"><p>No submissions found.</p></div>';
+      } else {
+        html += tableHead(['Reference', 'Organization', 'Hazard', 'Counties', 'People', 'Funds (KES)', 'Status', '']);
+        html += rows.map(function (s) {
+          var badge = s.status === 'Approved' ? '<span class="badge approved">Approved</span>'
+            : s.status === 'Not Approved' ? '<span class="badge rejected">Not Approved</span>'
+            : '<span class="badge pending">Pending</span>';
+          var actions = '<button class="btn sm ghost" data-view="' + AA.esc(s.name) + '">View</button>';
+          if (s.status !== 'Approved') actions += '<button class="btn sm ok" data-approve="' + AA.esc(s.name) + '">Approve</button>';
+          if (s.status !== 'Not Approved') actions += '<button class="btn sm danger" data-reject="' + AA.esc(s.name) + '">Reject</button>';
+          return '<tr>' +
+            '<td class="strong">' + AA.esc(s.name) + '</td>' +
+            '<td>' + AA.esc(s.organization || '—') + '</td>' +
+            '<td>' + AA.esc(s.hazard || '—') + '</td>' +
+            '<td>' + AA.esc(s.counties || '—') + '</td>' +
+            '<td>' + AA.fmtNum(s.people) + '</td>' +
+            '<td>' + AA.fmtNum(s.funds) + '</td>' +
+            '<td>' + badge + '</td>' +
+            '<td class="row-actions">' + actions + '</td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('submissions', html);
+      document.getElementById('sub-filter').addEventListener('change', function () { loadSubmissions(this.value); });
+      document.querySelectorAll('[data-approve]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          if (!confirm('Approve this submission? It will be locked and published to the dashboards.')) return;
+          try { await AA.call(P + 'set_submission_status', { name: b.dataset.approve, status: 'Approved' }); AA.toast('Submission approved.', true); loadSubmissions(document.getElementById('sub-filter').value); }
+          catch (e) { AA.toast(e.message); }
+        });
+      });
+      document.querySelectorAll('[data-reject]').forEach(function (b) {
+        b.addEventListener('click', function () { rejectSubmission(b.dataset.reject); });
+      });
+      document.querySelectorAll('[data-view]').forEach(function (b) {
+        b.addEventListener('click', function () { submissionDetail(b.dataset.view); });
+      });
+    } catch (e) { errPanel('submissions', e.message); }
+  }
+
+  function rejectSubmission(name) {
+    openModal('Reject Submission', field({ label: 'Reason for rejection', id: 'rej_reason', type: 'textarea', required: true, full: true, hint: 'Shared with the reporter so they can revise and resubmit.' }), async function () {
+      var reason = v('rej_reason');
+      if (!reason) { modalErr('Please give a reason.'); return; }
+      await AA.call(P + 'set_submission_status', { name: name, status: 'Not Approved', reason: reason });
+      closeModal(); AA.toast('Submission rejected.', true); loadSubmissions(curSubFilter());
+    }, 'Reject Submission');
+  }
+
+  async function submissionDetail(name) {
+    try {
+      var r = await AA.call(P + 'get_submission', { name: name });
+      var d = (r && r.data) || {};
+      var badge = d.status === 'Approved' ? '<span class="badge approved">Approved</span>'
+        : d.status === 'Not Approved' ? '<span class="badge rejected">Not Approved</span>'
+        : '<span class="badge pending">Pending Review</span>';
+      var dets = d.anticipatory_action_details || [];
+      var detTable = dets.length ?
+        ('<h3 class="card-title" style="margin-top:20px">Intervention Details</h3>' +
+         tableHead(['County', 'Sector', 'People', 'Amount (KES)', 'Early Action']) +
+         dets.map(function (x) {
+           return '<tr><td class="strong">' + AA.esc(x.county || '—') + '</td><td>' + AA.esc(x.sector || '—') +
+             '</td><td>' + AA.fmtNum(x.number_of_people_targeted) + '</td><td>' + AA.fmtNum(x.amount_for_anticipatory_action_kes) +
+             '</td><td>' + AA.esc(x.status_of_the_early_action || '—') + '</td></tr>';
+         }).join('') + '</tbody></table></div>') : '';
+      var docUrl = d.supporting_materials;
+      var body =
+        '<div style="margin-bottom:16px">' + badge + '</div>' +
+        (d.status === 'Not Approved' && d.reason_for_rejection ? '<div class="alert show err" style="margin-bottom:16px"><b>Rejection reason:</b> ' + AA.esc(d.reason_for_rejection) + '</div>' : '') +
+        '<div class="kv-grid">' +
+          kv('Reference', d.name) + kv('Submitted by', d.owner) +
+          kv('Implementing Organisation', d.implementing_organization) + kv('Organisation Type', d.entity_or_organization_type) +
+          kv('Hazard', d.anticipated_hazard) + kv('Funding Source', d.funding_source) +
+          kv('Reporting Person', d.reporting_person) + kv('Reporter Email', d.reporter_email) +
+          kv('Reporter Phone', d.reporter_phone_number) + kv('Implementing Partners', d.implementing_partners) +
+          kv('Activation Start', d.activation_start_date) + kv('Activation End', d.activation_end_date) +
+          (docUrl ? kv('Supporting Materials', '<a href="' + AA.esc(docUrl) + '" target="_blank" rel="noopener">Open file ↗</a>', { full: true, html: true }) : '') +
+          kv('Triggers & Thresholds', d.triggers_and_thresholds, { full: true }) +
+          kv('Lessons Learnt', d.lessons_learnt, { full: true }) +
+          kv('Challenges', d.challenges, { full: true }) +
+          kv('Recommendations', d.recommendations, { full: true }) +
+        '</div>' + detTable +
+        '<div class="form-actions">' +
+          (d.status !== 'Approved' ? '<button class="btn ok" id="d-approve">Approve</button>' : '') +
+          (d.status !== 'Not Approved' ? '<button class="btn danger" id="d-reject">Reject</button>' : '') +
+          '<button class="btn ghost" id="d-close">Close</button>' +
+        '</div>';
+      detailModal('Submission · ' + name, body);
+      var ap = document.getElementById('d-approve');
+      if (ap) ap.addEventListener('click', async function () {
+        if (!confirm('Approve this submission? It will be locked and published to the dashboards.')) return;
+        try { await AA.call(P + 'set_submission_status', { name: name, status: 'Approved' }); closeModal(); AA.toast('Submission approved.', true); loadSubmissions(curSubFilter()); }
+        catch (e) { AA.toast(e.message); }
+      });
+      var rj = document.getElementById('d-reject');
+      if (rj) rj.addEventListener('click', function () { rejectSubmission(name); });
+      document.getElementById('d-close').addEventListener('click', closeModal);
+    } catch (e) { AA.toast(e.message); }
+  }
+
+  // ===================== REPORTS =====================
+  async function loadReports() {
+    panelHTML('reports', '<div class="loading">Loading reports…</div>');
+    try {
+      var r = await AA.call(P + 'list_reports');
+      var rows = (r && r.data) || [];
+      var html = toolbar('<button class="btn" id="add-report">+ Add Report</button>');
+      if (!rows.length) { html += '<div class="empty"><p>No reports yet.</p></div>'; }
+      else {
+        html += tableHead(['Title', 'Category', 'Date', 'Source', 'Document', 'Status', '']);
+        html += rows.map(function (x) {
+          var url = x.link || x.attachment;
+          var pub = x.published ? '<span class="badge approved">Published</span>' : '<span class="badge off">Hidden</span>';
+          return '<tr>' +
+            '<td class="strong">' + AA.esc(x.title) + (x.description ? '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(x.description) + '</div>' : '') + '</td>' +
+            '<td>' + AA.esc(x.category || '—') + '</td>' +
+            '<td>' + AA.esc([x.month, x.year].filter(Boolean).join(' ') || '—') + '</td>' +
+            '<td>' + AA.esc(x.source || '—') + '</td>' +
+            '<td>' + (url ? '<a class="btn sm ghost" href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open</a>' : '—') + (x.attachment ? ' <span class="badge muted">file</span>' : '') + '</td>' +
+            '<td>' + pub + '</td>' +
+            '<td class="row-actions"><button class="btn sm ghost" data-open-report="' + AA.esc(x.name) + '">Edit</button><button class="btn sm danger" data-del-report="' + AA.esc(x.name) + '">Remove</button></td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('reports', html);
+      document.getElementById('add-report').addEventListener('click', function () { reportModal(); });
+      document.querySelectorAll('[data-open-report]').forEach(function (b) {
+        b.addEventListener('click', function () { reportModal(rows.find(function (x) { return x.name === b.dataset.openReport; })); });
+      });
+      document.querySelectorAll('[data-del-report]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          if (!confirm('Remove this report?')) return;
+          try { await AA.call(P + 'delete_report', { name: b.dataset.delReport }); AA.toast('Report removed.', true); loadReports(); }
+          catch (e) { AA.toast(e.message); }
+        });
+      });
+    } catch (e) { errPanel('reports', e.message); }
+  }
+
+  function reportModal(report) {
+    var editing = report && report.name;
+    var f =
+      field({ label: 'Title', id: 'r_title', required: true, full: true, value: report && report.title }) +
+      field({ label: 'Year', id: 'r_year', type: 'number', value: report && report.year }) +
+      field({ label: 'Month', id: 'r_month', placeholder: 'e.g. March', value: report && report.month }) +
+      field({ label: 'Category', id: 'r_cat', type: 'select', options: META.report_categories, value: (report && report.category) || 'Report', placeholder: false }) +
+      field({ label: 'Source', id: 'r_source', value: report && report.source }) +
+      field({ label: 'Keywords', id: 'r_keywords', full: true, value: report && report.key_words }) +
+      field({ label: 'External Link (URL)', id: 'r_link', type: 'url', full: true, value: report && report.link, hint: 'Provide a link OR upload a file below.' }) +
+      field({ label: (editing && report.attachment ? 'Replace File' : 'Upload File'), id: 'r_file', type: 'file', full: true, hint: editing && report.attachment ? 'A file is attached — uploading replaces it.' : '' }) +
+      field({ label: 'Description', id: 'r_desc', type: 'textarea', full: true, value: report && report.description });
+    openModal(editing ? 'Edit Report' : 'Add Report', f, async function () {
+      if (!v('r_title')) { modalErr('Title is required.'); return; }
+      var fileEl = document.getElementById('r_file');
+      var payload = {
+        title: v('r_title'), year: v('r_year'), month: v('r_month'), description: v('r_desc'),
+        category: v('r_cat'), source: v('r_source'), key_words: v('r_keywords'), link: v('r_link')
+      };
+      if (fileEl && fileEl.files && fileEl.files[0]) { payload.attachment = await AA.upload(fileEl.files[0], false); }
+      if (editing) { await AA.call(P + 'update_report', Object.assign({ name: report.name }, payload)); }
+      else { await AA.call(P + 'add_report', payload); }
+      closeModal(); AA.toast(editing ? 'Report updated.' : 'Report added.', true); loadReports();
+    }, editing ? 'Save Changes' : 'Add Report');
+  }
+
+  // ===================== ACTIVITIES =====================
+  async function loadActivities() {
+    panelHTML('activities', '<div class="loading">Loading activities…</div>');
+    try {
+      var r = await AA.call(P + 'list_activities');
+      var rows = (r && r.data) || [];
+      var html = toolbar('<button class="btn" id="add-act">+ Add Activity</button>');
+      if (!rows.length) { html += '<div class="empty"><p>No activities yet.</p></div>'; }
+      else {
+        html += tableHead(['Date', 'Pillar', 'Activity', 'Reference', 'Milestone', 'Status', '']);
+        html += rows.map(function (x) {
+          return '<tr>' +
+            '<td>' + AA.esc(x.date || '—') + '</td>' +
+            '<td>' + AA.esc(x.pillar || '—') + '</td>' +
+            '<td class="strong">' + AA.esc(x.activity || '—') + '</td>' +
+            '<td>' + AA.esc(x.activity_reference || '—') + '</td>' +
+            '<td>' + AA.esc(x.milestone || '—') + '</td>' +
+            '<td>' + AA.esc(x.status || '—') + '</td>' +
+            '<td class="row-actions"><button class="btn sm ghost" data-open-act="' + AA.esc(x.name) + '">Edit</button><button class="btn sm danger" data-del-act="' + AA.esc(x.name) + '">Remove</button></td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('activities', html);
+      document.getElementById('add-act').addEventListener('click', function () { activityModal(); });
+      document.querySelectorAll('[data-open-act]').forEach(function (b) {
+        b.addEventListener('click', function () { activityModal(rows.find(function (x) { return x.name === b.dataset.openAct; })); });
+      });
+      document.querySelectorAll('[data-del-act]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          if (!confirm('Remove this activity?')) return;
+          try { await AA.call(P + 'delete_activity', { name: b.dataset.delAct }); AA.toast('Activity removed.', true); loadActivities(); }
+          catch (e) { AA.toast(e.message); }
+        });
+      });
+    } catch (e) { errPanel('activities', e.message); }
+  }
+
+  function activityModal(activity) {
+    var editing = activity && activity.name;
+    var f =
+      field({ label: 'Activity', id: 'a_activity', required: true, full: true, value: activity && activity.activity }) +
+      field({ label: 'Date', id: 'a_date', type: 'date', value: activity && activity.date }) +
+      field({ label: 'Pillar', id: 'a_pillar', type: 'select', options: META.pillars, value: activity && activity.pillar }) +
+      field({ label: 'Activity Reference', id: 'a_ref', value: activity && activity.activity_reference }) +
+      field({ label: 'Milestone', id: 'a_milestone', value: activity && activity.milestone }) +
+      field({ label: 'Status', id: 'a_status', placeholder: 'e.g. Ongoing', value: activity && activity.status }) +
+      field({ label: 'Details', id: 'a_details', type: 'textarea', full: true, value: activity && activity.details });
+    openModal(editing ? 'Edit Activity' : 'Add Activity', f, async function () {
+      if (!v('a_activity')) { modalErr('Activity is required.'); return; }
+      var payload = {
+        activity: v('a_activity'), date: v('a_date'), pillar: v('a_pillar'),
+        activity_reference: v('a_ref'), milestone: v('a_milestone'), status: v('a_status'), details: v('a_details')
+      };
+      if (editing) { await AA.call(P + 'update_activity', Object.assign({ name: activity.name }, payload)); }
+      else { await AA.call(P + 'add_activity', payload); }
+      closeModal(); AA.toast(editing ? 'Activity updated.' : 'Activity added.', true); loadActivities();
+    }, editing ? 'Save Changes' : 'Add Activity');
+  }
+
+  // ===================== ORGANIZATIONS =====================
+  async function loadOrgs() {
+    panelHTML('orgs', '<div class="loading">Loading organizations…</div>');
+    try {
+      var r = await AA.call(P + 'list_organizations');
+      orgCache = (r && r.data) || [];
+      var rows = orgCache;
+      var html = toolbar('<button class="btn" id="add-org">+ Add Organization</button>');
+      if (!rows.length) { html += '<div class="empty"><p>No organizations yet.</p></div>'; }
+      else {
+        html += tableHead(['Name', 'Type', 'Contact', 'Email', 'Phone']);
+        html += rows.map(function (o) {
+          return '<tr>' +
+            '<td class="strong">' + AA.esc(o.name_of_organization) + '</td>' +
+            '<td>' + AA.esc(o.type_of_organization || '—') + '</td>' +
+            '<td>' + AA.esc(o.primary_contact_person_name || '—') + '</td>' +
+            '<td>' + AA.esc(o.primary_email_contact || o.organization_email || '—') + '</td>' +
+            '<td>' + AA.esc(o.organization_phone || '—') + '</td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('orgs', html);
+      document.getElementById('add-org').addEventListener('click', orgModal);
+    } catch (e) { errPanel('orgs', e.message); }
+  }
+
+  function orgModal() {
+    var f =
+      field({ label: 'Organization Name', id: 'o_name', required: true, full: true }) +
+      field({ label: 'Type', id: 'o_type', type: 'select', options: META.organization_types, required: true }) +
+      field({ label: 'Contact Person', id: 'o_contact' }) +
+      field({ label: 'Contact Email', id: 'o_email', type: 'email' }) +
+      field({ label: 'Contact Phone', id: 'o_phone' }) +
+      field({ label: 'Organization Email', id: 'o_oemail', type: 'email' }) +
+      field({ label: 'Organization Phone', id: 'o_ophone' }) +
+      field({ label: 'Website', id: 'o_web', type: 'url', full: true }) +
+      field({ label: 'Address', id: 'o_address', type: 'textarea', full: true });
+    openModal('Add Organization', f, async function () {
+      if (!v('o_name') || !v('o_type')) { modalErr('Name and type are required.'); return; }
+      await AA.call(P + 'add_organization', {
+        name_of_organization: v('o_name'), type_of_organization: v('o_type'),
+        primary_contact_person_name: v('o_contact'), primary_email_contact: v('o_email'),
+        primary_phone_contact: v('o_phone'), organization_email: v('o_oemail'),
+        organization_phone: v('o_ophone'), organization_website: v('o_web'), address: v('o_address')
+      });
+      closeModal(); AA.toast('Organization added.', true); orgCache = []; loadOrgs();
+    }, 'Add Organization');
+  }
+
+  // ===================== PUBLICATIONS =====================
+  async function loadPubs() {
+    panelHTML('pubs', '<div class="loading">Loading publications…</div>');
+    try {
+      var r = await AA.call(P + 'list_publications');
+      var rows = (r && r.data) || [];
+      var html = toolbar('<button class="btn" id="add-pub">+ Add Publication</button>');
+      if (!rows.length) { html += '<div class="empty"><p>No publications yet.</p></div>'; }
+      else {
+        html += tableHead(['Title', 'Type', 'Date', 'Authority', 'File / Link', '']);
+        html += rows.map(function (x) {
+          var url = x.publication_url || x.attach_publication;
+          return '<tr>' +
+            '<td class="strong">' + AA.esc(x.title) + '</td>' +
+            '<td>' + AA.esc(x.type || '—') + '</td>' +
+            '<td>' + AA.esc(x.publication_date || '—') + '</td>' +
+            '<td>' + AA.esc(x.publishing_authority || '—') + '</td>' +
+            '<td>' + (url ? '<a class="btn sm ghost" href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open</a>' : '—') + '</td>' +
+            '<td class="row-actions"><button class="btn sm ghost" data-view-pub="' + AA.esc(x.name) + '">View</button><button class="btn sm danger" data-del-pub="' + AA.esc(x.name) + '">Remove</button></td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('pubs', html);
+      document.getElementById('add-pub').addEventListener('click', pubModal);
+      document.querySelectorAll('[data-del-pub]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          if (!confirm('Remove this publication?')) return;
+          try { await AA.call(P + 'delete_publication', { name: b.dataset.delPub }); AA.toast('Publication removed.', true); loadPubs(); }
+          catch (e) { AA.toast(e.message); }
+        });
+      });
+      document.querySelectorAll('[data-view-pub]').forEach(function (b) {
+        b.addEventListener('click', function () { publicationDetail(b.dataset.viewPub); });
+      });
+    } catch (e) { errPanel('pubs', e.message); }
+  }
+
+  async function publicationDetail(name) {
+    try {
+      var r = await AA.call(P + 'get_publication', { name: name });
+      var d = (r && r.data) || {};
+      var url = d.publication_url || d.attach_publication;
+      var body = '<div class="kv-grid">' +
+          kv('Title', d.title, { full: true }) +
+          kv('Type', d.type) + kv('Publication Date', d.publication_date) +
+          kv('Publishing Authority', d.publishing_authority) +
+          kv('State', d.docstatus === 1 ? 'Submitted' : 'Draft') +
+          kv('Link / File', url ? '<a href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open document ↗</a>' : '—', { full: true, html: true }) +
+        '</div>' +
+        '<div class="form-actions"><button class="btn danger" id="d-del">Remove</button><button class="btn ghost" id="d-close">Close</button></div>';
+      detailModal('Publication · ' + name, body);
+      document.getElementById('d-del').addEventListener('click', async function () {
+        if (!confirm('Remove this publication?')) return;
+        try { await AA.call(P + 'delete_publication', { name: name }); closeModal(); AA.toast('Publication removed.', true); loadPubs(); }
+        catch (e) { AA.toast(e.message); }
+      });
+      document.getElementById('d-close').addEventListener('click', closeModal);
+    } catch (e) { AA.toast(e.message); }
+  }
+
+  async function pubModal() {
+    var orgs = (await ensureOrgs()).map(function (o) { return { value: o.name, label: o.name_of_organization }; });
+    var f =
+      field({ label: 'Title', id: 'p_title', required: true, full: true }) +
+      field({ label: 'Type', id: 'p_type', type: 'select', options: META.publication_types, required: true }) +
+      field({ label: 'Publication Date', id: 'p_date', type: 'date', required: true }) +
+      field({ label: 'Publishing Authority', id: 'p_auth', type: 'select', options: orgs, required: true, full: true }) +
+      field({ label: 'External URL (optional)', id: 'p_url', type: 'url', full: true, hint: 'Provide a URL or upload a file below.' }) +
+      field({ label: 'Upload File (optional)', id: 'p_file', type: 'file', full: true });
+    openModal('Add Publication', f, async function () {
+      if (!v('p_title') || !v('p_type') || !v('p_date') || !v('p_auth')) { modalErr('Title, type, date and authority are required.'); return; }
+      var fileEl = document.getElementById('p_file');
+      var fileUrl = '';
+      if (fileEl && fileEl.files && fileEl.files[0]) { fileUrl = await AA.upload(fileEl.files[0], false); }
+      await AA.call(P + 'add_publication', {
+        title: v('p_title'), type: v('p_type'), publishing_authority: v('p_auth'),
+        publication_date: v('p_date'), publication_url: v('p_url'), attach_publication: fileUrl
+      });
+      closeModal(); AA.toast('Publication added.', true); loadPubs();
+    }, 'Add Publication');
+  }
+
+  // ===================== MESSAGES =====================
+  async function loadMessages(status) {
+    panelHTML('messages', '<div class="loading">Loading messages…</div>');
+    try {
+      var r = await AA.call(P + 'list_messages', status ? { status: status } : {});
+      var rows = (r && r.data) || [];
+      var filterSel = '<select class="filter-select" id="msg-filter" style="min-width:160px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Barlow,sans-serif">' +
+        ['', 'New', 'Read', 'Replied', 'Closed'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
+      var html = toolbar('<div class="grow"></div>' + filterSel);
+      if (!rows.length) { html += '<div class="empty"><p>No messages.</p></div>'; }
+      else {
+        html += tableHead(['From', 'Subject', 'Received', 'Status', '']);
+        html += rows.map(function (m) {
+          var sb = m.status === 'New' ? 'new' : (m.status === 'Closed' ? 'off' : 'muted');
+          return '<tr>' +
+            '<td class="strong">' + AA.esc(m.full_name) + '<div style="font-weight:400;color:var(--muted);font-size:12px">' + AA.esc(m.email) + '</div></td>' +
+            '<td>' + AA.esc(m.subject || '—') + '</td>' +
+            '<td>' + AA.esc((m.submitted_on || m.creation || '').slice(0, 16).replace('T', ' ')) + '</td>' +
+            '<td><span class="badge ' + sb + '">' + AA.esc(m.status) + '</span></td>' +
+            '<td class="row-actions"><button class="btn sm ghost" data-view-msg="' + AA.esc(m.name) + '">View</button></td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('messages', html);
+      document.getElementById('msg-filter').addEventListener('change', function () { loadMessages(this.value); });
+      document.querySelectorAll('[data-view-msg]').forEach(function (b) {
+        b.addEventListener('click', function () { msgModal(rows.find(function (x) { return x.name === b.dataset.viewMsg; })); });
+      });
+    } catch (e) { errPanel('messages', e.message); }
+  }
+
+  function msgModal(m) {
+    if (!m) return;
+    document.getElementById('modal-title').textContent = m.subject || 'Message';
+    document.getElementById('modal-body').innerHTML =
+      '<div class="sc-meta" style="margin-bottom:14px;font-size:13.5px;color:var(--text-2)">' +
+        '<span><b>From:</b> ' + AA.esc(m.full_name) + '</span> <span><b>Email:</b> ' + AA.esc(m.email) + '</span>' +
+        (m.phone ? ' <span><b>Phone:</b> ' + AA.esc(m.phone) + '</span>' : '') +
+        (m.organization ? ' <span><b>Org:</b> ' + AA.esc(m.organization) + '</span>' : '') +
+      '</div>' +
+      '<div class="card" style="white-space:pre-wrap;line-height:1.6">' + AA.esc(m.message || '') + '</div>' +
+      '<div class="form-actions">' +
+        ['Read', 'Replied', 'Closed'].map(function (s) { return '<button class="btn ' + (s === 'Closed' ? 'ghost' : '') + '" data-msg-status="' + s + '">Mark ' + s + '</button>'; }).join('') +
+      '</div>';
+    document.getElementById('modal').classList.add('open');
+    document.querySelectorAll('[data-msg-status]').forEach(function (b) {
+      b.addEventListener('click', async function () {
+        try { await AA.call(P + 'set_message_status', { name: m.name, status: b.dataset.msgStatus }); closeModal(); AA.toast('Marked ' + b.dataset.msgStatus + '.', true); loadMessages(document.getElementById('msg-filter') ? document.getElementById('msg-filter').value : ''); loaded.overview = false; }
+        catch (e) { AA.toast(e.message); }
+      });
+    });
+  }
+
+  // ===================== ACCESS REQUESTS (sign-ups) =====================
+  async function loadRequests(status) {
+    panelHTML('requests', '<div class="loading">Loading sign-up requests…</div>');
+    try {
+      var r = await AA.call(P + 'list_requests', status ? { status: status } : {});
+      var rows = (r && r.data) || [];
+      var filterSel = '<select class="filter-select" id="req-filter" style="min-width:160px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Barlow,sans-serif">' +
+        ['', 'Pending', 'Approved', 'Rejected'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
+      var html = toolbar('<div class="grow"></div>' + filterSel);
+      if (!rows.length) { html += '<div class="empty"><p>No sign-up requests.</p></div>'; }
+      else {
+        html += tableHead(['Name', 'Email', 'Organisation', 'Requested', 'Status', '']);
+        html += rows.map(function (q) {
+          var sb = q.status === 'Approved' ? 'approved' : (q.status === 'Rejected' ? 'rejected' : 'pending');
+          return '<tr>' +
+            '<td class="strong">' + AA.esc(q.full_name || '—') + '</td>' +
+            '<td>' + AA.esc(q.email) + '</td>' +
+            '<td>' + AA.esc(q.organization || '—') + '</td>' +
+            '<td>' + AA.esc((q.creation || '').slice(0, 10)) + '</td>' +
+            '<td><span class="badge ' + sb + '">' + AA.esc(q.status) + '</span></td>' +
+            '<td class="row-actions"><button class="btn sm ghost" data-view-req="' + AA.esc(q.name) + '">Review</button></td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('requests', html);
+      document.getElementById('req-filter').addEventListener('change', function () { loadRequests(this.value); });
+      document.querySelectorAll('[data-view-req]').forEach(function (b) {
+        b.addEventListener('click', function () { requestDetail(b.dataset.viewReq); });
+      });
+    } catch (e) { errPanel('requests', e.message); }
+  }
+
+  async function requestDetail(name) {
+    try {
+      var r = await AA.call(P + 'get_request', { name: name });
+      var d = (r && r.data) || {};
+      var orgs = (await ensureOrgs()).map(function (o) { return { value: o.name, label: o.name_of_organization }; });
+      var pending = d.status === 'Pending';
+      var sb = d.status === 'Approved' ? 'approved' : (d.status === 'Rejected' ? 'rejected' : 'pending');
+      var body = '<div style="margin-bottom:16px"><span class="badge ' + sb + '">' + AA.esc(d.status) + '</span></div>' +
+        '<div class="kv-grid">' +
+          kv('Name', d.full_name) + kv('Email', d.email) +
+          kv('Phone', d.phone) + kv('Organisation (stated)', d.organization) +
+          kv('Position', d.position) + kv('Requested', (d.creation || '').slice(0, 10)) +
+          kv('Message', d.message, { full: true }) +
+          (d.review_notes ? kv('Review Notes', d.review_notes, { full: true }) : '') +
+        '</div>';
+      if (pending) {
+        body += '<h3 class="card-title" style="margin-top:22px">Decision</h3>' +
+          '<div class="form-grid">' +
+            field({ label: 'Assign Organisation', id: 'q_org', type: 'select', options: orgs, required: true, full: true, hint: 'The member will be linked to this organisation. Add it under Organizations first if it is missing.' }) +
+            field({ label: 'Role', id: 'q_role', type: 'select', options: META.roles.map(function (rl) { return { value: rl, label: rl.replace('Anticipatory Action ', 'AA ') }; }), value: 'Anticipatory Action User', placeholder: false }) +
+            field({ label: 'Notes (optional)', id: 'q_notes', type: 'textarea', full: true }) +
+          '</div>' +
+          '<div class="form-actions">' +
+            '<button class="btn ok" id="q-approve">Approve &amp; Create Account</button>' +
+            '<button class="btn danger" id="q-reject">Reject</button>' +
+            '<button class="btn ghost" id="q-close">Close</button>' +
+          '</div>';
+      } else {
+        body += '<div class="form-actions"><button class="btn ghost" id="q-close">Close</button></div>';
+      }
+      detailModal('Sign-up Request · ' + name, body);
+      document.getElementById('q-close').addEventListener('click', closeModal);
+      if (pending) {
+        document.getElementById('q-approve').addEventListener('click', async function () {
+          var org = v('q_org');
+          if (!org) { AA.toast('Choose an organisation to assign.'); return; }
+          this.disabled = true;
+          try {
+            await AA.call(P + 'approve_request', { name: name, organization: org, role: v('q_role'), notes: v('q_notes') });
+            closeModal(); AA.toast('Approved — account created, welcome email sent.', true);
+            loadRequests(curReqFilter()); loaded.users = false; loaded.overview = false;
+          } catch (e) { AA.toast(e.message); this.disabled = false; }
+        });
+        document.getElementById('q-reject').addEventListener('click', async function () {
+          if (!confirm('Reject this sign-up request?')) return;
+          this.disabled = true;
+          try {
+            await AA.call(P + 'reject_request', { name: name, notes: v('q_notes') });
+            closeModal(); AA.toast('Request rejected.', true); loadRequests(curReqFilter()); loaded.overview = false;
+          } catch (e) { AA.toast(e.message); this.disabled = false; }
+        });
+      }
+    } catch (e) { AA.toast(e.message); }
+  }
+
+  // ---------- boot ----------
+  (async function boot() {
+    try { var m = await AA.call(P + 'get_admin_meta'); if (m) META = Object.assign(META, m); } catch (e) {}
+    loadOverview();
+  })();
+})();
+</script>
+
+</body>
+</html>

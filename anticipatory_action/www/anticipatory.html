@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kenya Anticipatory Action Programme</title>
+  <link rel="preload" as="image" href="/ndoc1.webp" type="image/webp" fetchpriority="high" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,600&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
@@ -67,9 +68,9 @@
       flex: 0 0 33.333%;
       background-size: cover; background-position: center;
     }
-    .carousel-slide:nth-child(1) { background-image: url('/ndoc1.jpg'); }
-    .carousel-slide:nth-child(2) { background-image: url('/ndoc2.jpg'); }
-    .carousel-slide:nth-child(3) { background-image: url('/ndoc3.jpg'); }
+    .carousel-slide:nth-child(1) { background-image: url('/ndoc1-opt.jpg'); background-image: -webkit-image-set(url('/ndoc1.webp') type('image/webp'), url('/ndoc1-opt.jpg') type('image/jpeg')); background-image: image-set(url('/ndoc1.webp') type('image/webp'), url('/ndoc1-opt.jpg') type('image/jpeg')); }
+    .carousel-slide:nth-child(2) { background-image: url('/ndoc2-opt.jpg'); background-image: -webkit-image-set(url('/ndoc2.webp') type('image/webp'), url('/ndoc2-opt.jpg') type('image/jpeg')); background-image: image-set(url('/ndoc2.webp') type('image/webp'), url('/ndoc2-opt.jpg') type('image/jpeg')); }
+    .carousel-slide:nth-child(3) { background-image: url('/ndoc3-opt.jpg'); background-image: -webkit-image-set(url('/ndoc3.webp') type('image/webp'), url('/ndoc3-opt.jpg') type('image/jpeg')); background-image: image-set(url('/ndoc3.webp') type('image/webp'), url('/ndoc3-opt.jpg') type('image/jpeg')); }
     .hero::before {
       content: ''; position: absolute; inset: 0; z-index: 1;
       background: rgba(9,9,9,0.78); pointer-events: none;
@@ -335,7 +336,10 @@
   <div class="intro-left">
     <div class="intro-img-wrap">
       <div class="intro-img-label">ASAL Communities</div>
-      <img src="/arid.jpg" alt="Kenya ASAL community" loading="lazy" decoding="async" />
+      <picture>
+        <source srcset="/arid.webp" type="image/webp" />
+        <img src="/arid-opt.jpg" alt="Kenya ASAL community" loading="lazy" decoding="async" />
+      </picture>
       <div class="intro-img-caption">
         <p>Kenya's arid and semi-arid lands are home to pastoralist communities most vulnerable to recurring drought and flood cycles.</p>
       </div>
@@ -433,7 +437,10 @@
 <!-- IMPACT -->
 <section class="impact">
   <div class="impact-bg-img">
-    <img src="/ndoc2.jpg" alt="Impact background" loading="lazy" decoding="async" />
+    <picture>
+      <source srcset="/ndoc2.webp" type="image/webp" />
+      <img src="/ndoc2-opt.jpg" alt="Impact background" loading="lazy" decoding="async" />
+    </picture>
   </div>
   <div class="impact-bg-overlay"></div>
   <div class="impact-content">

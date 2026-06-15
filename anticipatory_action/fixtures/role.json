@@ -1,0 +1,22 @@
+[
+ {
+  "doctype": "Role",
+  "name": "Anticipatory Action Admin",
+  "role_name": "Anticipatory Action Admin",
+  "desk_access": 1,
+  "disabled": 0,
+  "is_custom": 0,
+  "two_factor_auth": 0,
+  "restrict_to_domain": ""
+ },
+ {
+  "doctype": "Role",
+  "name": "Anticipatory Action User",
+  "role_name": "Anticipatory Action User",
+  "desk_access": 1,
+  "disabled": 0,
+  "is_custom": 0,
+  "two_factor_auth": 0,
+  "restrict_to_domain": ""
+ }
+]

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign In — Kenya Anticipatory Action</title>
+  <link rel="preload" as="image" href="/ndoc1.webp" type="image/webp" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -26,7 +27,9 @@
     }
     .login-brand::before {
       content: ''; position: absolute; inset: 0;
-      background: url('/ndoc1.jpg') center/cover no-repeat;
+      background: url('/ndoc1-opt.jpg') center/cover no-repeat;
+      background-image: -webkit-image-set(url('/ndoc1.webp') type('image/webp'), url('/ndoc1-opt.jpg') type('image/jpeg'));
+      background-image: image-set(url('/ndoc1.webp') type('image/webp'), url('/ndoc1-opt.jpg') type('image/jpeg'));
       opacity: 0.16; filter: grayscale(0.3);
     }
     .login-brand::after {
@@ -283,7 +286,7 @@
       </form>
 
       <div class="login-divider">Need access?</div>
-      <p class="login-help">Accounts are provisioned by the TWG Secretariat. <a href="/aa-contact">Request access &rsaquo;</a></p>
+      <p class="login-help">Don't have an account yet? <a href="/aa-signup">Request access &rsaquo;</a></p>
 
       <p class="login-legal">© 2026 Kenya Anticipatory Action TWG · National Disaster Operations Centre. Powered by the Kenya Red Cross Society.</p>
     </div>
@@ -348,7 +351,18 @@
 
         if (res.ok) {
           var data = await res.json();
-          var target = safeRedirect(form.dataset.redirectTo) || data.home_page || '/app';
+          var target = safeRedirect(form.dataset.redirectTo);
+          if (!target) {
+            // System Users always get home_page=/app from the login API, so ask
+            // the portal where this account actually belongs.
+            try {
+              var lr = await fetch('/api/method/anticipatory_action.api.portal.get_landing', {
+                headers: { 'X-Frappe-CSRF-Token': csrf }
+              });
+              var lj = await lr.json();
+              target = (lj && lj.message) || data.home_page || '/app';
+            } catch (_) { target = data.home_page || '/app'; }
+          }
           window.location.href = target;
           return;
         }

@@ -1,0 +1,186 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"aHdr1\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Anticipatory Action \\u2014 Admin</b></span>\",\"col\":12}},{\"id\":\"aSc1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Submissions\",\"col\":3}},{\"id\":\"aSc2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sign-up Requests\",\"col\":3}},{\"id\":\"aSc3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Admin Console\",\"col\":3}},{\"id\":\"aSc4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Member Portal\",\"col\":3}},{\"id\":\"aSpc1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"aHdr2\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Manage</b></span>\",\"col\":12}},{\"id\":\"aCard1\",\"type\":\"card\",\"data\":{\"card_name\":\"Submissions & Members\",\"col\":4}},{\"id\":\"aCard2\",\"type\":\"card\",\"data\":{\"card_name\":\"Knowledge Library\",\"col\":4}},{\"id\":\"aCard3\",\"type\":\"card\",\"data\":{\"card_name\":\"Support\",\"col\":4}}]",
+ "creation": "2026-06-15 00:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "setting-gear",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Anticipatory Action Admin",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Submissions & Members",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Anticipatory Actions",
+   "link_count": 0,
+   "link_to": "Anticipatory Action",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sign-up Requests",
+   "link_count": 0,
+   "link_to": "AA Membership Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Members",
+   "link_count": 0,
+   "link_to": "Anticipatory Action User",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Organizations",
+   "link_count": 0,
+   "link_to": "Anticipatory Action Organization",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Knowledge Library",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 0,
+   "link_to": "Anticipatory Report",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Activities",
+   "link_count": 0,
+   "link_to": "Anticipatory Activity",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Publications",
+   "link_count": 0,
+   "link_to": "Anticipatory Action Reference Documents",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Support",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Contact Messages",
+   "link_count": 0,
+   "link_to": "AA Contact Message",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Counties",
+   "link_count": 0,
+   "link_to": "Counties",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-06-15 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Anticipatory Action",
+ "name": "Anticipatory Action Admin",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "Anticipatory Action Admin"
+  }
+ ],
+ "sequence_id": 2.0,
+ "shortcuts": [
+  {
+   "color": "Orange",
+   "format": "{} Pending",
+   "label": "Submissions",
+   "link_to": "Anticipatory Action",
+   "stats_filter": "{\"status\":\"Pending\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Yellow",
+   "format": "{} Pending",
+   "label": "Sign-up Requests",
+   "link_to": "AA Membership Request",
+   "stats_filter": "{\"status\":\"Pending\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "label": "Admin Console",
+   "type": "URL",
+   "url": "/aa-admin"
+  },
+  {
+   "color": "Grey",
+   "label": "Member Portal",
+   "type": "URL",
+   "url": "/aa-portal"
+  }
+ ],
+ "title": "Anticipatory Action Admin"
+}

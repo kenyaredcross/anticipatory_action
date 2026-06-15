@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Kenya Anticipatory Action Programme</title>
+<link rel="preload" as="image" href="/ndoc1.webp" type="image/webp" fetchpriority="high" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -185,9 +186,9 @@
     background-size: cover; background-position: center;
     filter: brightness(0.45) contrast(1.05) saturate(0.85);
   }
-  .hero-slide:nth-child(1) { background-image: url('/ndoc1.jpg'); }
-  .hero-slide:nth-child(2) { background-image: url('/ndoc2.jpg'); }
-  .hero-slide:nth-child(3) { background-image: url('/ndoc3.jpg'); }
+  .hero-slide:nth-child(1) { background-image: url('/ndoc1-opt.jpg'); background-image: -webkit-image-set(url('/ndoc1.webp') type('image/webp'), url('/ndoc1-opt.jpg') type('image/jpeg')); background-image: image-set(url('/ndoc1.webp') type('image/webp'), url('/ndoc1-opt.jpg') type('image/jpeg')); }
+  .hero-slide:nth-child(2) { background-image: url('/ndoc2-opt.jpg'); background-image: -webkit-image-set(url('/ndoc2.webp') type('image/webp'), url('/ndoc2-opt.jpg') type('image/jpeg')); background-image: image-set(url('/ndoc2.webp') type('image/webp'), url('/ndoc2-opt.jpg') type('image/jpeg')); }
+  .hero-slide:nth-child(3) { background-image: url('/ndoc3-opt.jpg'); background-image: -webkit-image-set(url('/ndoc3.webp') type('image/webp'), url('/ndoc3-opt.jpg') type('image/jpeg')); background-image: image-set(url('/ndoc3.webp') type('image/webp'), url('/ndoc3-opt.jpg') type('image/jpeg')); }
   @keyframes heroSlide {
     0%,28%  { transform: translateX(0); }
     33%,61% { transform: translateX(-33.333%); }
@@ -1081,7 +1082,10 @@
 <section class="intro" id="about" data-screen-label="02 About">
   <div class="intro-img-wrap">
     <div class="intro-img-label">ASAL Communities</div>
-    <img src="/arid.jpg" alt="Pastoralist community in Kenya's arid lands" loading="lazy" />
+    <picture>
+      <source srcset="/arid.webp" type="image/webp" />
+      <img src="/arid-opt.jpg" alt="Pastoralist community in Kenya's arid lands" loading="lazy" />
+    </picture>
     <div class="intro-img-caption">Kenya's arid and semi-arid lands are home to pastoralist communities most vulnerable to recurring drought and flood cycles.</div>
     <div class="intro-img-stat">
       <div class="n">23<span>M</span></div>
