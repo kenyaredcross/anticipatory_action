@@ -47,6 +47,12 @@ def _constrain_role(role):
 	return role
 
 
+def _can_set_role():
+	"""Only System Managers may decide a member's role; AA Admins cannot pick or
+	escalate it (everyone they create / approve becomes a plain member)."""
+	return "System Manager" in frappe.get_roles()
+
+
 def _foreign_roles(user):
 	"""Roles held by ``user`` that aren't AA roles or universal defaults."""
 	if not user or not frappe.db.exists("User", user):
@@ -314,10 +320,64 @@ def change_my_password(old_password, new_password):
 # ADMIN — USERS
 # ===========================================================================
 
+def _ensure_roster_for_aa_users():
+	"""Self-heal: make sure every Frappe User that holds an AA role (e.g. people
+	created before this app, via sign-up, or directly in the desk) has a roster
+	record, so the admin can see and manage all of them. Pure-AA accounts only —
+	anyone who also holds other-project roles is left untouched."""
+	role_rows = frappe.get_all(
+		"Has Role",
+		filters={"parenttype": "User", "role": ["in", list(AA_ROLES)]},
+		fields=["parent as user"],
+		limit=5000,
+	)
+	emails = {r.user for r in role_rows} - {"Administrator", "Guest"}
+	if not emails:
+		return
+	have = {d.email for d in frappe.get_all(
+		"Anticipatory Action User", filters={"email": ["in", list(emails)]}, fields=["email"])}
+	missing = emails - have
+	if not missing:
+		return
+
+	org = frappe.db.get_value("Anticipatory Action Organization", {}, "name")
+	if not org:
+		opts = frappe.get_meta("Anticipatory Action Organization").get_field("type_of_organization").options or ""
+		otype = next((o for o in opts.split("\n") if o.strip()), "Other")
+		o = frappe.get_doc({"doctype": "Anticipatory Action Organization",
+			"name_of_organization": "Unassigned", "type_of_organization": otype})
+		o.flags.ignore_permissions = True
+		o.insert()
+		org = o.name
+
+	for email in missing:
+		roles = set(frappe.get_roles(email))
+		if roles - AA_ROLES - _DEFAULT_ROLES:
+			continue  # also has non-AA roles -> managed elsewhere, leave alone
+		ud = frappe.db.get_value("User", email, ["first_name", "last_name", "phone"], as_dict=True) or {}
+		role = "Anticipatory Action Admin" if "Anticipatory Action Admin" in roles else "Anticipatory Action User"
+		try:
+			doc = frappe.get_doc({"doctype": "Anticipatory Action User",
+				"first_name": ud.get("first_name") or email.split("@")[0],
+				"last_name": ud.get("last_name") or "", "email": email,
+				"phone": ud.get("phone") or "0000000000", "organization": org,
+				"role": role, "enabled": 1})
+			doc.flags.ignore_permissions = True
+			doc.insert()
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "ensure_roster_for_aa_users")
+	frappe.db.commit()
+
+
 @frappe.whitelist()
 def list_aa_users(search=None):
-	"""The AA roster only — never the global User list."""
+	"""Every AA member (anyone holding an AA role), with their roster details.
+	Self-heals missing roster records so legacy / desk-created users show up too."""
 	_require_admin()
+	try:
+		_ensure_roster_for_aa_users()
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "list_aa_users self-heal")
 	or_filters = None
 	if search:
 		like = f"%{search}%"
@@ -330,7 +390,7 @@ def list_aa_users(search=None):
 			"organization", "role", "user", "enabled", "creation",
 		],
 		order_by="creation desc",
-		limit=500,
+		limit=1000,
 	)
 	return {"success": True, "data": users}
 
@@ -347,8 +407,10 @@ def get_user_form_meta():
 
 
 @frappe.whitelist()
-def create_aa_user(first_name, last_name, email, phone, organization, role):
+def create_aa_user(first_name, last_name, email, phone, organization, role="Anticipatory Action User"):
 	_require_admin()
+	if not _can_set_role():
+		role = "Anticipatory Action User"  # AA Admins can only create members
 	_constrain_role(role)
 	email = (email or "").strip().lower()
 	if not email:
@@ -393,7 +455,8 @@ def update_aa_user(name, first_name=None, last_name=None, phone=None, organizati
 		if not frappe.db.exists("Anticipatory Action Organization", organization):
 			frappe.throw("Please choose a valid organization.")
 		doc.organization = organization
-	if role is not None:
+	# Only a System Manager may change the role; AA Admins can edit everything else.
+	if role is not None and _can_set_role():
 		_constrain_role(role)
 		doc.role = role
 	# Email is intentionally immutable — it is the account identity.
@@ -883,14 +946,17 @@ def get_request(name):
 
 
 @frappe.whitelist()
-def approve_request(name, organization, role="Anticipatory Action User", notes=None):
+def approve_request(name, organization, role=None, notes=None):
 	"""Approve a sign-up: provision the AA account (roster record -> System User
 	+ welcome email) and mark the request Approved."""
 	_require_admin()
-	_constrain_role(role)
 	req = frappe.get_doc("AA Membership Request", name)
 	if req.status == "Approved":
 		frappe.throw("This request has already been approved.")
+	# Only a System Manager may choose the role; otherwise it is taken from the
+	# request's (System-Manager-controlled) Role field, defaulting to member.
+	role = (role if _can_set_role() and role else None) or req.role or "Anticipatory Action User"
+	_constrain_role(role)
 	if not organization or not frappe.db.exists("Anticipatory Action Organization", organization):
 		frappe.throw("Please choose a valid organization for this member.")
 	if not (req.phone or "").strip():

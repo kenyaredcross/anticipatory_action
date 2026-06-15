@@ -18,4 +18,5 @@ def get_context(context):
 
 	context.full_name = get_fullname(frappe.session.user)
 	context.is_admin = True
+	context.is_system_manager = "System Manager" in frappe.get_roles()
 	context.csrf_token = frappe.sessions.get_csrf_token()

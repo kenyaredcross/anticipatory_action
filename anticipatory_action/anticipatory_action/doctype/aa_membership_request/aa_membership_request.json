@@ -18,6 +18,7 @@
   "message",
   "section_break_review",
   "status",
+  "role",
   "review_notes",
   "column_break_review",
   "reviewed_by",
@@ -95,6 +96,15 @@
    "options": "Pending\nApproved\nRejected"
   },
   {
+   "default": "Anticipatory Action User",
+   "description": "The role this person gets when approved. Only a System Manager can change it.",
+   "fieldname": "role",
+   "fieldtype": "Select",
+   "label": "Role to Assign",
+   "options": "Anticipatory Action User\nAnticipatory Action Admin",
+   "permlevel": 1
+  },
+  {
    "fieldname": "review_notes",
    "fieldtype": "Small Text",
    "label": "Review Notes"
@@ -126,7 +136,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-06-14 00:00:00.000000",
+ "modified": "2026-06-15 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "AA Membership Request",
@@ -155,6 +165,17 @@
    "report": 1,
    "role": "Anticipatory Action Admin",
    "share": 1,
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Anticipatory Action Admin"
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "System Manager",
    "write": 1
   }
  ],
