@@ -71,3 +71,27 @@ def user_has_permission(doc, ptype=None, user=None):
 	if _is_pure_aa_user(user):
 		return getattr(doc, "name", None) == user
 	return None
+
+
+# ---------------------------------------------------------------------------
+# After-login routing — send AA members/admins to their web portal whatever
+# login path they use, WITHOUT changing where anyone else lands. System
+# Managers and other-project users are left on their normal destination.
+# Wired via the `on_session_creation` hook; the redirect is consumed by Frappe
+# in set_user_info (response["redirect_to"]).
+# ---------------------------------------------------------------------------
+
+def route_aa_user_after_login(login_manager=None):
+	user = getattr(login_manager, "user", None) or frappe.session.user
+	if user in ("Administrator", "Guest"):
+		return
+	roles = set(frappe.get_roles(user))
+	if "System Manager" in roles:
+		return  # general admins keep their normal landing
+	if "Anticipatory Action Admin" in roles:
+		dest = "/aa-admin"
+	elif "Anticipatory Action User" in roles:
+		dest = "/aa-portal"
+	else:
+		return  # not an AA account — don't touch
+	frappe.cache.hset("redirect_after_login", user, dest)
