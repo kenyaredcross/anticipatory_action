@@ -990,15 +990,56 @@ def approve_request(name, organization, role=None, notes=None):
 
 @frappe.whitelist()
 def reject_request(name, notes=None):
+	"""Decline a sign-up. A reason is required and is emailed to the applicant."""
 	_require_admin()
+	reason = (notes or "").strip()
+	if not reason:
+		frappe.throw("Please provide a reason for rejection — it is shared with the applicant.")
 	req = frappe.get_doc("AA Membership Request", name)
 	if req.status == "Approved":
 		frappe.throw("This request has already been approved and cannot be rejected.")
 	req.status = "Rejected"
-	req.review_notes = notes
+	req.review_notes = reason
 	req.reviewed_by = frappe.session.user
 	req.reviewed_on = frappe.utils.now_datetime()
 	req.flags.ignore_permissions = True
 	req.save()
 	frappe.db.commit()
+	_email_request_rejected(req, reason)
 	return {"success": True}
+
+
+def _email_request_rejected(req, reason):
+	"""Notify an applicant that their access request was not approved."""
+	if not (req.email or "").strip():
+		return
+	try:
+		name = (req.first_name or "there").strip()
+		html = f"""
+		<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;">
+		  <div style="background:#1F2937;border-bottom:3px solid #CC0000;padding:22px 32px;text-align:center;">
+		    <img src="{frappe.utils.get_url('/NDOC.png')}" alt="NDOC" height="40" style="height:40px;margin-bottom:8px;" />
+		    <p style="margin:0;font-size:18px;font-weight:700;color:#fff;">Anticipatory Action</p>
+		    <p style="margin:4px 0 0;font-size:11px;color:#9CA3AF;">Data Collection &amp; Monitoring Platform</p>
+		  </div>
+		  <div style="padding:30px 32px;color:#374151;font-size:14px;line-height:1.7;">
+		    <p style="margin:0 0 14px;font-weight:700;color:#1A1A1A;">Dear {frappe.utils.escape_html(name)},</p>
+		    <p style="margin:0 0 18px;">Thank you for your interest in the Kenya Anticipatory Action platform.
+		    After review, the TWG Secretariat is unable to approve your access request at this time.</p>
+		    <div style="background:#FEF2F2;border-left:3px solid #CC0000;padding:12px 16px;margin:0 0 18px;color:#991B1B;">
+		      <strong>Reason:</strong> {frappe.utils.escape_html(reason)}
+		    </div>
+		    <p style="margin:0;">If you believe this was in error or can provide more information,
+		    please reply to this email or contact <a href="mailto:info@ndoc.go.ke" style="color:#CC0000;">info@ndoc.go.ke</a>.</p>
+		  </div>
+		  <div style="border-top:1px solid #E5E7EB;padding:14px 32px;text-align:center;font-size:11px;color:#9CA3AF;">
+		    National Disaster Operations Centre &middot; Anticipatory Action Platform
+		  </div>
+		</div>"""
+		frappe.sendmail(
+			recipients=[req.email],
+			subject="Your Anticipatory Action access request",
+			message=html,
+		)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "reject_request email")

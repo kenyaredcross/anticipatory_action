@@ -37,7 +37,7 @@
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   background: var(--paper);
   color: var(--text);
   overflow-x: hidden;
@@ -64,20 +64,20 @@ nav.aa-nav {
   flex-shrink: 0; background: transparent;
 }
 .nav-brand-text {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 15px; font-weight: 700; letter-spacing: 0.04em;
   text-transform: uppercase; line-height: 1.1;
   color: var(--text);
 }
 .nav-brand-text span {
-  display: block; font-family: 'Barlow', sans-serif;
+  display: block; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 10px; font-weight: 400; letter-spacing: 0.16em;
   color: var(--muted); margin-top: 3px;
 }
 
 .nav-links { display: flex; align-items: center; gap: 4px; margin-left: 32px; }
 .nav-link {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px; font-weight: 500;
   color: var(--text-2); text-decoration: none;
   padding: 8px 14px; transition: color 0.2s;
@@ -108,7 +108,7 @@ nav.aa-nav {
 .nav-dropdown-inner a {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 14px;
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13.5px; font-weight: 500;
   color: var(--text); text-decoration: none;
   transition: background 0.15s, color 0.15s;
@@ -116,7 +116,7 @@ nav.aa-nav {
 }
 .nav-dropdown-inner a:hover { background: var(--paper-2); color: var(--red); }
 .nav-dropdown-inner .pillar-num {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
   color: var(--red); background: var(--red-tint);
   padding: 3px 7px; flex-shrink: 0;
@@ -126,7 +126,7 @@ nav.aa-nav {
 .btn-ghost {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 10px 18px;
-  font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600;
   color: var(--text); text-decoration: none;
   border: 1px solid var(--line);
   transition: all 0.2s; background: transparent; cursor: pointer;
@@ -136,7 +136,7 @@ nav.aa-nav {
 .btn-red {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 11px 18px; background: var(--red); color: #fff;
-  font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600;
   text-decoration: none; transition: background 0.2s;
   border: 1px solid var(--red);
 }
@@ -162,7 +162,7 @@ nav.aa-nav {
 
 .breadcrumb {
   display: flex; align-items: center; gap: 10px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 600;
   letter-spacing: 0.22em; text-transform: uppercase;
   color: rgba(255,255,255,0.4);
@@ -174,7 +174,7 @@ nav.aa-nav {
 
 .page-hero-label {
   display: inline-flex; align-items: center; gap: 12px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px; font-weight: 700;
   letter-spacing: 0.22em; text-transform: uppercase;
   color: #fff; margin-bottom: 24px;
@@ -182,7 +182,7 @@ nav.aa-nav {
 .page-hero-label::before { content: ''; width: 32px; height: 2px; background: var(--red); }
 
 .page-hero-title {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: clamp(56px, 9vw, 132px);
   font-weight: 900; line-height: 0.88;
   text-transform: uppercase; letter-spacing: -0.022em;
@@ -192,7 +192,7 @@ nav.aa-nav {
 .page-hero-title .accent { color: var(--red); font-style: italic; font-weight: 700; }
 
 .page-hero-sub {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: clamp(15px, 1.4vw, 18px); font-weight: 300;
   color: rgba(255,255,255,0.7); line-height: 1.65;
   max-width: 60ch;
@@ -200,7 +200,7 @@ nav.aa-nav {
 
 .hero-pillar-num {
   position: absolute; bottom: 28px; right: 80px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: clamp(180px, 22vw, 320px);
   font-weight: 900; line-height: 0.8;
   color: rgba(255,255,255,0.05);
@@ -214,7 +214,7 @@ nav.aa-nav {
 
 .kicker {
   display: inline-flex; align-items: center; gap: 12px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.22em;
   color: var(--red);
@@ -224,7 +224,7 @@ nav.aa-nav {
 .kicker.on-dark { color: #fff; }
 
 .h2 {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: clamp(40px, 5.2vw, 72px);
   font-weight: 800; line-height: 0.95;
   letter-spacing: -0.02em;
@@ -235,7 +235,7 @@ nav.aa-nav {
 .h2.on-dark { color: #fff; }
 
 .h3 {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: clamp(24px, 2.4vw, 32px);
   font-weight: 700; line-height: 1.1;
   letter-spacing: -0.01em;
@@ -249,7 +249,7 @@ nav.aa-nav {
 }
 
 .body-copy p {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 16px; font-weight: 400;
   color: var(--text-2); line-height: 1.75;
   margin-bottom: 16px;
@@ -271,7 +271,7 @@ nav.aa-nav {
   position: sticky; top: 96px;
 }
 .fact-box-title {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px; font-weight: 700;
   letter-spacing: 0.22em; text-transform: uppercase;
   color: rgba(255,255,255,0.5);
@@ -286,13 +286,13 @@ nav.aa-nav {
 .fact-item:last-child { border-bottom: none; padding-bottom: 0; }
 .fact-item:first-child { padding-top: 0; }
 .fact-val {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 44px; font-weight: 900; line-height: 1;
   color: #fff; letter-spacing: -0.02em;
 }
 .fact-val .u { font-size: 22px; color: var(--red); margin-left: 2px; }
 .fact-lbl {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13px; font-weight: 400;
   color: rgba(255,255,255,0.6); margin-top: 6px;
   line-height: 1.5;
@@ -318,7 +318,7 @@ nav.aa-nav {
   margin-bottom: 20px;
 }
 .obj-card h4 {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 20px; font-weight: 700;
   text-transform: uppercase; letter-spacing: -0.005em;
   color: var(--text); margin-bottom: 12px;
@@ -349,12 +349,12 @@ nav.aa-nav {
 }
 .act-item:last-child { border-bottom: none; }
 .act-num {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 36px; font-weight: 900;
   color: var(--red); line-height: 1; letter-spacing: -0.02em;
 }
 .act-item h4 {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 19px; font-weight: 700;
   text-transform: uppercase; letter-spacing: -0.005em;
   color: var(--text); margin-bottom: 8px;
@@ -380,7 +380,7 @@ nav.aa-nav {
   padding: 12px 20px;
   background: var(--paper);
   border: 1px solid var(--line);
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13.5px; font-weight: 600;
   color: var(--text); text-decoration: none;
   transition: all 0.2s;
@@ -389,7 +389,7 @@ nav.aa-nav {
 .pillar-chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
 .pillar-chip.active .pn { color: var(--red); }
 .pillar-chip .pn {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   color: var(--red); letter-spacing: 0.04em;
 }
@@ -420,12 +420,12 @@ nav.aa-nav {
 .pillar-list-row:hover .pl-name { color: var(--red); }
 .pillar-list-row:hover .pl-arrow { transform: translate(4px, -4px); color: var(--red); }
 .pl-num {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 48px; font-weight: 900; line-height: 1;
   color: var(--red); letter-spacing: -0.02em;
 }
 .pl-name {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 22px; font-weight: 700;
   text-transform: uppercase; letter-spacing: -0.005em;
   color: var(--text); line-height: 1.1;
@@ -433,7 +433,7 @@ nav.aa-nav {
 }
 .pl-name .desc {
   display: block;
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13.5px; font-weight: 400;
   color: var(--text-2);
   text-transform: none; letter-spacing: 0;
@@ -454,7 +454,7 @@ nav.aa-nav {
 .mv-card.dark { background: var(--ink); color: #fff; }
 .mv-card.span-2 { grid-column: 1 / -1; }
 .mv-card-label {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.22em; text-transform: uppercase;
   color: var(--red);
@@ -462,7 +462,7 @@ nav.aa-nav {
 }
 .mv-card.dark .mv-card-label { color: var(--red); }
 .mv-card-text {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 15px; font-weight: 400;
   color: var(--text-2); line-height: 1.7;
 }
@@ -489,13 +489,13 @@ nav.aa-nav {
 }
 .partner-card:hover { background: var(--paper-2); }
 .partner-name {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 16px; font-weight: 700;
   color: var(--text); line-height: 1.2;
   margin-bottom: 6px;
 }
 .partner-role {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12.5px; font-weight: 400;
   color: var(--muted); line-height: 1.5;
 }
@@ -531,21 +531,21 @@ nav.aa-nav {
 
 .org-type, .report-cat {
   display: inline-block; align-self: flex-start;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--red); background: var(--red-tint);
   padding: 4px 10px;
 }
 .org-name, .report-title {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 18px; font-weight: 700;
   color: var(--text); line-height: 1.25;
   letter-spacing: -0.005em;
 }
 .org-detail {
   display: flex; align-items: flex-start; gap: 10px;
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13px; color: var(--text-2);
   line-height: 1.5;
 }
@@ -556,13 +556,13 @@ nav.aa-nav {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
 .report-year {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px; font-weight: 600;
   letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--muted);
 }
 .report-desc {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13.5px; color: var(--text-2);
   line-height: 1.65; flex: 1;
 }
@@ -572,12 +572,12 @@ nav.aa-nav {
   border-top: 1px solid var(--line);
 }
 .report-source {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px; color: var(--muted);
 }
 .report-link {
   display: inline-flex; align-items: center; gap: 6px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text); text-decoration: none;
@@ -585,7 +585,7 @@ nav.aa-nav {
 }
 .report-link:hover { color: var(--red); }
 .no-link {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px; color: var(--muted); font-style: italic;
 }
 
@@ -595,7 +595,7 @@ nav.aa-nav {
   flex-wrap: wrap; margin-bottom: 36px;
 }
 .filter-label {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.22em; text-transform: uppercase;
   color: var(--muted);
@@ -605,7 +605,7 @@ nav.aa-nav {
   padding: 10px 18px;
   background: var(--paper);
   border: 1px solid var(--line);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12.5px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.12em;
   color: var(--text-2);
@@ -625,7 +625,7 @@ nav.aa-nav {
   padding: 12px 18px 12px 44px;
   background: var(--paper);
   border: 1px solid var(--line);
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
   color: var(--text);
   outline: none;
@@ -643,7 +643,7 @@ nav.aa-nav {
   padding: 12px 18px;
   background: var(--paper);
   border: 1px solid var(--line);
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
   color: var(--text);
   cursor: pointer;
@@ -660,10 +660,10 @@ nav.aa-nav {
 }
 .act-table {
   width: 100%; border-collapse: collapse;
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 .act-table th {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.22em; text-transform: uppercase;
   color: var(--muted);
@@ -686,7 +686,7 @@ nav.aa-nav {
 }
 .pillar-tag {
   display: inline-block;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--red); background: var(--red-tint);
@@ -695,7 +695,7 @@ nav.aa-nav {
 }
 .status-badge {
   display: inline-block;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase;
   padding: 4px 10px;
@@ -713,14 +713,14 @@ nav.aa-nav {
   padding: 48px 44px;
 }
 .form-title {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 26px; font-weight: 800;
   text-transform: uppercase; letter-spacing: -0.01em;
   color: var(--text);
   margin-bottom: 8px;
 }
 .form-sub {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px; font-weight: 400;
   color: var(--text-2); line-height: 1.65;
   margin-bottom: 32px;
@@ -732,7 +732,7 @@ nav.aa-nav {
 .form-group { margin-bottom: 18px; }
 .form-group label {
   display: block;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.22em; text-transform: uppercase;
   color: var(--muted);
@@ -745,7 +745,7 @@ nav.aa-nav {
   padding: 12px 16px;
   background: var(--paper);
   border: 1px solid var(--line);
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
   color: var(--text);
   outline: none;
@@ -758,14 +758,14 @@ nav.aa-nav {
 .form-group textarea::placeholder { color: var(--muted); }
 .form-group textarea {
   resize: vertical; min-height: 140px;
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 .btn-submit {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 14px 28px;
   background: var(--red); color: #fff;
   border: 1px solid var(--red);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13px; font-weight: 700;
   letter-spacing: 0.18em; text-transform: uppercase;
   cursor: pointer;
@@ -778,19 +778,19 @@ nav.aa-nav {
   background: var(--red-tint);
   border: 1px solid var(--red);
   color: var(--red-dark);
-  font-family: 'Barlow', sans-serif; font-size: 13px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px;
   padding: 12px 16px; margin-bottom: 20px;
 }
 .form-success { display: none; text-align: center; padding: 24px 0; }
 .form-success svg { margin: 0 auto 20px; display: block; color: var(--red); }
 .form-success h3 {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 30px; font-weight: 800;
   text-transform: uppercase; letter-spacing: -0.01em;
   color: var(--text); margin-bottom: 10px;
 }
 .form-success p {
-  font-family: 'Barlow', sans-serif; font-size: 15px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px;
   color: var(--text-2); line-height: 1.65;
 }
 
@@ -803,7 +803,7 @@ nav.aa-nav {
 }
 .info-card.dark { background: var(--ink); border-color: var(--ink); color: #fff; }
 .info-label {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.22em; text-transform: uppercase;
   color: var(--red);
@@ -817,7 +817,7 @@ nav.aa-nav {
 .info-line svg { flex-shrink: 0; margin-top: 3px; color: var(--muted); }
 .info-card.dark .info-line svg { color: rgba(255,255,255,0.4); }
 .info-line-text {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px; color: var(--text);
   line-height: 1.55;
 }
@@ -845,14 +845,14 @@ nav.aa-nav {
   position: relative; z-index: 1;
 }
 .cta-strip h2 {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: clamp(36px, 4.4vw, 60px); font-weight: 800;
   line-height: 0.95; letter-spacing: -0.02em;
   margin-bottom: 16px;
 }
 .cta-strip h2 em { font-style: italic; opacity: 0.7; font-weight: 700; }
 .cta-strip p {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 16px; font-weight: 300;
   line-height: 1.7; max-width: 56ch;
   color: rgba(255,255,255,0.88);
@@ -861,7 +861,7 @@ nav.aa-nav {
   display: inline-flex; align-items: center; gap: 12px;
   padding: 18px 28px;
   background: var(--paper); color: var(--red);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13px; font-weight: 700;
   letter-spacing: 0.18em; text-transform: uppercase;
   text-decoration: none;
@@ -876,7 +876,7 @@ nav.aa-nav {
   padding: 18px 28px;
   border: 1px solid rgba(255,255,255,0.4);
   color: #fff;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13px; font-weight: 700;
   letter-spacing: 0.18em; text-transform: uppercase;
   text-decoration: none;
@@ -893,7 +893,7 @@ nav.aa-nav {
 }
 .empty-state svg { margin: 0 auto 18px; display: block; opacity: 0.3; color: var(--muted); }
 .empty-state p {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 15px; color: var(--muted);
 }
 
@@ -911,19 +911,19 @@ footer.aa-footer {
 .footer-brand-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
 .footer-brand-row img { height: 32px; width: auto; object-fit: contain; opacity: 0.85; }
 .footer-brand-name {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 22px; font-weight: 800;
   text-transform: uppercase; letter-spacing: 0.02em;
   color: #fff; line-height: 1;
 }
 .footer-tag {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13.5px; font-weight: 300;
   color: rgba(255,255,255,0.45);
   line-height: 1.7; max-width: 38ch;
 }
 .footer-col h4 {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; text-transform: uppercase;
   letter-spacing: 0.22em; font-weight: 700;
   color: rgba(255,255,255,0.3);
@@ -931,7 +931,7 @@ footer.aa-footer {
 }
 .footer-col a {
   display: block;
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px; font-weight: 400;
   color: rgba(255,255,255,0.6);
   text-decoration: none;
@@ -943,7 +943,7 @@ footer.aa-footer {
   padding-top: 28px;
   display: flex; justify-content: space-between;
   flex-wrap: wrap; gap: 16px;
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px; color: rgba(255,255,255,0.3);
 }
 .footer-bottom a { color: var(--red); text-decoration: none; opacity: 0.7; }
