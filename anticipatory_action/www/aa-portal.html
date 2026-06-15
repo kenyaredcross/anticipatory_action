@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard — Kenya Anticipatory Action</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/aa-base.css" />
+  <link rel="stylesheet" href="/aa-portal-ui.css" />
+</head>
+<body class="portal">
+
+<header class="portal-bar">
+  <a href="/aa-portal" class="pb-brand">
+    <img src="/NDOC.png" alt="NDOC" />
+    <div class="pb-name">Anticipatory Action<span>Member Portal</span></div>
+  </a>
+  <nav class="pb-links" id="pbLinks">
+    <a href="/aa-portal" class="active">Dashboard</a>
+    <a href="/anticipatory-action">New Submission</a>
+    {% if is_admin %}<a href="/aa-admin">Admin Console</a>{% endif %}
+    <a href="/aa-profile">Profile</a>
+    <a href="/app" title="Open the Frappe desk">Desk ↗</a>
+  </nav>
+  <div class="pb-end">
+    <span class="pb-user">{{ full_name }}</span>
+    <button class="pb-logout" id="logoutBtn">Log Out</button>
+    <button class="pb-toggle" id="navToggle" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="portal-wrap">
+  <div class="portal-head">
+    <div>
+      <div class="portal-kicker">Welcome, {{ full_name.split(' ')[0] }}</div>
+      <h1 class="portal-title">My Dashboard</h1>
+      <p class="portal-sub">Track the anticipatory actions you've reported, keep them up to date while they're under review, and browse the programme's knowledge library.</p>
+    </div>
+    <a href="/anticipatory-action" class="btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Submission
+    </a>
+  </div>
+
+  <div class="stat-grid" id="stats">
+    <div class="stat"><div class="v" id="st-total">—</div><div class="l">Total Submissions</div></div>
+    <div class="stat accent"><div class="v" id="st-pending">—</div><div class="l">Pending Review</div></div>
+    <div class="stat"><div class="v" id="st-approved">—</div><div class="l">Approved</div></div>
+    <div class="stat"><div class="v" id="st-people">—</div><div class="l">People Targeted</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="subs">My Submissions</button>
+    <button class="tab" data-tab="reports">Knowledge Library</button>
+  </div>
+
+  <section class="tab-panel active" id="panel-subs">
+    <div id="subs-body"><div class="loading">Loading your submissions…</div></div>
+  </section>
+
+  <section class="tab-panel" id="panel-reports">
+    <div class="toolbar">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="reportSearch" placeholder="Search reports, publications, keywords…" />
+      </div>
+    </div>
+    <div id="reports-body"><div class="loading">Loading library…</div></div>
+  </section>
+</main>
+
+<script>window.AA_CSRF = "{{ csrf_token or '' }}";</script>
+<script src="/aa-portal-ui.js"></script>
+<script>
+(function () {
+  var REPORTS = [];
+
+  // ---- tabs ----
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (x) { x.classList.remove('active'); });
+      t.classList.add('active');
+      document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+      if (t.dataset.tab === 'reports' && !REPORTS.length) loadReports();
+    });
+  });
+
+  function statusBadge(s) {
+    if (s === 'Approved') return '<span class="badge approved">Approved</span>';
+    if (s === 'Not Approved') return '<span class="badge rejected">Not Approved</span>';
+    return '<span class="badge pending">Pending Review</span>';
+  }
+
+  function subCard(s) {
+    var details = s.details || [];
+    var people = details.reduce(function (a, d) { return a + Number(d.number_of_people_targeted || 0); }, 0);
+    var counties = Array.from(new Set(details.map(function (d) { return d.county; }).filter(Boolean)));
+    var dates = '';
+    if (s.activation_start_date) {
+      dates = s.activation_start_date + (s.activation_end_date ? ' → ' + s.activation_end_date : '');
+    }
+    var actions = '';
+    if (s.can_edit) {
+      actions =
+        '<button class="btn sm ghost" data-edit="' + AA.esc(s.name) + '">Edit</button>' +
+        '<button class="btn sm danger" data-withdraw="' + AA.esc(s.name) + '">Withdraw</button>';
+    } else {
+      actions = '<span class="badge muted">Locked</span>';
+    }
+    var reason = (s.status === 'Not Approved' && s.reason_for_rejection)
+      ? '<div class="sc-reason"><b>Reason:</b> ' + AA.esc(s.reason_for_rejection) + '</div>' : '';
+
+    return '<div class="sub-card">' +
+      '<div class="sc-top"><div>' +
+        '<div class="sc-org">' + AA.esc(s.implementing_organization || 'Untitled') + '</div>' +
+        '<div class="sc-ref">' + AA.esc(s.name) + '</div>' +
+      '</div>' + statusBadge(s.status) + '</div>' +
+      '<div class="sc-meta">' +
+        (s.anticipated_hazard ? '<span><b>Hazard:</b> ' + AA.esc(s.anticipated_hazard) + '</span>' : '') +
+        (counties.length ? '<span><b>Counties:</b> ' + AA.esc(counties.join(', ')) + '</span>' : '') +
+        (people ? '<span><b>People:</b> ' + AA.fmtNum(people) + '</span>' : '') +
+        (dates ? '<span><b>Window:</b> ' + AA.esc(dates) + '</span>' : '') +
+      '</div>' + reason +
+      '<div class="sc-actions">' + actions + '</div>' +
+    '</div>';
+  }
+
+  async function loadSubs() {
+    var body = document.getElementById('subs-body');
+    try {
+      var r = await AA.call('anticipatory_action.api.portal.get_my_submissions');
+      var rows = (r && r.data) || [];
+      // stats
+      document.getElementById('st-total').textContent = rows.length;
+      document.getElementById('st-pending').textContent = rows.filter(function (x) { return (x.status || 'Pending') === 'Pending'; }).length;
+      document.getElementById('st-approved').textContent = rows.filter(function (x) { return x.status === 'Approved'; }).length;
+      var people = rows.reduce(function (a, s) {
+        return a + (s.details || []).reduce(function (b, d) { return b + Number(d.number_of_people_targeted || 0); }, 0);
+      }, 0);
+      document.getElementById('st-people').textContent = AA.fmtNum(people);
+
+      if (!rows.length) {
+        body.innerHTML = '<div class="empty">' +
+          '<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+          '<p>You haven\'t reported any anticipatory actions yet.</p>' +
+          '<p style="margin-top:14px"><a class="btn" href="/anticipatory-action">Make your first submission</a></p></div>';
+        return;
+      }
+      body.innerHTML = '<div class="sub-grid">' + rows.map(subCard).join('') + '</div>';
+      body.querySelectorAll('[data-edit]').forEach(function (b) {
+        b.addEventListener('click', function () { window.location.href = '/anticipatory-action?name=' + encodeURIComponent(b.dataset.edit); });
+      });
+      body.querySelectorAll('[data-withdraw]').forEach(function (b) {
+        b.addEventListener('click', function () { withdraw(b.dataset.withdraw); });
+      });
+    } catch (e) {
+      body.innerHTML = '<div class="empty"><p>' + AA.esc(e.message) + '</p></div>';
+    }
+  }
+
+  async function withdraw(name) {
+    if (!confirm('Withdraw and permanently delete this submission? This cannot be undone.')) return;
+    try {
+      await AA.call('anticipatory_action.api.portal.withdraw_my_submission', { name: name });
+      AA.toast('Submission withdrawn.', true);
+      loadSubs();
+    } catch (e) { AA.toast(e.message); }
+  }
+
+  function reportCard(r) {
+    var when = [r.month, r.year].filter(Boolean).join(' ');
+    var link = r.url
+      ? '<a class="btn sm ghost" href="' + AA.esc(r.url) + '" target="_blank" rel="noopener">Open</a>'
+      : '<span class="badge muted">No link</span>';
+    return '<tr>' +
+      '<td class="strong">' + AA.esc(r.title) + (r.description ? '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(r.description) + '</div>' : '') + '</td>' +
+      '<td>' + AA.esc(r.category || '—') + '</td>' +
+      '<td>' + AA.esc(r.source || '—') + '</td>' +
+      '<td>' + AA.esc(when || '—') + '</td>' +
+      '<td class="row-actions">' + link + '</td>' +
+    '</tr>';
+  }
+
+  function renderReports() {
+    var q = (document.getElementById('reportSearch').value || '').toLowerCase();
+    var rows = REPORTS.filter(function (r) {
+      if (!q) return true;
+      return ((r.title || '') + ' ' + (r.description || '') + ' ' + (r.keywords || '') + ' ' + (r.source || '')).toLowerCase().indexOf(q) > -1;
+    });
+    var body = document.getElementById('reports-body');
+    if (!rows.length) { body.innerHTML = '<div class="empty"><p>No matching documents.</p></div>'; return; }
+    body.innerHTML = '<div class="table-wrap"><table class="data"><thead><tr>' +
+      '<th>Title</th><th>Category</th><th>Source</th><th>Date</th><th></th></tr></thead><tbody>' +
+      rows.map(reportCard).join('') + '</tbody></table></div>';
+  }
+
+  async function loadReports() {
+    var body = document.getElementById('reports-body');
+    try {
+      REPORTS = await AA.call('anticipatory_action.anticipatory_action.page.aa_operations.aa_operations.get_reports') || [];
+      renderReports();
+    } catch (e) {
+      body.innerHTML = '<div class="empty"><p>' + AA.esc(e.message) + '</p></div>';
+    }
+  }
+
+  document.getElementById('reportSearch').addEventListener('input', renderReports);
+
+  loadSubs();
+})();
+</script>
+
+</body>
+</html>

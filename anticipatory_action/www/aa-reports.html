@@ -96,8 +96,8 @@
         {% if r.description %}<div class="report-desc">{{ r.description }}</div>{% endif %}
         <div class="report-footer">
           <span class="report-source">{% if r.source %}{{ r.source }}{% endif %}</span>
-          {% if r.link %}
-          <a href="{{ r.link }}" target="_blank" rel="noopener" class="report-link">
+          {% if r.link or r.attachment %}
+          <a href="{{ r.link or r.attachment }}" target="_blank" rel="noopener" class="report-link">
             Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </a>
           {% else %}<span class="no-link">Link coming soon</span>{% endif %}
@@ -160,7 +160,7 @@
     </div>
     <div class="footer-col">
       <h4>Contact</h4>
-      <a href="mailto:ndoc@redcross.or.ke">ndoc@redcross.or.ke</a>
+      <a href="mailto:Info@ndoc.go.ke">Info@ndoc.go.ke</a>
       <a href="mailto:info@redcross.or.ke">info@redcross.or.ke</a>
       <a href="/aa-contact">Send a Message</a>
     </div>

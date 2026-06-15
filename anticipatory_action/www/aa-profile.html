@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile — Kenya Anticipatory Action</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/aa-base.css" />
+  <link rel="stylesheet" href="/aa-portal-ui.css" />
+</head>
+<body class="portal">
+
+<header class="portal-bar">
+  <a href="/aa-portal" class="pb-brand">
+    <img src="/NDOC.png" alt="NDOC" />
+    <div class="pb-name">Anticipatory Action<span>Member Portal</span></div>
+  </a>
+  <nav class="pb-links" id="pbLinks">
+    <a href="/aa-portal">Dashboard</a>
+    <a href="/anticipatory-action">New Submission</a>
+    {% if is_admin %}<a href="/aa-admin">Admin Console</a>{% endif %}
+    <a href="/aa-profile" class="active">Profile</a>
+    <a href="/app" title="Open the Frappe desk">Desk ↗</a>
+  </nav>
+  <div class="pb-end">
+    <span class="pb-user">{{ full_name }}</span>
+    <button class="pb-logout" id="logoutBtn">Log Out</button>
+    <button class="pb-toggle" id="navToggle" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="portal-wrap" style="max-width: 780px;">
+  <div class="portal-head"><div>
+    <div class="portal-kicker">Account</div>
+    <h1 class="portal-title">My Profile</h1>
+    <p class="portal-sub">Update your contact details and password. Your email is your sign-in identity and can't be changed here — contact the Secretariat if it needs updating.</p>
+  </div></div>
+
+  <div id="alert" class="alert"></div>
+
+  <div class="card">
+    <h3 class="card-title">Account Details</h3>
+    <form id="profileForm" novalidate>
+      <div class="form-grid">
+        <div class="field"><label for="first_name">First Name</label><input id="first_name" required /></div>
+        <div class="field"><label for="last_name">Last Name</label><input id="last_name" /></div>
+        <div class="field"><label for="phone">Phone</label><input id="phone" /></div>
+        <div class="field"><label for="email">Email · Sign-in</label><input id="email" readonly /></div>
+        <div class="field"><label for="organization">Organisation</label><input id="organization" readonly /></div>
+        <div class="field"><label for="role">Role</label><input id="role" readonly /></div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn" id="saveBtn">Save Changes</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 class="card-title">Change Password</h3>
+    <form id="passwordForm" novalidate>
+      <div class="form-grid">
+        <div class="field full"><label for="old_password">Current Password</label><input type="password" id="old_password" autocomplete="current-password" required /></div>
+        <div class="field"><label for="new_password">New Password</label><input type="password" id="new_password" autocomplete="new-password" required /></div>
+        <div class="field"><label for="confirm_password">Confirm New Password</label><input type="password" id="confirm_password" autocomplete="new-password" required /></div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn ghost" id="pwBtn">Update Password</button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<script>window.AA_CSRF = "{{ csrf_token or '' }}";</script>
+<script src="/aa-portal-ui.js"></script>
+<script>
+(function () {
+  var alertEl = document.getElementById('alert');
+  function showAlert(msg, type) { alertEl.textContent = msg; alertEl.className = 'alert show ' + type; }
+  function clearAlert() { alertEl.className = 'alert'; }
+
+  async function load() {
+    try {
+      var r = await AA.call('anticipatory_action.api.portal.get_my_profile');
+      var d = (r && r.data) || {};
+      document.getElementById('first_name').value = d.first_name || '';
+      document.getElementById('last_name').value = d.last_name || '';
+      document.getElementById('phone').value = d.phone || d.mobile_no || '';
+      document.getElementById('email').value = d.email || '';
+      var m = (r && r.membership) || {};
+      document.getElementById('organization').value = m.organization_name || '—';
+      document.getElementById('role').value = (m.role ? m.role.replace('Anticipatory Action ', 'AA ') : '—');
+    } catch (e) { showAlert(e.message, 'err'); }
+  }
+
+  document.getElementById('profileForm').addEventListener('submit', async function (e) {
+    e.preventDefault(); clearAlert();
+    var btn = document.getElementById('saveBtn'); btn.disabled = true;
+    try {
+      await AA.call('anticipatory_action.api.portal.update_my_profile', {
+        first_name: document.getElementById('first_name').value.trim(),
+        last_name: document.getElementById('last_name').value.trim(),
+        phone: document.getElementById('phone').value.trim()
+      });
+      AA.toast('Profile updated.', true);
+    } catch (e) { showAlert(e.message, 'err'); }
+    btn.disabled = false;
+  });
+
+  document.getElementById('passwordForm').addEventListener('submit', async function (e) {
+    e.preventDefault(); clearAlert();
+    var np = document.getElementById('new_password').value;
+    var cp = document.getElementById('confirm_password').value;
+    if (np !== cp) { showAlert('The new passwords do not match.', 'err'); return; }
+    var btn = document.getElementById('pwBtn'); btn.disabled = true;
+    try {
+      await AA.call('anticipatory_action.api.portal.change_my_password', {
+        old_password: document.getElementById('old_password').value,
+        new_password: np
+      });
+      AA.toast('Password updated.', true);
+      document.getElementById('passwordForm').reset();
+    } catch (e) { showAlert(e.message, 'err'); }
+    btn.disabled = false;
+  });
+
+  load();
+})();
+</script>
+
+</body>
+</html>

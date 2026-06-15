@@ -48,9 +48,11 @@ def submit_anticipatory_action(data):
 			]
 		})
 
+		# Save as a Draft (not submitted) so the reporter can edit or withdraw
+		# it from their portal while it is still Pending. An AA Admin submits it
+		# when they approve — see anticipatory_action.api.portal.set_submission_status.
 		doc.flags.ignore_permissions = True
 		doc.insert()
-		doc.submit()
 		frappe.db.commit()
 
 		return {"success": True, "name": doc.name}

@@ -7,8 +7,9 @@ def get_context(context):
 	context.no_footer = 1
 
 	context.reports = frappe.get_all(
-		"Anticipatory Reports Table",
-		fields=["year", "month", "title", "description", "category", "source", "key_words", "link"],
+		"Anticipatory Report",
+		filters={"published": 1},
+		fields=["year", "month", "title", "description", "category", "source", "key_words", "link", "attachment"],
 		order_by="year desc, month asc"
 	)
 

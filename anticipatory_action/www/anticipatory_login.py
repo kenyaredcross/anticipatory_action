@@ -15,10 +15,16 @@ def get_context(context):
 	# Already authenticated? Skip the login screen and send them onward.
 	if frappe.session.user and frappe.session.user != "Guest":
 		if not redirect_to:
-			if frappe.session.data.user_type == "Website User":
+			aa_roles = {"Anticipatory Action User", "Anticipatory Action Admin"} & set(frappe.get_roles())
+			if aa_roles:
+				# AA accounts land on their portal (role_home_page), not the desk.
+				redirect_to = get_home_page()
+			elif frappe.session.data.user_type == "Website User":
 				redirect_to = get_default_path() or get_home_page()
 			else:
 				redirect_to = get_default_path() or "/app"
+		if redirect_to and not redirect_to.startswith("/"):
+			redirect_to = "/" + redirect_to
 		frappe.local.flags.redirect_location = redirect_to
 		raise frappe.Redirect
 

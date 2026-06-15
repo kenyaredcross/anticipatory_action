@@ -65,6 +65,12 @@ app_license = "mit"
 # 	"Role": "home_page"
 # }
 
+# Land AA accounts on their portal after login instead of the desk.
+role_home_page = {
+	"Anticipatory Action Admin": "/aa-admin",
+	"Anticipatory Action User": "/aa-portal",
+}
+
 # Generators
 # ----------
 
@@ -128,6 +134,25 @@ app_license = "mit"
 # has_permission = {
 # 	"Event": "frappe.desk.doctype.event.event.has_permission",
 # }
+
+# Scope non-admin AA users to their own submissions, and confined AA accounts to
+# their own User record (so they can't browse everyone on this shared site).
+permission_query_conditions = {
+	"Anticipatory Action": "anticipatory_action.api.permissions.aa_query_conditions",
+	"User": "anticipatory_action.api.permissions.user_query_conditions",
+}
+
+has_permission = {
+	"Anticipatory Action": "anticipatory_action.api.permissions.aa_has_permission",
+	"User": "anticipatory_action.api.permissions.user_has_permission",
+}
+
+# Ship the AA roles so they exist on a fresh install (the workspace + doctype
+# permissions reference them). The workspace itself ships in the module's
+# workspace/ folder and installs on migrate.
+fixtures = [
+	{"dt": "Role", "filters": [["name", "in", ["Anticipatory Action User", "Anticipatory Action Admin"]]]},
+]
 
 # Document Events
 # ---------------
