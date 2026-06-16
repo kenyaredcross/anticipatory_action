@@ -36,8 +36,12 @@
 <main class="portal-wrap admin-wrap">
   <div class="portal-head"><div>
     <div class="portal-kicker">Secretariat</div>
-    <h1 class="portal-title">Admin Console</h1>
+    <h1 class="portal-title">{% if is_approver %}Approver Console{% else %}Admin Console{% endif %}</h1>
+    {% if is_approver %}
+    <p class="portal-sub">Review and clear the submission queue, and curate the programme's activities, reports and publications.</p>
+    {% else %}
     <p class="portal-sub">Manage Anticipatory Action members, review submissions, and curate the programme's activities, reports and publications — all in one place.</p>
+    {% endif %}
   </div></div>
 
   <div class="admin-shell">
@@ -47,6 +51,7 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           <span>Overview</span>
         </button>
+        {% if can_manage_users %}
         <button class="tab" data-tab="users">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span>Users</span><span class="count" id="cnt-users" style="display:none"></span>
@@ -55,6 +60,7 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="11" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
           <span>Requests</span><span class="count" id="cnt-reqs" style="display:none"></span>
         </button>
+        {% endif %}
         <button class="tab" data-tab="submissions">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
           <span>Submissions</span>
@@ -67,10 +73,12 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span>Activities</span>
         </button>
+        {% if can_manage_users %}
         <button class="tab" data-tab="orgs">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><line x1="9" y1="8" x2="9" y2="8"/><line x1="9" y1="12" x2="9" y2="12"/><line x1="15" y1="8" x2="15" y2="8"/><line x1="15" y1="12" x2="15" y2="12"/></svg>
           <span>Organizations</span>
         </button>
+        {% endif %}
         <button class="tab" data-tab="pubs">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           <span>Publications</span>
@@ -116,13 +124,14 @@
   <div class="review-foot" id="review-foot"></div>
 </div>
 
-<script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }};</script>
+<script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }}; window.AA_IS_ADMIN = {{ 1 if is_admin else 0 }};</script>
 <script src="/aa-portal-ui.js"></script>
 <script>
 (function () {
   'use strict';
   var P = 'anticipatory_action.api.portal.';
   var IS_SM = !!window.AA_IS_SM;  // System Manager — only they may set/change roles
+  var IS_ADMIN = !!window.AA_IS_ADMIN;  // full admin (users/orgs/sign-ups); approvers are false
   var loaded = {};
   // Select options are loaded live from the server (get_admin_meta) so they
   // never drift from the doctype schema. These are just fallbacks.
@@ -164,8 +173,9 @@
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
     document.getElementById('modal-form').addEventListener('submit', function (e) {
       e.preventDefault();
-      var btn = document.getElementById('modal-submit'); btn.disabled = true;
-      Promise.resolve(onSubmit()).catch(function (err) { modalErr(err.message); }).then(function () { btn.disabled = false; });
+      var btn = document.getElementById('modal-submit');
+      var done = busy(btn, 'Working…');
+      Promise.resolve(onSubmit()).catch(function (err) { modalErr(err.message); }).then(function () { done(); });
     });
   }
   function closeModal() { document.getElementById('modal').classList.remove('open'); }
@@ -215,6 +225,28 @@
 
   function panelHTML(id, html) { document.getElementById('panel-' + id).innerHTML = html; }
   function errPanel(id, msg) { panelHTML(id, '<div class="empty"><p>' + AA.esc(msg) + '</p></div>'); }
+
+  // Disable a button and show a "working…" state while an async action runs.
+  // Returns a restore() fn — call it on failure (on success the panel usually
+  // re-renders and replaces the button anyway).
+  function busy(btn, label) {
+    if (!btn) return function () {};
+    var html = btn.innerHTML, dis = btn.disabled;
+    btn.disabled = true; btn.classList.add('is-busy');
+    btn.innerHTML = '<span class="btn-spin" aria-hidden="true"></span>' + AA.esc(label || 'Working…');
+    return function restore() { btn.disabled = dis; btn.classList.remove('is-busy'); btn.innerHTML = html; };
+  }
+
+  // Jump to a sidebar tab programmatically (used by the overview shortcuts).
+  function goTab(name) { var t = document.querySelector('.tab[data-tab="' + name + '"]'); if (t) t.click(); }
+
+  function stat(val, label, accent) {
+    return '<div class="stat' + (accent ? ' accent' : '') + '"><div class="v">' + val + '</div><div class="l">' + AA.esc(label) + '</div></div>';
+  }
+  function setCount(id, val) {
+    var c = document.getElementById(id); if (!c) return;
+    if (val) { c.textContent = val; c.style.display = ''; } else { c.style.display = 'none'; }
+  }
   function tableHead(cols) { return '<div class="table-wrap"><table class="data"><thead><tr>' + cols.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>'; }
   function toolbar(html) { return '<div class="toolbar">' + html + '</div>'; }
 
@@ -226,33 +258,55 @@
   }
 
   // ===================== OVERVIEW =====================
+  function attnCard(tab, count, label, action, urgent) {
+    return '<button type="button" class="attn' + (urgent ? ' urgent' : ' clear') + '" data-go="' + tab + '">' +
+        '<div class="attn-n">' + (count || 0) + '</div>' +
+        '<div class="attn-meta"><div class="attn-l">' + AA.esc(label) + '</div>' +
+        '<div class="attn-a">' + AA.esc(action) + ' <span aria-hidden="true">→</span></div></div>' +
+      '</button>';
+  }
+
   async function loadOverview() {
+    panelHTML('overview', '<div class="loading">Loading…</div>');
     try {
       var r = await AA.call(P + 'get_admin_overview');
       var d = (r && r.data) || {};
-      if (typeof d.users === 'number') { var c = document.getElementById('cnt-users'); c.textContent = d.users; c.style.display = ''; }
-      if (d.messages_new) { var m = document.getElementById('cnt-msgs'); m.textContent = d.messages_new; m.style.display = ''; }
-      if (d.requests_new) { var rq = document.getElementById('cnt-reqs'); rq.textContent = d.requests_new; rq.style.display = ''; }
-      function stat(val, label, accent) { return '<div class="stat' + (accent ? ' accent' : '') + '"><div class="v">' + val + '</div><div class="l">' + label + '</div></div>'; }
+
+      // sidebar badges (these spans only exist for full admins)
+      setCount('cnt-users', d.users);
+      setCount('cnt-reqs', d.requests_new);
+      setCount('cnt-msgs', d.messages_new);
+
+      var pend = d.activations_pending || 0, reqs = d.requests_new || 0, msgs = d.messages_new || 0;
+      var attn = [attnCard('submissions', pend, pend === 1 ? 'Submission awaiting review' : 'Submissions awaiting review', 'Open review queue', pend > 0)];
+      if (IS_ADMIN) attn.push(attnCard('requests', reqs, reqs === 1 ? 'New sign-up request' : 'New sign-up requests', 'Review applicants', reqs > 0));
+      attn.push(attnCard('messages', msgs, msgs === 1 ? 'Unread message' : 'Unread messages', 'Open inbox', msgs > 0));
+
+      var needs = pend + reqs + msgs;
       var html =
+        '<div class="ov-head"><h2 class="ov-hi">' + (needs > 0 ? 'A few things need your attention' : 'You’re all caught up') + '</h2>' +
+          '<p class="ov-hs">' + (needs > 0 ? 'Jump straight to whatever needs a decision.' : 'Nothing is waiting in the queues right now.') + '</p></div>' +
+        '<div class="ov-attn">' + attn.join('') + '</div>' +
+
+        '<div class="ov-sec">Programme impact</div>' +
         '<div class="stat-grid">' +
-          stat(d.activations_pending || 0, 'Pending Review', true) +
-          stat(d.activations_approved || 0, 'Approved') +
-          stat(d.activations_total || 0, 'Total Submissions') +
+          stat(d.activations_approved || 0, 'Approved Activations') +
           stat(AA.fmtNum(d.people_reached), 'People Targeted') +
           stat(AA.fmtNum(d.households), 'Households') +
           stat('KES ' + AA.fmtNum(d.funds_kes), 'Funds Mobilised') +
           stat(d.counties_active || 0, 'Counties Active') +
-          stat(d.organizations || 0, 'Organizations') +
+          stat(d.activations_total || 0, 'Total Submissions') +
         '</div>' +
+
+        '<div class="ov-sec">Knowledge &amp; network</div>' +
         '<div class="stat-grid">' +
-          stat(d.requests_new || 0, 'Sign-up Requests', !!d.requests_new) +
-          stat(d.users || 0, 'AA Users') +
           stat(d.reports || 0, 'Reports') +
           stat(d.activities || 0, 'TWG Activities') +
           stat(d.documents || 0, 'Publications') +
-          stat(d.messages_new || 0, 'New Messages', !!d.messages_new) +
+          (IS_ADMIN ? stat(d.organizations || 0, 'Organizations') : '') +
+          (IS_ADMIN ? stat(d.users || 0, 'AA Members') : '') +
         '</div>';
+
       if (d.hazards && d.hazards.length) {
         html += '<div class="card"><h3 class="card-title">Approved Activations by Hazard</h3>' +
           tableHead(['Hazard', 'Activations', 'People Targeted']) +
@@ -260,6 +314,9 @@
           '</tbody></table></div></div>';
       }
       panelHTML('overview', html);
+      document.querySelectorAll('#panel-overview [data-go]').forEach(function (c) {
+        c.addEventListener('click', function () { goTab(c.dataset.go); });
+      });
     } catch (e) { errPanel('overview', e.message); }
   }
 
@@ -357,10 +414,10 @@
           var badge = s.status === 'Approved' ? '<span class="badge approved">Approved</span>'
             : s.status === 'Not Approved' ? '<span class="badge rejected">Not Approved</span>'
             : '<span class="badge pending">Pending</span>';
-          var actions = '<button class="btn sm ghost" data-view="' + AA.esc(s.name) + '">View</button>';
+          var actions = '';
           if (s.status !== 'Approved') actions += '<button class="btn sm ok" data-approve="' + AA.esc(s.name) + '">Approve</button>';
           if (s.status !== 'Not Approved') actions += '<button class="btn sm danger" data-reject="' + AA.esc(s.name) + '">Reject</button>';
-          return '<tr>' +
+          return '<tr class="clickable-row" data-row-open="' + AA.esc(s.name) + '" title="Click to open this submission">' +
             '<td class="strong">' + AA.esc(s.name) + '</td>' +
             '<td>' + AA.esc(s.organization || '—') + '</td>' +
             '<td>' + AA.esc(s.hazard || '—') + '</td>' +
@@ -375,17 +432,20 @@
       panelHTML('submissions', html);
       document.getElementById('sub-filter').addEventListener('change', function () { loadSubmissions(this.value); });
       document.querySelectorAll('[data-approve]').forEach(function (b) {
-        b.addEventListener('click', async function () {
+        b.addEventListener('click', async function (e) {
+          e.stopPropagation();
           if (!confirm('Approve this submission? It will be locked and published to the dashboards.')) return;
-          try { await AA.call(P + 'set_submission_status', { name: b.dataset.approve, status: 'Approved' }); AA.toast('Submission approved.', true); loadSubmissions(document.getElementById('sub-filter').value); }
-          catch (e) { AA.toast(e.message); }
+          var done = busy(b, 'Approving…');
+          try { await AA.call(P + 'set_submission_status', { name: b.dataset.approve, status: 'Approved' }); AA.toast('Submission approved.', true); loaded.overview = false; loadSubmissions(curSubFilter()); }
+          catch (e2) { AA.toast(e2.message); done(); }
         });
       });
       document.querySelectorAll('[data-reject]').forEach(function (b) {
-        b.addEventListener('click', function () { rejectSubmission(b.dataset.reject); });
+        b.addEventListener('click', function (e) { e.stopPropagation(); rejectSubmission(b.dataset.reject); });
       });
-      document.querySelectorAll('[data-view]').forEach(function (b) {
-        b.addEventListener('click', function () { submissionDetail(b.dataset.view); });
+      // Whole row opens the review screen (clicks on the action buttons are ignored).
+      document.querySelectorAll('#panel-submissions tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function (e) { if (e.target.closest('button')) return; submissionDetail(tr.dataset.rowOpen); });
       });
     } catch (e) { errPanel('submissions', e.message); }
   }
@@ -493,8 +553,9 @@
       var ap = document.getElementById('rv-approve');
       if (ap) ap.addEventListener('click', async function () {
         if (!confirm('Approve this submission? It will be locked and published to the dashboards.')) return;
+        var done = busy(ap, 'Approving…');
         try { await AA.call(P + 'set_submission_status', { name: name, status: 'Approved' }); closeReview(); AA.toast('Submission approved.', true); loadSubmissions(curSubFilter()); loaded.overview = false; }
-        catch (e) { AA.toast(e.message); }
+        catch (e) { AA.toast(e.message); done(); }
       });
       var rj = document.getElementById('rv-reject');
       if (rj) rj.addEventListener('click', function () { reviewReject(name); });
@@ -940,14 +1001,14 @@
         document.getElementById('q-approve').addEventListener('click', async function () {
           var org = v('q_org');
           if (!org) { AA.toast('Choose an organisation to assign.'); return; }
-          this.disabled = true;
+          var done = busy(this, 'Creating account…');
           try {
             var args = { name: name, organization: org, notes: v('q_notes') };
             if (IS_SM) args.role = v('q_role');
             await AA.call(P + 'approve_request', args);
             closeModal(); AA.toast('Approved — account created, welcome email sent.', true);
             loadRequests(curReqFilter()); loaded.users = false; loaded.overview = false;
-          } catch (e) { AA.toast(e.message); this.disabled = false; }
+          } catch (e) { AA.toast(e.message); done(); }
         });
         document.getElementById('q-reject').addEventListener('click', function () { rejectRequestModal(name); });
       }

@@ -389,3 +389,50 @@ table.data .row-actions { display: flex; gap: 6px; justify-content: flex-end; wh
   .form-grid { grid-template-columns: 1fr; }
   .portal-wrap { padding: 24px 18px 64px; }
 }
+
+/* ---------- busy button spinner ---------- */
+.btn-spin {
+  display: inline-block; width: 13px; height: 13px; margin-right: 8px; vertical-align: -2px;
+  border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%;
+  animation: aa-spin 0.6s linear infinite;
+}
+.btn.is-busy { cursor: progress; }
+@keyframes aa-spin { to { transform: rotate(360deg); } }
+
+/* ---------- clickable table rows ---------- */
+table.data tbody tr.clickable-row { cursor: pointer; transition: background 0.12s var(--ease); }
+table.data tbody tr.clickable-row:hover { background: rgba(0,0,0,0.025); }
+
+/* ---------- overview: attention cards + section headers ---------- */
+.ov-head { margin: 2px 0 16px; }
+.ov-hi {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 800; font-size: 22px;
+  letter-spacing: -0.01em; color: var(--text); margin: 0;
+}
+.ov-hs { margin: 5px 0 0; color: var(--muted); font-size: 13.5px; }
+.ov-sec {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 700; font-size: 11px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+  margin: 30px 0 12px; padding-bottom: 9px; border-bottom: 1px solid var(--line);
+}
+.ov-attn { display: grid; grid-template-columns: repeat(auto-fit, minmax(225px, 1fr)); gap: 14px; margin-bottom: 8px; }
+.attn {
+  display: flex; align-items: center; gap: 15px; text-align: left; width: 100%;
+  background: var(--paper); border: 1px solid var(--line); border-left: 3px solid var(--stone);
+  padding: 16px 18px; cursor: pointer; font-family: inherit;
+  transition: transform 0.12s var(--ease), box-shadow 0.12s var(--ease), border-color 0.12s var(--ease);
+}
+.attn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+.attn-n {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 800; font-size: 34px;
+  line-height: 1; letter-spacing: -0.02em; color: var(--text); min-width: 30px;
+}
+.attn-l { font-weight: 600; font-size: 13.5px; color: var(--text); line-height: 1.3; }
+.attn-a {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 600; font-size: 10.5px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 5px;
+}
+.attn.urgent { border-left-color: var(--red); }
+.attn.urgent .attn-n { color: var(--red); }
+.attn.urgent .attn-a { color: var(--red-dark); }
+.attn.clear .attn-n { color: var(--stone); }

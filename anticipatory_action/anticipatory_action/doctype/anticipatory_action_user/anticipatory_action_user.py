@@ -7,7 +7,11 @@ from frappe.model.document import Document
 # The only roles an Anticipatory Action account may ever hold. Keeping this
 # narrow is what stops an AA Admin from minting System Managers or touching
 # users that belong to the other projects on this shared site.
-AA_ROLES = ("Anticipatory Action User", "Anticipatory Action Admin")
+AA_ROLES = (
+	"Anticipatory Action User",
+	"Anticipatory Action Approver",
+	"Anticipatory Action Admin",
+)
 
 
 class AnticipatoryActionUser(Document):
@@ -73,8 +77,11 @@ AA_MODULE = "Anticipatory Action"
 
 def _workspace_for(role):
 	"""Members and admins land on different, role-scoped workspaces — so a member
-	never sees the admin-only links (Organizations, Contact, Admin Console)."""
-	return "Anticipatory Action Admin" if role == "Anticipatory Action Admin" else "Anticipatory Action"
+	never sees the admin-only links (Organizations, Contact, Admin Console).
+	Approvers are admin-adjacent, so they share the admin workspace (the web
+	console at /aa-admin is where their real, scoped tools live)."""
+	admin_like = {"Anticipatory Action Admin", "Anticipatory Action Approver"}
+	return "Anticipatory Action Admin" if role in admin_like else "Anticipatory Action"
 
 
 def _confine_modules(user, role=None):

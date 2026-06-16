@@ -371,18 +371,18 @@ select.aa-input {
         </div>
         <div class="aa-field">
           <label>Name of person reporting <span class="req">*</span></label>
-          <input name="reporting_person" class="aa-input" required />
+          <input name="reporting_person" class="aa-input" required value="{{ reporter_name or '' }}" />
           <div class="aa-field-error">This field is required</div>
         </div>
         <div class="aa-field">
           <label>Email address <span class="req">*</span></label>
-          <input type="email" name="reporter_email" class="aa-input" required />
+          <input type="email" name="reporter_email" class="aa-input" required value="{{ reporter_email or '' }}" />
           <div class="aa-field-error">Please enter a valid email</div>
         </div>
         <div class="aa-field">
           <label>Phone number</label>
           <div class="aa-field-hint">Format: 254700000000</div>
-          <input type="tel" name="reporter_phone_number" class="aa-input" placeholder="254700000000" />
+          <input type="tel" name="reporter_phone_number" class="aa-input" placeholder="254700000000" value="{{ reporter_phone or '' }}" />
         </div>
       </div>
     </div>
