@@ -9,13 +9,16 @@
  "field_order": [
   "activity",
   "column_break_top",
-  "date",
+  "start_date",
+  "end_date",
   "pillar",
+  "published",
   "section_break_body",
   "activity_reference",
   "milestone",
   "status",
-  "details"
+  "details",
+  "date"
  ],
  "fields": [
   {
@@ -30,10 +33,15 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "date",
+   "fieldname": "start_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Date"
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
   },
   {
    "fieldname": "pillar",
@@ -41,6 +49,13 @@
    "in_list_view": 1,
    "label": "Pillar",
    "options": "Pillar 1\nPillar 2\nPillar 3\nPillar 4\nPillar 5"
+  },
+  {
+   "default": "1",
+   "fieldname": "published",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Published (visible on the public site)"
   },
   {
    "fieldname": "section_break_body",
@@ -57,15 +72,24 @@
    "label": "Milestone"
   },
   {
+   "default": "Planned",
    "fieldname": "status",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Status"
+   "label": "Status",
+   "options": "Planned\nOngoing\nCompleted\nOn Hold\nCancelled"
   },
   {
    "fieldname": "details",
    "fieldtype": "Small Text",
    "label": "Details"
+  },
+  {
+   "description": "Superseded by Start Date — kept for historical records.",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "hidden": 1,
+   "label": "Date (legacy)"
   }
  ],
  "index_web_pages_for_search": 1,

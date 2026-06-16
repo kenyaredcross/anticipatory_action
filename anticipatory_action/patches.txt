@@ -8,3 +8,4 @@ anticipatory_action.patches.repair_aa_users
 anticipatory_action.patches.migrate_reports_activities
 anticipatory_action.patches.confine_aa_users
 anticipatory_action.patches.reload_aa_meta
+anticipatory_action.patches.upgrade_activities

@@ -677,13 +677,17 @@ def delete_report(name):
 # ADMIN — ACTIVITIES (standalone Anticipatory Activity doctype)
 # ===========================================================================
 
+_ACTIVITY_STATUSES = ("Planned", "Ongoing", "Completed", "On Hold", "Cancelled")
+
+
 @frappe.whitelist()
 def list_activities():
 	_require_approver()
 	rows = frappe.get_all(
 		"Anticipatory Activity",
-		fields=["name", "date", "pillar", "activity", "activity_reference", "milestone", "status", "details"],
-		order_by="date desc, modified desc",
+		fields=["name", "start_date", "end_date", "pillar", "activity", "activity_reference",
+				"milestone", "status", "published", "details"],
+		order_by="start_date desc, modified desc",
 		limit=1000,
 	)
 	return {"success": True, "data": rows}
@@ -696,17 +700,20 @@ def get_activity(name):
 
 
 @frappe.whitelist()
-def add_activity(activity, date=None, pillar=None, activity_reference=None, milestone=None, status=None, details=None):
+def add_activity(activity, start_date=None, end_date=None, pillar=None, activity_reference=None,
+				 milestone=None, status=None, details=None, published=1):
 	_require_approver()
 	if not (activity or "").strip():
 		frappe.throw("Activity is required.")
 	if pillar and pillar not in _PILLARS:
 		frappe.throw("Invalid pillar.")
+	if status and status not in _ACTIVITY_STATUSES:
+		frappe.throw("Invalid status.")
 	doc = frappe.get_doc({
 		"doctype": "Anticipatory Activity",
-		"activity": activity, "date": date or None, "pillar": pillar,
-		"activity_reference": activity_reference, "milestone": milestone,
-		"status": status, "details": details,
+		"activity": activity, "start_date": start_date or None, "end_date": end_date or None,
+		"pillar": pillar, "activity_reference": activity_reference, "milestone": milestone,
+		"status": status or "Planned", "details": details, "published": _as_bool(published),
 	})
 	doc.flags.ignore_permissions = True
 	doc.insert()
@@ -715,17 +722,21 @@ def add_activity(activity, date=None, pillar=None, activity_reference=None, mile
 
 
 @frappe.whitelist()
-def update_activity(name, activity=None, date=None, pillar=None, activity_reference=None,
-					milestone=None, status=None, details=None):
+def update_activity(name, activity=None, start_date=None, end_date=None, pillar=None,
+					activity_reference=None, milestone=None, status=None, details=None, published=None):
 	_require_approver()
 	if pillar and pillar not in _PILLARS:
 		frappe.throw("Invalid pillar.")
+	if status and status not in _ACTIVITY_STATUSES:
+		frappe.throw("Invalid status.")
 	doc = frappe.get_doc("Anticipatory Activity", name)
-	for field, value in (("activity", activity), ("date", date), ("pillar", pillar),
-						 ("activity_reference", activity_reference), ("milestone", milestone),
-						 ("status", status), ("details", details)):
+	for field, value in (("activity", activity), ("start_date", start_date), ("end_date", end_date),
+						 ("pillar", pillar), ("activity_reference", activity_reference),
+						 ("milestone", milestone), ("status", status), ("details", details)):
 		if value is not None:
 			doc.set(field, value)
+	if published is not None:
+		doc.published = _as_bool(published)
 	doc.flags.ignore_permissions = True
 	doc.save()
 	frappe.db.commit()
@@ -917,11 +928,56 @@ def get_admin_meta():
 		"publication_types": _select_options("Anticipatory Action Reference Documents", "type"),
 		"report_categories": _select_options("Anticipatory Report", "category"),
 		"pillars": _select_options("Anticipatory Activity", "pillar"),
+		"activity_statuses": _select_options("Anticipatory Activity", "status"),
 		"roles": sorted(AA_ROLES),
 		"caps": {
 			"is_admin": _is_admin(),          # manage users, orgs, sign-ups
 			"is_system_manager": _can_set_role(),  # may assign roles
 		},
+	}
+
+
+# ===========================================================================
+# FORM BUILDER (concept preview — read-only)
+# ===========================================================================
+
+# The form whose structure the builder previews. Read-only for now: the
+# builder shows how the Anticipatory Action submission form is composed
+# (sections, fields, properties) but does not yet edit it.
+_BUILDER_FORMS = {
+	"Anticipatory Action": "Anticipatory Action — Submission",
+	"Anticipatory Action Details": "Anticipatory Action — Intervention Detail (row)",
+}
+
+
+@frappe.whitelist()
+def get_form_schema(doctype="Anticipatory Action"):
+	"""Return the live field layout of a submission form so the admin Form
+	Builder can render it. Concept stage: read-only, no mutation."""
+	_require_admin()
+	if doctype not in _BUILDER_FORMS:
+		frappe.throw("Unknown form.")
+	meta = frappe.get_meta(doctype)
+	fields = [
+		{
+			"fieldname": df.fieldname,
+			"label": df.label,
+			"fieldtype": df.fieldtype,
+			"options": df.options,
+			"reqd": int(df.reqd or 0),
+			"read_only": int(df.read_only or 0),
+			"hidden": int(df.hidden or 0),
+			"in_list_view": int(df.in_list_view or 0),
+			"description": df.description,
+		}
+		for df in meta.fields
+	]
+	return {
+		"success": True,
+		"doctype": doctype,
+		"label": _BUILDER_FORMS[doctype],
+		"forms": [{"doctype": k, "label": v} for k, v in _BUILDER_FORMS.items()],
+		"fields": fields,
 	}
 
 

@@ -8,8 +8,12 @@ def get_context(context):
 
 	context.activities = frappe.get_all(
 		"Anticipatory Activity",
-		fields=["date", "pillar", "activity", "activity_reference", "milestone", "status"],
-		order_by="date desc"
+		filters={"published": 1},
+		fields=[
+			"start_date", "end_date", "pillar", "activity",
+			"activity_reference", "milestone", "status",
+		],
+		order_by="start_date desc",
 	)
 
 	# Build unique pillar list for filter UI
