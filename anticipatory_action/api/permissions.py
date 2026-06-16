@@ -10,18 +10,32 @@ Wired in hooks.py via `permission_query_conditions` and `has_permission`.
 
 import frappe
 
-# Roles that get to see every submission.
+# Full administrators — manage users, organizations and sign-up approvals.
 ADMIN_ROLES = {"Anticipatory Action Admin", "System Manager"}
+
+# The middle "Approver" role: reviews submissions and curates content
+# (reports, activities, publications, messages) but cannot manage users,
+# organizations, sign-up requests or assign roles.
+APPROVER_ROLE = "Anticipatory Action Approver"
+
+# Everyone who may see/act on every submission (the review queue).
+REVIEW_ROLES = ADMIN_ROLES | {APPROVER_ROLE}
 
 
 def _is_admin(user=None):
 	return bool(ADMIN_ROLES & set(frappe.get_roles(user or frappe.session.user)))
 
 
+def _can_review(user=None):
+	"""Admins, System Managers and Approvers — anyone allowed to see and act on
+	the full submission queue (not scoped to their own records)."""
+	return bool(REVIEW_ROLES & set(frappe.get_roles(user or frappe.session.user)))
+
+
 def aa_query_conditions(user=None):
 	"""SQL WHERE fragment restricting non-admins to records they own."""
 	user = user or frappe.session.user
-	if _is_admin(user) or user == "Guest":
+	if _can_review(user) or user == "Guest":
 		return ""
 	return f"`tabAnticipatory Action`.`owner` = {frappe.db.escape(user)}"
 
@@ -33,7 +47,7 @@ def aa_has_permission(doc, ptype=None, user=None):
 	and the owner), and False to actively deny everyone else.
 	"""
 	user = user or frappe.session.user
-	if _is_admin(user) or user == "Guest":
+	if _can_review(user) or user == "Guest":
 		return None
 	return None if getattr(doc, "owner", None) == user else False
 
@@ -45,7 +59,7 @@ def aa_has_permission(doc, ptype=None, user=None):
 # record. Other users (System Managers, other projects) are untouched.
 # ---------------------------------------------------------------------------
 
-AA_ONLY_ROLES = {"Anticipatory Action User", "Anticipatory Action Admin"}
+AA_ONLY_ROLES = {"Anticipatory Action User", "Anticipatory Action Admin", APPROVER_ROLE}
 _DEFAULT_ROLES = {"All", "Guest", "Desk User"}
 
 
@@ -88,7 +102,7 @@ def route_aa_user_after_login(login_manager=None):
 	roles = set(frappe.get_roles(user))
 	if "System Manager" in roles:
 		return  # general admins keep their normal landing
-	if "Anticipatory Action Admin" in roles:
+	if {"Anticipatory Action Admin", APPROVER_ROLE} & roles:
 		dest = "/aa-admin"
 	elif "Anticipatory Action User" in roles:
 		dest = "/aa-portal"

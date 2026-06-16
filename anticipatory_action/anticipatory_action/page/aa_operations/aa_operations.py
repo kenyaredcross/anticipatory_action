@@ -224,14 +224,17 @@ def get_events():
 	"""
 	rows = frappe.get_all(
 		"Anticipatory Activity",
-		fields=["name", "date", "pillar", "activity", "activity_reference", "milestone", "status"],
-		order_by="date desc",
+		fields=["name", "start_date", "end_date", "date", "pillar", "activity",
+				"activity_reference", "milestone", "status"],
+		order_by="start_date desc",
 		limit=300,
 	)
 
 	today = getdate(nowdate())
 	upcoming, past = [], []
 	for r in rows:
+		# prefer the new start_date, fall back to the legacy single date
+		r.date = r.start_date or r.date
 		bucket = upcoming if (r.date and getdate(r.date) >= today) else past
 		bucket.append(r)
 

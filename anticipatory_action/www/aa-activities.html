@@ -81,13 +81,13 @@
       <table class="act-table">
         <thead>
           <tr>
-            <th>Date</th><th>Pillar</th><th>Activity</th><th>Milestone</th><th>Status</th>
+            <th>Dates</th><th>Pillar</th><th>Activity</th><th>Milestone</th><th>Status</th>
           </tr>
         </thead>
         <tbody id="actBody">
           {% for a in activities %}
           <tr data-pillar="{{ a.pillar or '' }}">
-            <td>{{ a.date or '—' }}</td>
+            <td style="white-space:nowrap">{% if a.start_date %}{{ frappe.utils.formatdate(a.start_date, "d MMM yyyy") }}{% if a.end_date %} <span style="color:var(--muted)">→</span> {{ frappe.utils.formatdate(a.end_date, "d MMM yyyy") }}{% endif %}{% else %}—{% endif %}</td>
             <td>{% if a.pillar %}<span class="pillar-tag">{{ a.pillar }}</span>{% else %}—{% endif %}</td>
             <td class="bold">
               {{ a.activity or '—' }}

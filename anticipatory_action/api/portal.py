@@ -16,10 +16,16 @@ import frappe
 from frappe.utils import strip_html
 
 from anticipatory_action.api.anticipatory_action import _sanitize
-from anticipatory_action.api.permissions import _is_admin
+from anticipatory_action.api.permissions import _can_review, _is_admin
 
-# The two roles an AA account may hold.
-AA_ROLES = {"Anticipatory Action User", "Anticipatory Action Admin"}
+# The roles an AA account may hold. "Approver" sits between User and Admin:
+# it can clear the submission queue and curate content, but not manage users,
+# organizations or sign-ups.
+AA_ROLES = {
+	"Anticipatory Action User",
+	"Anticipatory Action Approver",
+	"Anticipatory Action Admin",
+}
 
 # Roles every (system) user picks up by default — ignored when deciding whether
 # an account "belongs" to another project.
@@ -36,8 +42,16 @@ def _require_login():
 
 
 def _require_admin():
+	"""Full admin only — user, organization and sign-up management."""
 	_require_login()
 	if not _is_admin():
+		frappe.throw("You are not authorised to perform this action.", frappe.PermissionError)
+
+
+def _require_approver():
+	"""Approver or Admin — submission review and content curation."""
+	_require_login()
+	if not _can_review():
 		frappe.throw("You are not authorised to perform this action.", frappe.PermissionError)
 
 
@@ -104,7 +118,7 @@ def get_landing():
 	so the branded login page asks us instead.
 	"""
 	roles = set(frappe.get_roles())
-	if {"Anticipatory Action Admin", "System Manager"} & roles:
+	if {"Anticipatory Action Admin", "System Manager", "Anticipatory Action Approver"} & roles:
 		return "/aa-admin"
 	if "Anticipatory Action User" in roles:
 		return "/aa-portal"
@@ -240,6 +254,25 @@ def withdraw_my_submission(name):
 	frappe.delete_doc("Anticipatory Action", name, ignore_permissions=True)
 	frappe.db.commit()
 	return {"success": True}
+
+
+@frappe.whitelist()
+def download_my_submission_pdf(name):
+	"""Stream the NDOC-branded PDF copy of a submission — same layout as the
+	emailed copy. A member may print any of their own submissions (any status);
+	reviewers may print any submission."""
+	_require_login()
+	doc = frappe.get_doc("Anticipatory Action", name)
+	if doc.owner != frappe.session.user and not _can_review():
+		frappe.throw("You can only download your own submissions.", frappe.PermissionError)
+
+	from anticipatory_action.anticipatory_action.doctype.anticipatory_action.pdf import (
+		build_submission_pdf,
+	)
+
+	frappe.local.response.filename = f"Anticipatory_Action_{doc.name}.pdf"
+	frappe.local.response.filecontent = build_submission_pdf(doc)
+	frappe.local.response.type = "download"
 
 
 # ---- profile ----
@@ -499,7 +532,7 @@ def set_aa_user_active(name, enabled):
 
 @frappe.whitelist()
 def list_submissions(status=None):
-	_require_admin()
+	_require_approver()
 	from anticipatory_action.anticipatory_action.page.aa_operations.aa_operations import get_activations
 
 	return {"success": True, "data": get_activations(status=status)}
@@ -509,7 +542,7 @@ def list_submissions(status=None):
 def get_submission(name):
 	"""Full read-only detail of one submission, so an admin can review it before
 	approving or rejecting."""
-	_require_admin()
+	_require_approver()
 	doc = frappe.get_doc("Anticipatory Action", name)
 	data = {f: doc.get(f) for f in _PARENT_FIELDS}
 	data.update({
@@ -531,7 +564,7 @@ def get_submission(name):
 @frappe.whitelist()
 def set_submission_status(name, status, reason=None):
 	"""Approve (submit + lock), reject (keep editable for revision), or reset."""
-	_require_admin()
+	_require_approver()
 	if status not in ("Pending", "Approved", "Not Approved"):
 		frappe.throw("Invalid status.")
 	if status == "Not Approved" and not (reason or "").strip():
@@ -573,7 +606,7 @@ def _as_bool(v, default=1):
 
 @frappe.whitelist()
 def list_reports():
-	_require_admin()
+	_require_approver()
 	rows = frappe.get_all(
 		"Anticipatory Report",
 		fields=["name", "year", "month", "title", "description", "category", "source",
@@ -586,14 +619,14 @@ def list_reports():
 
 @frappe.whitelist()
 def get_report(name):
-	_require_admin()
+	_require_approver()
 	return {"success": True, "data": frappe.get_doc("Anticipatory Report", name).as_dict()}
 
 
 @frappe.whitelist()
 def add_report(title, year=None, month=None, description=None, category=None,
 			   source=None, key_words=None, link=None, attachment=None, published=1):
-	_require_admin()
+	_require_approver()
 	if not (title or "").strip():
 		frappe.throw("Report title is required.")
 	if category and category not in ("Report", "Workshop Report"):
@@ -613,7 +646,7 @@ def add_report(title, year=None, month=None, description=None, category=None,
 @frappe.whitelist()
 def update_report(name, title=None, year=None, month=None, description=None, category=None,
 				  source=None, key_words=None, link=None, attachment=None, published=None):
-	_require_admin()
+	_require_approver()
 	if category and category not in ("Report", "Workshop Report"):
 		frappe.throw("Invalid category.")
 	doc = frappe.get_doc("Anticipatory Report", name)
@@ -632,7 +665,7 @@ def update_report(name, title=None, year=None, month=None, description=None, cat
 
 @frappe.whitelist()
 def delete_report(name):
-	_require_admin()
+	_require_approver()
 	if not frappe.db.exists("Anticipatory Report", name):
 		frappe.throw("Unknown report.")
 	frappe.delete_doc("Anticipatory Report", name, ignore_permissions=True)
@@ -644,13 +677,17 @@ def delete_report(name):
 # ADMIN — ACTIVITIES (standalone Anticipatory Activity doctype)
 # ===========================================================================
 
+_ACTIVITY_STATUSES = ("Planned", "Ongoing", "Completed", "On Hold", "Cancelled")
+
+
 @frappe.whitelist()
 def list_activities():
-	_require_admin()
+	_require_approver()
 	rows = frappe.get_all(
 		"Anticipatory Activity",
-		fields=["name", "date", "pillar", "activity", "activity_reference", "milestone", "status", "details"],
-		order_by="date desc, modified desc",
+		fields=["name", "start_date", "end_date", "pillar", "activity", "activity_reference",
+				"milestone", "status", "published", "details"],
+		order_by="start_date desc, modified desc",
 		limit=1000,
 	)
 	return {"success": True, "data": rows}
@@ -658,22 +695,25 @@ def list_activities():
 
 @frappe.whitelist()
 def get_activity(name):
-	_require_admin()
+	_require_approver()
 	return {"success": True, "data": frappe.get_doc("Anticipatory Activity", name).as_dict()}
 
 
 @frappe.whitelist()
-def add_activity(activity, date=None, pillar=None, activity_reference=None, milestone=None, status=None, details=None):
-	_require_admin()
+def add_activity(activity, start_date=None, end_date=None, pillar=None, activity_reference=None,
+				 milestone=None, status=None, details=None, published=1):
+	_require_approver()
 	if not (activity or "").strip():
 		frappe.throw("Activity is required.")
 	if pillar and pillar not in _PILLARS:
 		frappe.throw("Invalid pillar.")
+	if status and status not in _ACTIVITY_STATUSES:
+		frappe.throw("Invalid status.")
 	doc = frappe.get_doc({
 		"doctype": "Anticipatory Activity",
-		"activity": activity, "date": date or None, "pillar": pillar,
-		"activity_reference": activity_reference, "milestone": milestone,
-		"status": status, "details": details,
+		"activity": activity, "start_date": start_date or None, "end_date": end_date or None,
+		"pillar": pillar, "activity_reference": activity_reference, "milestone": milestone,
+		"status": status or "Planned", "details": details, "published": _as_bool(published),
 	})
 	doc.flags.ignore_permissions = True
 	doc.insert()
@@ -682,17 +722,21 @@ def add_activity(activity, date=None, pillar=None, activity_reference=None, mile
 
 
 @frappe.whitelist()
-def update_activity(name, activity=None, date=None, pillar=None, activity_reference=None,
-					milestone=None, status=None, details=None):
-	_require_admin()
+def update_activity(name, activity=None, start_date=None, end_date=None, pillar=None,
+					activity_reference=None, milestone=None, status=None, details=None, published=None):
+	_require_approver()
 	if pillar and pillar not in _PILLARS:
 		frappe.throw("Invalid pillar.")
+	if status and status not in _ACTIVITY_STATUSES:
+		frappe.throw("Invalid status.")
 	doc = frappe.get_doc("Anticipatory Activity", name)
-	for field, value in (("activity", activity), ("date", date), ("pillar", pillar),
-						 ("activity_reference", activity_reference), ("milestone", milestone),
-						 ("status", status), ("details", details)):
+	for field, value in (("activity", activity), ("start_date", start_date), ("end_date", end_date),
+						 ("pillar", pillar), ("activity_reference", activity_reference),
+						 ("milestone", milestone), ("status", status), ("details", details)):
 		if value is not None:
 			doc.set(field, value)
+	if published is not None:
+		doc.published = _as_bool(published)
 	doc.flags.ignore_permissions = True
 	doc.save()
 	frappe.db.commit()
@@ -701,7 +745,7 @@ def update_activity(name, activity=None, date=None, pillar=None, activity_refere
 
 @frappe.whitelist()
 def delete_activity(name):
-	_require_admin()
+	_require_approver()
 	if not frappe.db.exists("Anticipatory Activity", name):
 		frappe.throw("Unknown activity.")
 	frappe.delete_doc("Anticipatory Activity", name, ignore_permissions=True)
@@ -715,7 +759,8 @@ def delete_activity(name):
 
 @frappe.whitelist()
 def list_organizations():
-	_require_admin()
+	# Read-only: approvers need the org list to pick a publishing authority.
+	_require_approver()
 	orgs = frappe.get_all(
 		"Anticipatory Action Organization",
 		fields=[
@@ -762,7 +807,7 @@ def add_organization(
 
 @frappe.whitelist()
 def list_publications():
-	_require_admin()
+	_require_approver()
 	pubs = frappe.get_all(
 		"Anticipatory Action Reference Documents",
 		fields=[
@@ -777,13 +822,13 @@ def list_publications():
 
 @frappe.whitelist()
 def get_publication(name):
-	_require_admin()
+	_require_approver()
 	return {"success": True, "data": frappe.get_doc("Anticipatory Action Reference Documents", name).as_dict()}
 
 
 @frappe.whitelist()
 def add_publication(title, type, publishing_authority, publication_date=None, publication_url=None, attach_publication=None):
-	_require_admin()
+	_require_approver()
 	if not (title or "").strip():
 		frappe.throw("Publication title is required.")
 	if not publishing_authority or not frappe.db.exists("Anticipatory Action Organization", publishing_authority):
@@ -805,7 +850,7 @@ def add_publication(title, type, publishing_authority, publication_date=None, pu
 
 @frappe.whitelist()
 def delete_publication(name):
-	_require_admin()
+	_require_approver()
 	if not frappe.db.exists("Anticipatory Action Reference Documents", name):
 		frappe.throw("Unknown publication.")
 	doc = frappe.get_doc("Anticipatory Action Reference Documents", name)
@@ -823,7 +868,7 @@ def delete_publication(name):
 
 @frappe.whitelist()
 def list_messages(status=None):
-	_require_admin()
+	_require_approver()
 	filters = {"status": status} if status else {}
 	msgs = frappe.get_all(
 		"AA Contact Message",
@@ -843,7 +888,7 @@ def list_messages(status=None):
 
 @frappe.whitelist()
 def set_message_status(name, status):
-	_require_admin()
+	_require_approver()
 	if status not in ("New", "Read", "Replied", "Closed"):
 		frappe.throw("Invalid status.")
 	if not frappe.db.exists("AA Contact Message", name):
@@ -859,7 +904,7 @@ def set_message_status(name, status):
 
 @frappe.whitelist()
 def get_admin_overview():
-	_require_admin()
+	_require_approver()
 	from anticipatory_action.anticipatory_action.page.aa_operations.aa_operations import get_summary
 
 	return {"success": True, "data": get_summary()}
@@ -876,14 +921,63 @@ def _select_options(doctype, fieldname):
 def get_admin_meta():
 	"""Live Select options for the admin console forms — sourced from the
 	doctypes themselves so the dropdowns never drift from the schema."""
-	_require_admin()
+	_require_approver()
 	return {
 		"success": True,
 		"organization_types": _select_options("Anticipatory Action Organization", "type_of_organization"),
 		"publication_types": _select_options("Anticipatory Action Reference Documents", "type"),
 		"report_categories": _select_options("Anticipatory Report", "category"),
 		"pillars": _select_options("Anticipatory Activity", "pillar"),
+		"activity_statuses": _select_options("Anticipatory Activity", "status"),
 		"roles": sorted(AA_ROLES),
+		"caps": {
+			"is_admin": _is_admin(),          # manage users, orgs, sign-ups
+			"is_system_manager": _can_set_role(),  # may assign roles
+		},
+	}
+
+
+# ===========================================================================
+# FORM BUILDER (concept preview — read-only)
+# ===========================================================================
+
+# The form whose structure the builder previews. Read-only for now: the
+# builder shows how the Anticipatory Action submission form is composed
+# (sections, fields, properties) but does not yet edit it.
+_BUILDER_FORMS = {
+	"Anticipatory Action": "Anticipatory Action — Submission",
+	"Anticipatory Action Details": "Anticipatory Action — Intervention Detail (row)",
+}
+
+
+@frappe.whitelist()
+def get_form_schema(doctype="Anticipatory Action"):
+	"""Return the live field layout of a submission form so the admin Form
+	Builder can render it. Concept stage: read-only, no mutation."""
+	_require_admin()
+	if doctype not in _BUILDER_FORMS:
+		frappe.throw("Unknown form.")
+	meta = frappe.get_meta(doctype)
+	fields = [
+		{
+			"fieldname": df.fieldname,
+			"label": df.label,
+			"fieldtype": df.fieldtype,
+			"options": df.options,
+			"reqd": int(df.reqd or 0),
+			"read_only": int(df.read_only or 0),
+			"hidden": int(df.hidden or 0),
+			"in_list_view": int(df.in_list_view or 0),
+			"description": df.description,
+		}
+		for df in meta.fields
+	]
+	return {
+		"success": True,
+		"doctype": doctype,
+		"label": _BUILDER_FORMS[doctype],
+		"forms": [{"doctype": k, "label": v} for k, v in _BUILDER_FORMS.items()],
+		"fields": fields,
 	}
 
 

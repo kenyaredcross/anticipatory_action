@@ -66,7 +66,7 @@
    "fieldname": "role",
    "fieldtype": "Select",
    "label": "Role",
-   "options": "Anticipatory Action User\nAnticipatory Action Admin",
+   "options": "Anticipatory Action User\nAnticipatory Action Approver\nAnticipatory Action Admin",
    "permlevel": 1,
    "reqd": 1
   },
