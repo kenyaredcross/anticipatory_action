@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Programme Impact - Kenya Anticipatory Action</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    .impact-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--line); border: 1px solid var(--line);
+    }
+    .impact-card { background: var(--paper); padding: 34px 26px; }
+    .impact-val {
+      font-family: 'Barlow Condensed', 'Helvetica Neue', sans-serif;
+      font-size: 46px; font-weight: 800; line-height: 1; color: var(--text);
+    }
+    .impact-val .accent { color: var(--accent, #CC0000); }
+    .impact-label {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted); margin-top: 12px;
+    }
+    .impact-note { font-size: 13px; color: var(--muted); margin-top: 8px; }
+    .hazard-rows { margin-top: 36px; border: 1px solid var(--line); }
+    .hazard-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 22px; border-bottom: 1px solid var(--line);
+      background: var(--paper); font-size: 15px;
+    }
+    .hazard-row:last-child { border-bottom: 0; }
+    .hazard-row b { font-weight: 700; }
+    .hazard-count {
+      font-family: 'Barlow Condensed', sans-serif; font-weight: 800;
+      font-size: 22px; color: var(--accent, #CC0000);
+    }
+    @media (max-width: 768px) { .impact-grid { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav class="aa-nav">
+  <a href="/aa" class="nav-brand">
+    <img src="/NDOC.png" alt="NDOC" />
+    <div class="nav-brand-text">Anticipatory Action<span>Kenya · NDOC / KRCS</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="/aa-activities" class="nav-link">Activities</a>
+    <a href="/aa-dashboard" class="nav-link">Results Dashboard</a>
+    <a href="/aa-reports" class="nav-link">Reports</a>
+    <a href="/aa-impact" class="nav-link active">Impact</a>
+  </div>
+  <div class="nav-end">
+    <a href="/anticipatory-action" class="btn-ghost">Report an Action</a>
+    <a href="/anticipatory-login" class="btn-red">Log In
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+    </a>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="breadcrumb"><a href="/aa">Home</a><span>›</span>Programme Impact</div>
+  <div class="page-hero-label">Approved Anticipatory Actions</div>
+  <h1 class="page-hero-title">Collective<br><span class="accent">impact.</span></h1>
+  <p class="page-hero-sub">What partners across Kenya have reported and had approved: anticipatory actions taken, funds committed, people protected, and counties reached. Every approved submission strengthens this picture. Report and keep your actions up to date to be counted.</p>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="impact-grid">
+      <div class="impact-card">
+        <div class="impact-val" id="m-subs">-</div>
+        <div class="impact-label">Approved Submissions</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-val"><span class="accent">KES</span> <span id="m-funds">-</span></div>
+        <div class="impact-label">Funds Committed</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-val" id="m-people">-</div>
+        <div class="impact-label">People Targeted</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-val" id="m-counties">-</div>
+        <div class="impact-label">Counties Reached</div>
+      </div>
+    </div>
+
+    <div class="hazard-rows" id="hazardRows" style="display:none;"></div>
+
+    <div style="margin-top:40px;text-align:center;">
+      <a href="/anticipatory-action" class="btn-red" style="display:inline-flex;">Report an Anticipatory Action
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="aa-footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-row">
+        <img src="/NDOC.png" alt="NDOC" />
+        <div class="footer-brand-name">Kenya Anticipatory Action</div>
+      </div>
+      <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Operations Centre with the Kenya Red Cross Society.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Programme</h4>
+      <a href="/aa-about">About Us</a>
+      <a href="/aa-membership">Membership</a>
+      <a href="/aa-activities">Activities</a>
+      <a href="/aa-reports">Reports</a>
+    </div>
+    <div class="footer-col">
+      <h4>Explore</h4>
+      <a href="/aa-dashboard">Results Dashboard</a>
+      <a href="/aa-impact">Programme Impact</a>
+      <a href="/anticipatory-action">Report an Action</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a>
+      <a href="/aa-contact">Send a Message</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Kenya Anticipatory Action TWG · National Disaster Operations Centre</span>
+    <span>Powered by <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross Society</a></span>
+  </div>
+</footer>
+
+<script src="/aa-nav.js" defer></script>
+<script>
+(function () {
+  function fmt(n) { return Number(n || 0).toLocaleString('en-KE'); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  fetch('/api/method/anticipatory_action.api.anticipatory_action.get_public_metrics')
+    .then(function (r) { return r.json(); })
+    .then(function (res) {
+      var d = (res && res.message) || {};
+      document.getElementById('m-subs').textContent = fmt(d.approved_submissions);
+      document.getElementById('m-funds').textContent = fmt(d.funds_committed_kes);
+      document.getElementById('m-people').textContent = fmt(d.people_targeted);
+      document.getElementById('m-counties').textContent = fmt(d.counties_reached);
+      var hz = (d.hazards || []).filter(function (h) { return h.activations > 0; });
+      if (hz.length) {
+        var box = document.getElementById('hazardRows');
+        box.innerHTML = '<div class="hazard-row" style="background:var(--ink,#1A1A1A);color:#fff;font-weight:700;">' +
+          '<span>Approved activations by hazard</span><span></span></div>' +
+          hz.map(function (h) {
+            return '<div class="hazard-row"><b>' + esc(h.hazard) + '</b>' +
+              '<span class="hazard-count">' + fmt(h.activations) + '</span></div>';
+          }).join('');
+        box.style.display = 'block';
+      }
+    })
+    .catch(function () {});
+})();
+</script>
+</body>
+</html>
