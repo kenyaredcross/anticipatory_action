@@ -176,6 +176,13 @@ on_session_creation = [
 # Scheduled Tasks
 # ---------------
 
+# Daily: flip activity / event status as their dates pass.
+scheduler_events = {
+	"daily": [
+		"anticipatory_action.api.scheduling.refresh_statuses",
+	],
+}
+
 # scheduler_events = {
 # 	"all": [
 # 		"anticipatory_action.tasks.all"

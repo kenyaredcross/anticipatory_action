@@ -17,6 +17,7 @@
   "activity_reference",
   "milestone",
   "status",
+  "image",
   "details",
   "date"
  ],
@@ -73,11 +74,17 @@
   },
   {
    "default": "Planned",
+   "description": "Set automatically from the dates; flips to Completed once the end date passes.",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
    "options": "Planned\nOngoing\nCompleted\nOn Hold\nCancelled"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
   },
   {
    "fieldname": "details",

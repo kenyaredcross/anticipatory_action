@@ -205,6 +205,68 @@ def get_public_metrics():
 	}
 
 
+@frappe.whitelist(allow_guest=True)
+def get_activities_events():
+	"""Published TWG activities and events for the public Activities page, as one
+	normalised, clickable list. Status is derived live from the dates so it is
+	always current (Planned / Ongoing / Completed), unless parked On Hold or
+	Cancelled."""
+	from anticipatory_action.api.scheduling import derive_status
+
+	def _status(stored, start, end):
+		if stored in ("On Hold", "Cancelled"):
+			return stored
+		return derive_status(start, end) or stored or "Planned"
+
+	out = []
+	for a in frappe.get_all(
+		"Anticipatory Activity", filters={"published": 1},
+		fields=["name", "activity", "details", "pillar", "start_date", "end_date",
+				"status", "activity_reference", "milestone", "image"],
+		limit=500,
+	):
+		out.append({
+			"kind": "activity", "name": a.name, "title": a.activity,
+			"description": a.details, "pillar": a.pillar, "location": None,
+			"start_date": str(a.start_date) if a.start_date else None,
+			"end_date": str(a.end_date) if a.end_date else None,
+			"status": _status(a.status, a.start_date, a.end_date),
+			"reference": a.activity_reference, "milestone": a.milestone, "image": a.image,
+		})
+
+	for e in frappe.get_all(
+		"AA Event", filters={"published": 1},
+		fields=["name", "title", "description", "location", "pillar", "start_date",
+				"end_date", "status", "image"],
+		limit=500,
+	):
+		out.append({
+			"kind": "event", "name": e.name, "title": e.title,
+			"description": e.description, "pillar": e.pillar, "location": e.location,
+			"start_date": str(e.start_date) if e.start_date else None,
+			"end_date": str(e.end_date) if e.end_date else None,
+			"status": _status(e.status, e.start_date, e.end_date),
+			"reference": None, "milestone": None, "image": e.image,
+		})
+
+	out.sort(key=lambda x: x.get("start_date") or "", reverse=True)
+	return {"success": True, "data": _sanitize(out)}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_faqs():
+	"""Published FAQs for the public FAQ page, grouped-ready (ordered by category
+	then display order)."""
+	rows = frappe.get_all(
+		"AA FAQ",
+		filters={"published": 1},
+		fields=["name", "question", "answer", "category", "display_order"],
+		order_by="category asc, display_order asc, creation asc",
+		limit=500,
+	)
+	return {"success": True, "data": rows}
+
+
 def _sanitize(data):
 	if isinstance(data, dict):
 		return {k: _sanitize(v) for k, v in data.items()}

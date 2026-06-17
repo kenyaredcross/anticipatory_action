@@ -1,0 +1,92 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:pillar",
+ "creation": "2026-06-17 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "pillar",
+  "lead",
+  "lead_name",
+  "lead_email",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "pillar",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Pillar",
+   "options": "Early Warning\nEarly Action\nCoordination and Governance\nResearch and Learning\nPolicy and Advocacy\nFinancing\nMonitoring and Evaluation",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Pillar lead",
+   "options": "Anticipatory Action User"
+  },
+  {
+   "fetch_from": "lead.full_name",
+   "fieldname": "lead_name",
+   "fieldtype": "Data",
+   "label": "Lead name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "lead.email",
+   "fieldname": "lead_email",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Lead email",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-06-17 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Anticipatory Action",
+ "name": "AA Pillar Lead",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Anticipatory Action Admin",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "pillar",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "pillar",
+ "track_changes": 1
+}

@@ -7,6 +7,6 @@ from frappe.model.document import Document
 from anticipatory_action.api.scheduling import auto_set_status
 
 
-class AnticipatoryActivity(Document):
+class AAEvent(Document):
 	def validate(self):
 		auto_set_status(self)

@@ -934,7 +934,7 @@ def list_activities():
 	rows = frappe.get_all(
 		"Anticipatory Activity",
 		fields=["name", "start_date", "end_date", "pillar", "activity", "activity_reference",
-				"milestone", "status", "published", "details"],
+				"milestone", "status", "published", "details", "image"],
 		order_by="start_date desc, modified desc",
 		limit=1000,
 	)
@@ -949,7 +949,7 @@ def get_activity(name):
 
 @frappe.whitelist()
 def add_activity(activity, start_date=None, end_date=None, pillar=None, activity_reference=None,
-				 milestone=None, status=None, details=None, published=1):
+				 milestone=None, status=None, details=None, published=1, image=None):
 	_require_approver()
 	if not (activity or "").strip():
 		frappe.throw("Activity is required.")
@@ -961,7 +961,8 @@ def add_activity(activity, start_date=None, end_date=None, pillar=None, activity
 		"doctype": "Anticipatory Activity",
 		"activity": activity, "start_date": start_date or None, "end_date": end_date or None,
 		"pillar": pillar, "activity_reference": activity_reference, "milestone": milestone,
-		"status": status or "Planned", "details": details, "published": _as_bool(published),
+		"status": status or "Planned", "details": details, "image": image,
+		"published": _as_bool(published),
 	})
 	doc.flags.ignore_permissions = True
 	doc.insert()
@@ -971,7 +972,8 @@ def add_activity(activity, start_date=None, end_date=None, pillar=None, activity
 
 @frappe.whitelist()
 def update_activity(name, activity=None, start_date=None, end_date=None, pillar=None,
-					activity_reference=None, milestone=None, status=None, details=None, published=None):
+					activity_reference=None, milestone=None, status=None, details=None,
+					published=None, image=None):
 	_require_approver()
 	if pillar and pillar not in _PILLARS:
 		frappe.throw("Invalid pillar.")
@@ -980,7 +982,8 @@ def update_activity(name, activity=None, start_date=None, end_date=None, pillar=
 	doc = frappe.get_doc("Anticipatory Activity", name)
 	for field, value in (("activity", activity), ("start_date", start_date), ("end_date", end_date),
 						 ("pillar", pillar), ("activity_reference", activity_reference),
-						 ("milestone", milestone), ("status", status), ("details", details)):
+						 ("milestone", milestone), ("status", status), ("details", details),
+						 ("image", image)):
 		if value is not None:
 			doc.set(field, value)
 	if published is not None:
@@ -997,6 +1000,90 @@ def delete_activity(name):
 	if not frappe.db.exists("Anticipatory Activity", name):
 		frappe.throw("Unknown activity.")
 	frappe.delete_doc("Anticipatory Activity", name, ignore_permissions=True)
+	frappe.db.commit()
+	return {"success": True}
+
+
+# ===========================================================================
+# ADMIN - EVENTS
+# ===========================================================================
+
+_EVENT_PILLARS = ("Early Warning", "Early Action", "Coordination and Governance",
+				  "Research and Learning", "Policy and Advocacy", "Financing",
+				  "Monitoring and Evaluation")
+
+
+@frappe.whitelist()
+def list_events():
+	_require_approver()
+	rows = frappe.get_all(
+		"AA Event",
+		fields=["name", "title", "description", "location", "pillar", "start_date",
+				"end_date", "status", "published", "image"],
+		order_by="start_date desc, modified desc",
+		limit=1000,
+	)
+	return {"success": True, "data": rows}
+
+
+@frappe.whitelist()
+def get_event(name):
+	_require_approver()
+	return {"success": True, "data": frappe.get_doc("AA Event", name).as_dict()}
+
+
+@frappe.whitelist()
+def add_event(title, start_date, end_date=None, location=None, pillar=None,
+			  description=None, image=None, status=None, published=1):
+	_require_approver()
+	if not (title or "").strip():
+		frappe.throw("Event title is required.")
+	if not (start_date or "").strip():
+		frappe.throw("An event date is required.")
+	if pillar and pillar not in _EVENT_PILLARS:
+		frappe.throw("Invalid pillar.")
+	if status and status not in _ACTIVITY_STATUSES:
+		frappe.throw("Invalid status.")
+	doc = frappe.get_doc({
+		"doctype": "AA Event",
+		"title": title, "start_date": start_date, "end_date": end_date or None,
+		"location": location, "pillar": pillar, "description": description, "image": image,
+		"status": status or None, "published": _as_bool(published),
+	})
+	doc.flags.ignore_permissions = True
+	doc.insert()  # validate() auto-sets status from the dates
+	frappe.db.commit()
+	return {"success": True, "name": doc.name}
+
+
+@frappe.whitelist()
+def update_event(name, title=None, start_date=None, end_date=None, location=None, pillar=None,
+				 description=None, image=None, status=None, published=None):
+	_require_approver()
+	if pillar and pillar not in _EVENT_PILLARS:
+		frappe.throw("Invalid pillar.")
+	if status and status not in _ACTIVITY_STATUSES:
+		frappe.throw("Invalid status.")
+	doc = frappe.get_doc("AA Event", name)
+	for field, value in (("title", title), ("start_date", start_date), ("end_date", end_date),
+						 ("location", location), ("pillar", pillar), ("description", description),
+						 ("image", image), ("status", status)):
+		if value is not None:
+			doc.set(field, value)
+	if published is not None:
+		doc.published = _as_bool(published)
+	doc.flags.ignore_permissions = True
+	doc.save()  # validate() re-derives status unless On Hold / Cancelled
+	frappe.db.commit()
+	return {"success": True}
+
+
+@frappe.whitelist()
+def delete_event(name):
+	_require_approver()
+	if not frappe.db.exists("AA Event", name):
+		frappe.throw("Unknown event.")
+	frappe.delete_doc("AA Event", name, ignore_permissions=True)
 	frappe.db.commit()
 	return {"success": True}
 
@@ -1238,6 +1325,215 @@ def get_organization(name):
 	return {"success": True, "data": frappe.get_doc("Anticipatory Action Organization", name).as_dict()}
 
 
+# ===========================================================================
+# PILLAR LEADS
+# ===========================================================================
+
+PILLARS = (
+	"Early Warning", "Early Action", "Coordination and Governance", "Research and Learning",
+	"Policy and Advocacy", "Financing", "Monitoring and Evaluation",
+)
+
+
+@frappe.whitelist()
+def list_pillar_leads():
+	"""Every pillar with its currently assigned lead (admins set these)."""
+	_require_approver()
+	existing = {r.pillar: r for r in frappe.get_all(
+		"AA Pillar Lead", fields=["pillar", "lead", "lead_name", "lead_email"], limit=50)}
+	rows = []
+	for pillar in PILLARS:
+		r = existing.get(pillar)
+		rows.append({
+			"pillar": pillar,
+			"lead": r.lead if r else None,
+			"lead_name": r.lead_name if r else None,
+			"lead_email": r.lead_email if r else None,
+		})
+	return {"success": True, "data": rows}
+
+
+@frappe.whitelist()
+def set_pillar_lead(pillar, lead=None):
+	"""Assign (or clear) the lead for a pillar. Admins only."""
+	_require_admin()
+	if pillar not in PILLARS:
+		frappe.throw("Unknown pillar.")
+	lead = (lead or "").strip() or None
+	if lead and not frappe.db.exists("Anticipatory Action User", lead):
+		frappe.throw("Please choose a valid Anticipatory Action member as the lead.")
+	if frappe.db.exists("AA Pillar Lead", pillar):
+		doc = frappe.get_doc("AA Pillar Lead", pillar)
+	else:
+		doc = frappe.new_doc("AA Pillar Lead")
+		doc.pillar = pillar
+	doc.lead = lead
+	doc.flags.ignore_permissions = True
+	doc.save()
+	frappe.db.commit()
+	return {"success": True}
+
+
+@frappe.whitelist()
+def list_aa_reviewers(search=None):
+	"""AA members who can be a pillar lead: Approvers and Admins only."""
+	_require_approver()
+	or_filters = None
+	if search:
+		like = f"%{search}%"
+		or_filters = {"full_name": ["like", like], "email": ["like", like]}
+	rows = frappe.get_all(
+		"Anticipatory Action User",
+		filters={"role": ["in", ["Anticipatory Action Approver", "Anticipatory Action Admin"]], "enabled": 1},
+		or_filters=or_filters,
+		fields=["name", "full_name", "email", "role"],
+		order_by="full_name asc",
+		limit=500,
+	)
+	return {"success": True, "data": rows}
+
+
+# ===========================================================================
+# CHANGE LOG (who changed what - exposes track_changes history in the UI)
+# ===========================================================================
+
+# Only AA doctypes may be inspected through the portal.
+_AUDITABLE = {
+	"Anticipatory Action", "Anticipatory Report", "Anticipatory Activity",
+	"Anticipatory Action Organization", "Anticipatory Action Reference Documents",
+	"AA Membership Request", "AA Support Request", "AA Contact Message",
+	"AA Pillar Lead", "AA FAQ", "Anticipatory Action User",
+}
+
+
+@frappe.whitelist()
+def get_change_log(doctype, name):
+	"""Who created and changed a record, and what changed. Reads Frappe's Version
+	history (populated because these doctypes have track_changes on)."""
+	_require_approver()
+	if doctype not in _AUDITABLE:
+		frappe.throw("This record type cannot be audited here.")
+	if not frappe.db.exists(doctype, name):
+		frappe.throw("Unknown record.")
+
+	meta = frappe.get_meta(doctype)
+
+	def _label(fieldname):
+		df = meta.get_field(fieldname)
+		return df.label if df and df.label else fieldname
+
+	base = frappe.db.get_value(doctype, name, ["owner", "creation"], as_dict=True) or {}
+	entries = [{
+		"by": base.get("owner"),
+		"by_name": frappe.db.get_value("User", base.get("owner"), "full_name") or base.get("owner"),
+		"on": str(base.get("creation")),
+		"action": "Created",
+		"changes": [],
+	}]
+
+	versions = frappe.get_all(
+		"Version",
+		filters={"ref_doctype": doctype, "docname": name},
+		fields=["owner", "creation", "data"],
+		order_by="creation asc",
+		limit=200,
+	)
+	for v in versions:
+		try:
+			data = frappe.parse_json(v.data) or {}
+		except Exception:
+			data = {}
+		changes = []
+		for ch in (data.get("changed") or []):
+			# ch = [fieldname, old, new]
+			if len(ch) >= 3:
+				changes.append({"field": _label(ch[0]), "from": ch[1], "to": ch[2]})
+		row_changes = bool(data.get("added") or data.get("removed") or data.get("row_changed"))
+		if not changes and not row_changes:
+			continue
+		entries.append({
+			"by": v.owner,
+			"by_name": frappe.db.get_value("User", v.owner, "full_name") or v.owner,
+			"on": str(v.creation),
+			"action": "Updated",
+			"changes": changes,
+			"detail_changed": row_changes,
+		})
+
+	entries.reverse()  # newest first
+	return {"success": True, "data": _sanitize(entries)}
+
+
+# ===========================================================================
+# SUPPORT REQUESTS (approvers raise requests; members report problems)
+# ===========================================================================
+
+@frappe.whitelist()
+def submit_support_request(subject, message, request_type=None, priority="Medium"):
+	"""A signed-in member or approver raises a request / problem report."""
+	_require_login()
+	if not (subject or "").strip() or not (message or "").strip():
+		frappe.throw("Please provide a subject and details.")
+	roles = set(frappe.get_roles())
+	# Approvers/admins make 'Request's; plain members 'Report a problem'.
+	default_type = "Request" if _can_review() else "Problem"
+	request_type = request_type if request_type in ("Request", "Problem") else default_type
+	doc = frappe.get_doc({
+		"doctype": "AA Support Request",
+		"subject": subject, "message": message, "request_type": request_type,
+		"priority": priority if priority in ("Low", "Medium", "High") else "Medium",
+		"status": "New", "raised_by": frappe.session.user,
+		"raised_by_role": "Approver" if _can_review() else "Member",
+	})
+	doc.flags.ignore_permissions = True
+	doc.insert()
+	frappe.db.commit()
+	return {"success": True, "name": doc.name}
+
+
+@frappe.whitelist()
+def list_my_support_requests():
+	"""The signed-in user's own support requests / problem reports."""
+	_require_login()
+	rows = frappe.get_all(
+		"AA Support Request", filters={"raised_by": frappe.session.user},
+		fields=["name", "subject", "request_type", "status", "priority", "response", "submitted_on", "creation"],
+		order_by="creation desc", limit=200)
+	return {"success": True, "data": rows}
+
+
+@frappe.whitelist()
+def list_support_requests(status=None):
+	"""Admin triage queue: all support requests / problem reports."""
+	_require_admin()
+	filters = {"status": status} if status else {}
+	rows = frappe.get_all(
+		"AA Support Request", filters=filters,
+		fields=["name", "subject", "request_type", "status", "priority", "raised_by",
+				"raised_by_role", "response", "submitted_on", "creation"],
+		order_by="creation desc", limit=500)
+	return {"success": True, "data": rows}
+
+
+@frappe.whitelist()
+def update_support_request(name, status=None, response=None):
+	"""Admin updates the status / response on a support request."""
+	_require_admin()
+	if not frappe.db.exists("AA Support Request", name):
+		frappe.throw("Unknown request.")
+	doc = frappe.get_doc("AA Support Request", name)
+	if status is not None:
+		if status not in ("New", "Open", "Resolved", "Closed"):
+			frappe.throw("Invalid status.")
+		doc.status = status
+	if response is not None:
+		doc.response = response
+	doc.flags.ignore_permissions = True
+	doc.save()
+	frappe.db.commit()
+	return {"success": True}
+
+
 def _select_options(doctype, fieldname):
 	field = frappe.get_meta(doctype).get_field(fieldname)
 	if not field or not field.options:
@@ -1340,22 +1636,30 @@ def submit_membership_request(first_name, last_name=None, email=None, phone=None
 		doc.flags.ignore_permissions = True
 		doc.insert()
 		frappe.db.commit()
+		_email_request_received(doc)
 		return {"success": True, "name": doc.name}
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "submit_membership_request")
 		return {"success": False, "error": "Could not submit your request. Please try again."}
 
 
+_CONTACT_TYPES = ("General enquiry", "Get involved", "Join a pillar", "Report a problem")
+
+
 @frappe.whitelist(allow_guest=True)
-def submit_contact(full_name=None, email=None, organization=None, phone=None, subject=None, message=None):
+def submit_contact(full_name=None, email=None, organization=None, phone=None, subject=None,
+				   message=None, request_type=None, pillar=None):
 	"""Public 'Contact us' form. Lives here (an importable module) rather than the
-	hyphenated www controller, whose dotted path cannot be imported by /api/method."""
+	hyphenated www controller, whose dotted path cannot be imported by /api/method.
+	A 'Join a pillar' / 'Get involved' request is routed to the relevant pillar lead."""
 	from frappe.utils import validate_email_address
 
 	full_name = (full_name or "").strip()
 	email = (email or "").strip()
 	subject = (subject or "").strip()
 	message = (message or "").strip()
+	request_type = request_type if request_type in _CONTACT_TYPES else "General enquiry"
+	pillar = (pillar or "").strip() or None
 	if not full_name or not email or not subject or not message:
 		return {"success": False, "error": "Please fill in your name, email, subject and message."}
 	if not validate_email_address(email):
@@ -1365,14 +1669,54 @@ def submit_contact(full_name=None, email=None, organization=None, phone=None, su
 			"doctype": "AA Contact Message",
 			"full_name": full_name, "email": email, "organization": organization,
 			"phone": phone, "subject": subject, "message": message, "status": "New",
+			"request_type": request_type, "pillar": pillar,
 		})
 		doc.flags.ignore_permissions = True
 		doc.insert(ignore_permissions=True)
 		frappe.db.commit()
+		if pillar and request_type in ("Join a pillar", "Get involved"):
+			_route_to_pillar_lead(doc, pillar)
 		return {"success": True}
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "submit_contact")
 		return {"success": False, "error": "Could not send your message. Please try again."}
+
+
+def _route_to_pillar_lead(msg, pillar):
+	"""Email the pillar lead and leave them an in-app notification about a new
+	get-involved / join-a-pillar enquiry."""
+	try:
+		row = frappe.db.get_value("AA Pillar Lead", pillar, ["lead", "lead_email"], as_dict=True)
+		if not row or not (row.get("lead_email") or "").strip():
+			return  # no lead set for this pillar yet
+		lead_user = frappe.db.get_value("Anticipatory Action User", row.lead, "user") if row.get("lead") else None
+		body = (
+			f"<p>A new <strong>{frappe.utils.escape_html(msg.request_type)}</strong> enquiry for the "
+			f"<strong>{frappe.utils.escape_html(pillar)}</strong> pillar has been received.</p>"
+			f"<p><strong>From:</strong> {frappe.utils.escape_html(msg.full_name)} "
+			f"({frappe.utils.escape_html(msg.email)})"
+			+ (f", {frappe.utils.escape_html(msg.organization)}" if msg.organization else "") + "</p>"
+			f"<p><strong>Subject:</strong> {frappe.utils.escape_html(msg.subject)}</p>"
+			f"<p>{frappe.utils.escape_html(msg.message)}</p>"
+			"<p>Open the admin console (Messages) to respond.</p>"
+		)
+		frappe.sendmail(
+			recipients=[row.lead_email],
+			subject=f"[{pillar}] New {msg.request_type} enquiry",
+			message=body,
+		)
+		if lead_user:
+			with contextlib.suppress(Exception):
+				frappe.get_doc({
+					"doctype": "Notification Log",
+					"subject": f"New {msg.request_type}: {pillar}",
+					"email_content": f"{msg.full_name} is interested in the {pillar} pillar.",
+					"for_user": lead_user, "type": "Alert",
+					"document_type": "AA Contact Message", "document_name": msg.name,
+				}).insert(ignore_permissions=True)
+		frappe.db.commit()
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "route_to_pillar_lead")
 
 
 @frappe.whitelist(allow_guest=True)
@@ -1526,6 +1870,41 @@ def reject_request(name, notes=None):
 	return {"success": True}
 
 
+def _email_request_received(req):
+	"""Acknowledge a new access request so the applicant knows it arrived."""
+	if not (req.email or "").strip():
+		return
+	try:
+		name = (req.first_name or "there").strip()
+		html = f"""
+		<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;">
+		  <div style="background:#1F2937;border-bottom:3px solid #CC0000;padding:22px 32px;text-align:center;">
+		    <img src="{frappe.utils.get_url('/aadashboard.png')}" alt="NDOC" height="40" style="height:40px;margin-bottom:8px;" />
+		    <p style="margin:0;font-size:18px;font-weight:700;color:#fff;">Anticipatory Action</p>
+		    <p style="margin:4px 0 0;font-size:11px;color:#9CA3AF;">Data Collection &amp; Monitoring Platform</p>
+		  </div>
+		  <div style="padding:30px 32px;color:#374151;font-size:14px;line-height:1.7;">
+		    <p style="margin:0 0 14px;font-weight:700;color:#1A1A1A;">Dear {frappe.utils.escape_html(name)},</p>
+		    <p style="margin:0 0 18px;">Thank you for requesting access to the Kenya Anticipatory Action platform.
+		    <strong style="color:#059669;">We have received your request.</strong></p>
+		    <p style="margin:0 0 18px;">The TWG Secretariat will review it and get back to you. If it is approved,
+		    you will receive a follow-up email with a link to set your password and sign in.</p>
+		    <p style="margin:0;">Questions? Contact
+		    <a href="mailto:aadashboard@ndoc.go.ke" style="color:#CC0000;">aadashboard@ndoc.go.ke</a>.</p>
+		  </div>
+		  <div style="border-top:1px solid #E5E7EB;padding:14px 32px;text-align:center;font-size:11px;color:#9CA3AF;">
+		    National Disaster Operations Centre &middot; Anticipatory Action Platform
+		  </div>
+		</div>"""
+		frappe.sendmail(
+			recipients=[req.email],
+			subject="We received your Anticipatory Action access request",
+			message=html,
+		)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "request_received email")
+
+
 def _email_request_rejected(req, reason):
 	"""Notify an applicant that their access request was not approved."""
 	if not (req.email or "").strip():
@@ -1535,7 +1914,7 @@ def _email_request_rejected(req, reason):
 		html = f"""
 		<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;">
 		  <div style="background:#1F2937;border-bottom:3px solid #CC0000;padding:22px 32px;text-align:center;">
-		    <img src="{frappe.utils.get_url('/ndoc-aa.jpg')}" alt="NDOC" height="40" style="height:40px;margin-bottom:8px;" />
+		    <img src="{frappe.utils.get_url('/aadashboard.png')}" alt="NDOC" height="40" style="height:40px;margin-bottom:8px;" />
 		    <p style="margin:0;font-size:18px;font-weight:700;color:#fff;">Anticipatory Action</p>
 		    <p style="margin:4px 0 0;font-size:11px;color:#9CA3AF;">Data Collection &amp; Monitoring Platform</p>
 		  </div>

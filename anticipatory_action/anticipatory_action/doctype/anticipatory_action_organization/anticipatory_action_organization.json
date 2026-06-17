@@ -8,6 +8,12 @@
   "name_of_organization",
   "column_break_xeqh",
   "type_of_organization",
+  "website_display_section",
+  "about",
+  "logo",
+  "column_break_web",
+  "pillars_involved",
+  "show_on_website",
   "contact_person_details_section",
   "primary_contact_person_name",
   "column_break_vexs",
@@ -41,6 +47,40 @@
   {
    "fieldname": "column_break_xeqh",
    "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "website_display_section",
+   "fieldtype": "Section Break",
+   "label": "Website Profile"
+  },
+  {
+   "description": "A short description shown on the public Member Organisations page.",
+   "fieldname": "about",
+   "fieldtype": "Small Text",
+   "label": "About the organisation"
+  },
+  {
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo"
+  },
+  {
+   "fieldname": "column_break_web",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Pillars this organisation is involved in (comma separated).",
+   "fieldname": "pillars_involved",
+   "fieldtype": "Small Text",
+   "label": "Pillars involved"
+  },
+  {
+   "default": "1",
+   "description": "Show this organisation on the public Member Organisations page.",
+   "fieldname": "show_on_website",
+   "fieldtype": "Check",
+   "label": "Show on website"
   },
   {
    "collapsible": 1,
@@ -162,5 +202,6 @@
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
- "title_field": "name_of_organization"
+ "title_field": "name_of_organization",
+ "track_changes": 1
 }
