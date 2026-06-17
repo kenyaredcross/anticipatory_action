@@ -8,9 +8,31 @@ exactly.
 """
 
 import frappe
+from werkzeug.exceptions import HTTPException
+from werkzeug.utils import redirect as _wz_redirect
 
 # The only host this module ever acts on.
 AA_HOST = "anticipatoryaction.ndoc.go.ke"
+
+
+class _Redirect302(HTTPException):
+	"""A 302 redirect that Frappe's ``application()`` returns cleanly.
+
+	``frappe.Redirect`` is only handled by the website render path, NOT by the
+	``before_request`` hook chain, so raising it here would fall through to the
+	generic exception handler and be logged as a traceback. ``application()`` does
+	have ``except HTTPException: return e``, so raising a real HTTPException gives
+	a clean, un-logged 302.
+	"""
+
+	code = 302
+
+	def __init__(self, location):
+		super().__init__()
+		self._location = location
+
+	def get_response(self, environ=None, scope=None):
+		return _wz_redirect(self._location, 302)
 
 AA_ROLES = {
 	"Anticipatory Action User",
@@ -55,10 +77,11 @@ def route_subdomain():
 			dest = "/aa-portal"
 		else:
 			dest = "/aa"
+	except _Redirect302:
+		raise
 	except Exception:
 		# Routing must never break a request; if anything is off, do nothing.
 		return
 
 	if dest:
-		frappe.local.flags.redirect_location = dest
-		raise frappe.Redirect
+		raise _Redirect302(dest)
