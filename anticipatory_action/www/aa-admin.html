@@ -1261,7 +1261,8 @@
       field({ label: 'Visibility', id: 'a_pub', type: 'select', options: VISIBILITY, value: editing ? (activity.published ? '1' : '0') : '1', placeholder: false, full: true }) +
       imgPreview +
       field({ label: (existingImg ? 'Replace Image' : 'Image'), id: 'a_image', type: 'file', accept: 'image/*', full: true, hint: existingImg ? 'An image is set - uploading replaces it.' : 'Optional. Shown alongside the activity.' }) +
-      field({ label: 'Details', id: 'a_details', type: 'textarea', full: true, value: activity && activity.details });
+      field({ label: 'Details', id: 'a_details', type: 'textarea', full: true, value: activity && activity.details }) +
+      field({ label: 'Story / narrative', id: 'a_narrative', type: 'textarea', full: true, value: activity && activity.narrative, hint: 'A longer story shown on the public Activities page.' });
     openModal(editing ? 'Edit Activity' : 'Add Activity', f, async function () {
       if (!v('a_activity')) { modalErr('Activity is required.'); return; }
       var imgEl = document.getElementById('a_image');
@@ -1270,7 +1271,7 @@
       var payload = {
         activity: v('a_activity'), start_date: v('a_start'), end_date: v('a_end'), pillar: v('a_pillar'),
         activity_reference: v('a_ref'), milestone: v('a_milestone'), status: v('a_status'),
-        published: v('a_pub'), details: v('a_details'), image: image
+        published: v('a_pub'), details: v('a_details'), narrative: v('a_narrative'), image: image
       };
       if (editing) { await AA.call(P + 'update_activity', Object.assign({ name: activity.name }, payload)); }
       else { await AA.call(P + 'add_activity', payload); }
@@ -1406,6 +1407,13 @@
       var typeField = ro
         ? field({ label: 'Type', id: 'o_type', value: d.type_of_organization, readonly: true })
         : field({ label: 'Type', id: 'o_type', type: 'select', options: META.organization_types, value: d.type_of_organization, required: true });
+      var existingLogo = d.logo || '';
+      var logoPreview = existingLogo
+        ? '<div class="field full" id="o_logo_preview"><label>Current logo / photo</label>' +
+            '<img src="' + AA.esc(existingLogo) + '" alt="" style="max-width:160px;max-height:120px;object-fit:contain;border:1px solid var(--line);display:block" />' +
+          '</div>'
+        : '';
+      // Internal contact details (recorded by admins, not shown publicly).
       var f =
         field({ label: 'Organization Name', id: 'o_name', required: !ro, readonly: ro, full: true, value: d.name_of_organization }) +
         typeField +
@@ -1415,7 +1423,16 @@
         field({ label: 'Organization Email', id: 'o_oemail', type: 'email', readonly: ro, value: d.organization_email }) +
         field({ label: 'Organization Phone', id: 'o_ophone', readonly: ro, value: d.organization_phone }) +
         field({ label: 'Website', id: 'o_web', type: 'url', readonly: ro, full: true, value: d.organization_website }) +
-        field({ label: 'Address', id: 'o_address', type: 'textarea', readonly: ro, full: true, value: d.address });
+        field({ label: 'Address', id: 'o_address', type: 'textarea', readonly: ro, full: true, value: d.address }) +
+        // ----- Public profile (shown on the AA website) -----
+        logoPreview +
+        // File input is admin-only; approvers see the preview above but cannot replace it.
+        (ro ? '' : field({ label: (existingLogo ? 'Replace logo / photo' : 'Logo / photo'), id: 'o_logo', type: 'file', accept: 'image/*', full: true, hint: existingLogo ? 'A logo is set - uploading replaces it.' : 'Optional. A photo or logo of the organisation, shown on the public site.' })) +
+        field({ label: 'About (short)', id: 'o_about', type: 'textarea', readonly: ro, full: true, value: d.about, hint: 'A one-line or short summary of the organisation.' }) +
+        field({ label: 'Story / narrative', id: 'o_narrative', type: 'textarea', readonly: ro, full: true, value: d.narrative, hint: 'The longer organisation story shown on the public site.' }) +
+        field({ label: 'Pillars involved', id: 'o_pillars', readonly: ro, full: true, value: d.pillars_involved, hint: 'Comma separated, e.g. Pillar 1, Pillar 3.' }) +
+        field({ label: 'Support to Anticipatory Action', id: 'o_support', type: 'textarea', readonly: ro, full: true, value: d.aa_support }) +
+        field({ label: 'Show on website', id: 'o_show', type: 'select', options: VISIBILITY, value: (d.show_on_website === undefined ? '1' : (d.show_on_website ? '1' : '0')), placeholder: false, full: true });
       if (ro) {
         // Read-only widget for approvers: no form, no Save.
         document.getElementById('modal-title').textContent = d.name_of_organization || 'Organization';
@@ -1432,12 +1449,17 @@
       }
       openModal('Edit Organization', f, async function () {
         if (!v('o_name') || !v('o_type')) { modalErr('Name and type are required.'); return; }
+        var logoEl = document.getElementById('o_logo');
+        var logo = existingLogo;
+        if (logoEl && logoEl.files && logoEl.files[0]) { logo = await AA.upload(logoEl.files[0], false); }
         await AA.call(P + 'update_organization', {
           name: name,
           name_of_organization: v('o_name'), type_of_organization: v('o_type'),
           primary_contact_person_name: v('o_contact'), primary_email_contact: v('o_email'),
           primary_phone_contact: v('o_phone'), organization_email: v('o_oemail'),
-          organization_phone: v('o_ophone'), organization_website: v('o_web'), address: v('o_address')
+          organization_phone: v('o_ophone'), organization_website: v('o_web'), address: v('o_address'),
+          logo: logo, about: v('o_about'), narrative: v('o_narrative'),
+          pillars_involved: v('o_pillars'), aa_support: v('o_support'), show_on_website: v('o_show')
         });
         closeModal(); AA.toast('Organization updated.', true); orgCache = []; loadOrgs();
       }, 'Save Changes');
@@ -1463,14 +1485,26 @@
       field({ label: 'Organization Email', id: 'o_oemail', type: 'email' }) +
       field({ label: 'Organization Phone', id: 'o_ophone' }) +
       field({ label: 'Website', id: 'o_web', type: 'url', full: true }) +
-      field({ label: 'Address', id: 'o_address', type: 'textarea', full: true });
+      field({ label: 'Address', id: 'o_address', type: 'textarea', full: true }) +
+      // ----- Public profile (shown on the AA website) -----
+      field({ label: 'Logo / photo', id: 'o_logo', type: 'file', accept: 'image/*', full: true, hint: 'Optional. A photo or logo of the organisation, shown on the public site.' }) +
+      field({ label: 'About (short)', id: 'o_about', type: 'textarea', full: true, hint: 'A one-line or short summary of the organisation.' }) +
+      field({ label: 'Story / narrative', id: 'o_narrative', type: 'textarea', full: true, hint: 'The longer organisation story shown on the public site.' }) +
+      field({ label: 'Pillars involved', id: 'o_pillars', full: true, hint: 'Comma separated, e.g. Pillar 1, Pillar 3.' }) +
+      field({ label: 'Support to Anticipatory Action', id: 'o_support', type: 'textarea', full: true }) +
+      field({ label: 'Show on website', id: 'o_show', type: 'select', options: VISIBILITY, value: '1', placeholder: false, full: true });
     openModal('Add Organization', f, async function () {
       if (!v('o_name') || !v('o_type')) { modalErr('Name and type are required.'); return; }
+      var logoEl = document.getElementById('o_logo');
+      var logo = '';
+      if (logoEl && logoEl.files && logoEl.files[0]) { logo = await AA.upload(logoEl.files[0], false); }
       await AA.call(P + 'add_organization', {
         name_of_organization: v('o_name'), type_of_organization: v('o_type'),
         primary_contact_person_name: v('o_contact'), primary_email_contact: v('o_email'),
         primary_phone_contact: v('o_phone'), organization_email: v('o_oemail'),
-        organization_phone: v('o_ophone'), organization_website: v('o_web'), address: v('o_address')
+        organization_phone: v('o_ophone'), organization_website: v('o_web'), address: v('o_address'),
+        logo: logo, about: v('o_about'), narrative: v('o_narrative'),
+        pillars_involved: v('o_pillars'), aa_support: v('o_support'), show_on_website: v('o_show')
       });
       closeModal(); AA.toast('Organization added.', true); orgCache = []; loadOrgs();
     }, 'Add Organization');

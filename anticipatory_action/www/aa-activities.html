@@ -13,6 +13,33 @@
     .ae-toolbar { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
     .ae-filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
+    /* ===== Sections (Activities top / Events bottom) ===== */
+    .ae-section { margin-top: 48px; }
+    .ae-section:first-of-type { margin-top: 0; }
+    .ae-section-head { margin-bottom: 24px; }
+    .ae-section-label {
+      font-size: 11px; font-weight: 800;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--red);
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .ae-section-label::before {
+      content: ''; width: 26px; height: 2px; background: var(--red); display: inline-block;
+    }
+    .ae-section-title {
+      font-size: 26px; font-weight: 800; line-height: 1.1;
+      letter-spacing: -0.015em; color: var(--text);
+      margin: 12px 0 8px;
+    }
+    .ae-section-intro {
+      font-size: 14.5px; line-height: 1.6; color: var(--text-2);
+      max-width: 62ch;
+    }
+    .ae-section-empty {
+      font-size: 13.5px; color: var(--muted); font-style: italic;
+      padding: 8px 0 4px;
+    }
+
     .ae-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -77,6 +104,11 @@
     .ae-title {
       font-size: 17px; font-weight: 700; line-height: 1.28;
       color: var(--text); letter-spacing: -0.005em;
+    }
+    .ae-teaser {
+      font-size: 13px; line-height: 1.5; color: var(--text-2);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
     }
     .ae-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: auto; padding-top: 4px; }
     .ae-loc {
@@ -176,6 +208,17 @@
       color: var(--muted);
     }
     .ae-detail-grid dd { font-size: 14px; color: var(--text); line-height: 1.5; }
+    .ae-modal-narrative {
+      font-size: 15.5px; line-height: 1.75; color: var(--text);
+      white-space: pre-line;
+      margin-bottom: 22px;
+    }
+    .ae-modal-narrative-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
     .ae-modal-desc {
       font-size: 15px; line-height: 1.7; color: var(--text-2);
       white-space: pre-line;
@@ -250,12 +293,6 @@
 <section class="section">
   <div class="container">
     <div class="ae-toolbar" id="aeToolbar" hidden>
-      <div class="ae-filter-group" id="aeKindFilter">
-        <span class="filter-label">Show:</span>
-        <button class="filter-btn active" data-kind="all">All</button>
-        <button class="filter-btn" data-kind="activity">Activities</button>
-        <button class="filter-btn" data-kind="event">Events</button>
-      </div>
       <div class="ae-filter-group" id="aeStatusFilter">
         <span class="filter-label">Status:</span>
         <button class="filter-btn active" data-status="all">All</button>
@@ -268,7 +305,26 @@
     </div>
 
     <div class="ae-loading" id="aeLoading">Loading activities and events...</div>
-    <div class="ae-grid" id="aeGrid"></div>
+
+    <section class="ae-section" id="aeActivitiesSection" hidden>
+      <div class="ae-section-head">
+        <span class="ae-section-label">Programme Activities</span>
+        <h2 class="ae-section-title">Activities</h2>
+        <p class="ae-section-intro">Technical Working Group activities and milestones in delivery across the seven strategic pillars. Select a card to read the full story.</p>
+      </div>
+      <div class="ae-grid" id="aeActivitiesGrid"></div>
+      <p class="ae-section-empty" id="aeActivitiesEmpty" hidden>No activities match the selected status.</p>
+    </section>
+
+    <section class="ae-section" id="aeEventsSection" hidden>
+      <div class="ae-section-head">
+        <span class="ae-section-label">Convenings &amp; Engagements</span>
+        <h2 class="ae-section-title">Events</h2>
+        <p class="ae-section-intro">Workshops, trainings, and coordination meetings bringing the partnership together. Select a card for details.</p>
+      </div>
+      <div class="ae-grid" id="aeEventsGrid"></div>
+      <p class="ae-section-empty" id="aeEventsEmpty" hidden>No events match the selected status.</p>
+    </section>
 
     <div class="empty-state" id="aeEmpty" hidden>
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -293,7 +349,6 @@
 (function () {
   'use strict';
 
-  var GRID = document.getElementById('aeGrid');
   var LOADING = document.getElementById('aeLoading');
   var TOOLBAR = document.getElementById('aeToolbar');
   var EMPTY = document.getElementById('aeEmpty');
@@ -302,8 +357,15 @@
   var MODAL_MEDIA = document.getElementById('aeModalMedia');
   var MODAL_BODY = document.getElementById('aeModalBody');
 
+  var ACT_SECTION = document.getElementById('aeActivitiesSection');
+  var ACT_GRID = document.getElementById('aeActivitiesGrid');
+  var ACT_EMPTY = document.getElementById('aeActivitiesEmpty');
+  var EVT_SECTION = document.getElementById('aeEventsSection');
+  var EVT_GRID = document.getElementById('aeEventsGrid');
+  var EVT_EMPTY = document.getElementById('aeEventsEmpty');
+
   var ITEMS = [];           // all fetched items
-  var FILTER = { kind: 'all', status: 'all' };
+  var FILTER = { status: 'all' };
   var lastFocused = null;
 
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -366,11 +428,15 @@
       ? '<span class="ae-loc">' + PIN_SVG + esc(item.location) + '</span>' : '';
     var pillar = item.pillar ? '<span class="pillar-tag">' + esc(item.pillar) + '</span>' : '';
 
+    var teaser = (!isEvent && item.narrative)
+      ? '<div class="ae-teaser">' + esc(item.narrative) + '</div>' : '';
+
     return '<button class="ae-card" type="button" data-idx="' + idx + '" aria-label="View details: ' + esc(item.title) + '">' +
       thumb +
       '<div class="ae-body">' +
         '<div class="ae-date">' + esc(fmtRange(item.start_date, item.end_date)) + '</div>' +
         '<div class="ae-title">' + esc(item.title || 'Untitled') + '</div>' +
+        teaser +
         '<div class="ae-meta">' +
           '<span class="ae-status ' + statusClass(item.status) + '">' + esc(item.status || 'Planned') + '</span>' +
           pillar + loc +
@@ -379,26 +445,44 @@
     '</button>';
   }
 
-  function applyFilter() {
-    var visible = ITEMS.filter(function (it) {
-      var okKind = FILTER.kind === 'all' || it.kind === FILTER.kind;
-      var okStatus = FILTER.status === 'all' || it.status === FILTER.status;
-      return okKind && okStatus;
+  function renderSection(section, grid, emptyNote, kind) {
+    // Items of this kind that exist at all (controls whether the section shows).
+    var ofKind = ITEMS.filter(function (it) { return it.kind === kind; });
+    if (!ofKind.length) {
+      section.hidden = true;
+      grid.innerHTML = '';
+      return;
+    }
+    section.hidden = false;
+
+    var visible = ofKind.filter(function (it) {
+      return FILTER.status === 'all' || it.status === FILTER.status;
     });
 
     if (!visible.length) {
-      GRID.innerHTML = '';
+      grid.innerHTML = '';
+      emptyNote.hidden = false;
+      return;
+    }
+
+    emptyNote.hidden = true;
+    grid.innerHTML = visible.map(function (it) {
+      return cardHTML(it, ITEMS.indexOf(it));
+    }).join('');
+  }
+
+  function applyFilter() {
+    if (!ITEMS.length) {
+      ACT_SECTION.hidden = true;
+      EVT_SECTION.hidden = true;
       EMPTY.hidden = false;
-      EMPTY_TEXT.textContent = ITEMS.length
-        ? 'No items match the selected filters.'
-        : 'No activities or events have been published yet.';
+      EMPTY_TEXT.textContent = 'No activities or events have been published yet.';
       return;
     }
 
     EMPTY.hidden = true;
-    GRID.innerHTML = visible.map(function (it) {
-      return cardHTML(it, ITEMS.indexOf(it));
-    }).join('');
+    renderSection(ACT_SECTION, ACT_GRID, ACT_EMPTY, 'activity');
+    renderSection(EVT_SECTION, EVT_GRID, EVT_EMPTY, 'event');
   }
 
   function sortItems(list) {
@@ -437,6 +521,11 @@
     if (!isEvent && item.reference) details += row('Reference', item.reference);
     if (!isEvent && item.milestone) details += row('Milestone', item.milestone);
 
+    var narrative = (!isEvent && item.narrative)
+      ? '<div class="ae-modal-narrative-label">Story</div>' +
+        '<div class="ae-modal-narrative">' + esc(item.narrative) + '</div>'
+      : '';
+
     var desc = item.description
       ? '<div class="ae-modal-desc">' + esc(item.description) + '</div>'
       : '<div class="ae-modal-desc is-muted">No description provided.</div>';
@@ -448,6 +537,7 @@
       '</div>' +
       '<h2 class="ae-modal-title" id="aeModalTitle">' + esc(item.title || 'Untitled') + '</h2>' +
       '<dl class="ae-detail-grid">' + details + '</dl>' +
+      narrative +
       desc;
 
     lastFocused = document.activeElement;
@@ -466,12 +556,14 @@
   }
 
   // ---------- Events ----------
-  GRID.addEventListener('click', function (e) {
+  function onGridClick(e) {
     var card = e.target.closest('.ae-card');
     if (!card) return;
     var item = ITEMS[parseInt(card.dataset.idx, 10)];
     if (item) openModal(item);
-  });
+  }
+  ACT_GRID.addEventListener('click', onGridClick);
+  EVT_GRID.addEventListener('click', onGridClick);
 
   MODAL.addEventListener('click', function (e) {
     if (e.target.closest('[data-close]')) closeModal();
@@ -479,15 +571,6 @@
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && MODAL.classList.contains('open')) closeModal();
-  });
-
-  document.getElementById('aeKindFilter').addEventListener('click', function (e) {
-    var btn = e.target.closest('.filter-btn');
-    if (!btn) return;
-    this.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    FILTER.kind = btn.dataset.kind;
-    applyFilter();
   });
 
   document.getElementById('aeStatusFilter').addEventListener('click', function (e) {
