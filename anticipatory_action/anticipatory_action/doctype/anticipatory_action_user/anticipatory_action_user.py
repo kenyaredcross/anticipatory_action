@@ -119,7 +119,9 @@ def _workspace_for(role):
 	Approvers are admin-adjacent, so they share the admin workspace (the web
 	console at /aa-admin is where their real, scoped tools live)."""
 	admin_like = {"Anticipatory Action Admin", "Anticipatory Action Approver"}
-	return "Anticipatory Action Admin" if role in admin_like else "Anticipatory Action"
+	# The member workspace is "Anticipatory Actions" (plural) so its desk route does
+	# not collide with the "Anticipatory Action" DocType route.
+	return "Anticipatory Action Admin" if role in admin_like else "Anticipatory Actions"
 
 
 def _confine_modules(user, role=None):

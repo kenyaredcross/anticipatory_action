@@ -39,6 +39,7 @@
   "linked_request",
   "awaiting_account",
   "is_update",
+  "is_test",
   "amended_from"
  ],
  "fields": [
@@ -241,6 +242,14 @@
    "fieldname": "is_update",
    "fieldtype": "Check",
    "label": "Update to a previous submission",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Submitted through the test / dissemination form. Never counts towards real metrics or the dashboard.",
+   "fieldname": "is_test",
+   "fieldtype": "Check",
+   "label": "Test submission",
    "read_only": 1
   },
   {

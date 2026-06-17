@@ -2,65 +2,92 @@ import frappe
 from frappe.utils import strip_html
 
 
+def _submission_dict(d, is_test=0):
+	"""Build the Anticipatory Action doc payload from the public form data."""
+	return {
+		"doctype": "Anticipatory Action",
+		"implementing_organization": d.get("implementing_organization"),
+		"entity_or_organization_type": d.get("entity_or_organization_type"),
+		"other_organization_entity": d.get("other_organization_entity"),
+		"funding_source": d.get("funding_source"),
+		"reporting_person": d.get("reporting_person"),
+		"reporter_email": d.get("reporter_email"),
+		"reporter_phone_number": d.get("reporter_phone_number"),
+		"anticipated_hazard": d.get("anticipated_hazard"),
+		"other_anticipated_hazards": d.get("other_anticipated_hazards"),
+		"implementing_partners": d.get("implementing_partners"),
+		"other_implementing_partners": d.get("other_implementing_partners"),
+		"activation_start_date": d.get("activation_start_date"),
+		"activation_end_date": d.get("activation_end_date"),
+		"triggers_and_thresholds": d.get("triggers_and_thresholds"),
+		"lessons_learnt": d.get("lessons_learnt"),
+		"challenges": d.get("challenges"),
+		"recommendations": d.get("recommendations"),
+		"supporting_materials": d.get("supporting_materials"),
+		"email_me_a_copy": d.get("email_me_a_copy", 0),
+		"is_test": 1 if is_test else 0,
+		"anticipatory_action_details": [
+			{
+				"doctype": "Anticipatory Action Details",
+				"subcounty_level": row.get("subcounty_level", 0),
+				"county": row.get("county"),
+				"subcounty": row.get("subcounty"),
+				"sector": row.get("sector"),
+				"number_of_livestock_targeted": row.get("number_of_livestock_targeted"),
+				"number_of_wildlife_targeted": row.get("number_of_wildlife_targeted"),
+				"amount_for_anticipatory_action_kes": row.get("amount_for_anticipatory_action_kes"),
+				"describe_the_anticipatory_action_intervention": row.get("describe_the_anticipatory_action_intervention"),
+				"status_of_the_early_action": row.get("status_of_the_early_action", "Planned"),
+				"number_of_people_targeted": row.get("number_of_people_targeted"),
+				"number_of_hh_targeted": row.get("number_of_hh_targeted"),
+				"number_of_males_targeted": row.get("number_of_males_targeted"),
+				"number_of_females_targeted": row.get("number_of_females_targeted"),
+			}
+			for row in (d.get("anticipatory_action_details") or [])
+		],
+	}
+
+
 @frappe.whitelist(allow_guest=True)
 def submit_anticipatory_action(data):
 	try:
 		d = frappe.parse_json(data)
-
-		doc = frappe.get_doc({
-			"doctype": "Anticipatory Action",
-			"implementing_organization": d.get("implementing_organization"),
-			"entity_or_organization_type": d.get("entity_or_organization_type"),
-			"other_organization_entity": d.get("other_organization_entity"),
-			"funding_source": d.get("funding_source"),
-			"reporting_person": d.get("reporting_person"),
-			"reporter_email": d.get("reporter_email"),
-			"reporter_phone_number": d.get("reporter_phone_number"),
-			"anticipated_hazard": d.get("anticipated_hazard"),
-			"other_anticipated_hazards": d.get("other_anticipated_hazards"),
-			"implementing_partners": d.get("implementing_partners"),
-			"other_implementing_partners": d.get("other_implementing_partners"),
-			"activation_start_date": d.get("activation_start_date"),
-			"activation_end_date": d.get("activation_end_date"),
-			"triggers_and_thresholds": d.get("triggers_and_thresholds"),
-			"lessons_learnt": d.get("lessons_learnt"),
-			"challenges": d.get("challenges"),
-			"recommendations": d.get("recommendations"),
-			"supporting_materials": d.get("supporting_materials"),
-			"email_me_a_copy": d.get("email_me_a_copy", 0),
-			"anticipatory_action_details": [
-				{
-					"doctype": "Anticipatory Action Details",
-					"subcounty_level": row.get("subcounty_level", 0),
-					"county": row.get("county"),
-					"subcounty": row.get("subcounty"),
-					"sector": row.get("sector"),
-					"number_of_livestock_targeted": row.get("number_of_livestock_targeted"),
-					"number_of_wildlife_targeted": row.get("number_of_wildlife_targeted"),
-					"amount_for_anticipatory_action_kes": row.get("amount_for_anticipatory_action_kes"),
-					"describe_the_anticipatory_action_intervention": row.get("describe_the_anticipatory_action_intervention"),
-					"status_of_the_early_action": row.get("status_of_the_early_action", "Planned"),
-					"number_of_people_targeted": row.get("number_of_people_targeted"),
-					"number_of_hh_targeted": row.get("number_of_hh_targeted"),
-					"number_of_males_targeted": row.get("number_of_males_targeted"),
-					"number_of_females_targeted": row.get("number_of_females_targeted"),
-				}
-				for row in (d.get("anticipatory_action_details") or [])
-			]
-		})
-
 		# Save as a Draft (not submitted) so the reporter can edit or withdraw
 		# it from their portal while it is still Pending. An AA Admin submits it
-		# when they approve — see anticipatory_action.api.portal.set_submission_status.
+		# when they approve - see anticipatory_action.api.portal.set_submission_status.
+		doc = frappe.get_doc(_submission_dict(d, is_test=0))
 		doc.flags.ignore_permissions = True
 		doc.insert()
 		frappe.db.commit()
-
 		return {"success": True, "name": doc.name}
 
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "submit_anticipatory_action")
 		return {"success": False, "error": "Submission failed. Please try again or contact support."}
+
+
+@frappe.whitelist(allow_guest=True)
+def submit_test_application(data):
+	"""Submit through the test / dissemination form. Only works while an admin has
+	the test environment switched on. The record is flagged is_test and never
+	counts towards real metrics or the dashboard."""
+	from anticipatory_action.anticipatory_action.doctype.anticipatory_action_settings.anticipatory_action_settings import (
+		testing_enabled,
+	)
+
+	if not testing_enabled():
+		return {"success": False, "error": "The test environment is currently switched off."}
+	try:
+		d = frappe.parse_json(data)
+		doc = frappe.get_doc(_submission_dict(d, is_test=1))
+		doc.flags.ignore_permissions = True
+		doc.insert()
+		frappe.db.commit()
+		return {"success": True, "name": doc.name, "test": True}
+
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "submit_test_application")
+		return {"success": False, "error": "Test submission failed. Please try again."}
 
 
 @frappe.whitelist(allow_guest=True)
@@ -97,8 +124,9 @@ def get_anticipatory_action_data(limit=100):
 		anticipatory_actions = frappe.db.get_all(
 			"Anticipatory Action",
 			# Power BI / dashboard feed: only approved (and therefore submitted)
-			# activations count towards the published metrics.
-			filters={"status": "Approved", "docstatus": 1},
+			# activations count towards the published metrics. Test/dissemination
+			# submissions are never included.
+			filters={"status": "Approved", "docstatus": 1, "is_test": ["!=", 1]},
 			fields=[
 				"name",
 				"implementing_organization", "entity_or_organization_type",
@@ -148,7 +176,7 @@ def get_public_metrics():
 			COUNT(DISTINCT NULLIF(d.county, ''))                  AS counties
 		FROM `tabAnticipatory Action Details` d
 		JOIN `tabAnticipatory Action` p ON d.parent = p.name
-		WHERE p.status = 'Approved'
+		WHERE p.status = 'Approved' AND (p.is_test = 0 OR p.is_test IS NULL)
 		""",
 		as_dict=True,
 	)
@@ -159,7 +187,7 @@ def get_public_metrics():
 		SELECT COALESCE(NULLIF(p.anticipated_hazard,''),'Unspecified') AS hazard,
 			   COUNT(DISTINCT p.name) AS activations
 		FROM `tabAnticipatory Action` p
-		WHERE p.status = 'Approved'
+		WHERE p.status = 'Approved' AND (p.is_test = 0 OR p.is_test IS NULL)
 		GROUP BY hazard
 		ORDER BY activations DESC
 		""",
@@ -168,7 +196,7 @@ def get_public_metrics():
 
 	return {
 		"success": True,
-		"approved_submissions": frappe.db.count("Anticipatory Action", {"status": "Approved"}),
+		"approved_submissions": frappe.db.count("Anticipatory Action", {"status": "Approved", "is_test": ["!=", 1]}),
 		"funds_committed_kes": float(t.get("funds") or 0),
 		"people_targeted": int(t.get("people") or 0),
 		"counties_reached": int(t.get("counties") or 0),

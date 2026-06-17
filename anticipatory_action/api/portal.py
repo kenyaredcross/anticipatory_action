@@ -185,7 +185,7 @@ def get_my_submissions():
 		"Anticipatory Action",
 		# docstatus < 2 hides cancelled, superseded versions left behind by an
 		# update/amend — the live amendment (a fresh Draft) is what shows instead.
-		filters={"owner": frappe.session.user, "docstatus": ["<", 2]},
+		filters={"owner": frappe.session.user, "docstatus": ["<", 2], "is_test": ["!=", 1]},
 		fields=[
 			"name", "implementing_organization", "anticipated_hazard",
 			"activation_start_date", "activation_end_date", "status",
@@ -1158,6 +1158,86 @@ def get_admin_overview():
 	return {"success": True, "data": get_summary()}
 
 
+# ===========================================================================
+# ADMIN - TEST / DISSEMINATION ENVIRONMENT
+# ===========================================================================
+
+@frappe.whitelist()
+def get_testing_status():
+	"""Whether the test/dissemination environment is on, plus a quick test count.
+	Approvers and admins use this to show/hide the Testing Environment button and
+	the Test Data widget."""
+	_require_approver()
+	from anticipatory_action.anticipatory_action.doctype.anticipatory_action_settings.anticipatory_action_settings import (
+		testing_enabled,
+	)
+
+	enabled = testing_enabled()
+	count = frappe.db.count("Anticipatory Action", {"is_test": 1}) if enabled else 0
+	return {"success": True, "enabled": enabled, "count": count, "can_toggle": _is_admin()}
+
+
+@frappe.whitelist()
+def set_testing_enabled(enabled):
+	"""Switch the test/dissemination environment on or off (full admins only).
+	When off, the public test form refuses submissions and the console hides the
+	test button + widget."""
+	_require_admin()
+	on = 1 if str(enabled).lower() in ("1", "true", "yes", "on") else 0
+	settings = frappe.get_single("Anticipatory Action Settings")
+	settings.testing_enabled = on
+	settings.flags.ignore_permissions = True
+	settings.save()
+	frappe.db.commit()
+	return {"success": True, "enabled": bool(on)}
+
+
+@frappe.whitelist()
+def list_test_submissions(status=None):
+	"""Test/dissemination submissions only, for the admin Test Data widget."""
+	_require_approver()
+	from anticipatory_action.anticipatory_action.page.aa_operations.aa_operations import get_activations
+
+	return {"success": True, "data": get_activations(status=status, test_only=1)}
+
+
+@frappe.whitelist()
+def update_organization(
+	name, name_of_organization=None, type_of_organization=None, primary_contact_person_name=None,
+	primary_phone_contact=None, primary_email_contact=None, organization_phone=None,
+	organization_email=None, organization_website=None, address=None,
+):
+	"""Edit an organization (full admins only; approvers are read-only)."""
+	_require_admin()
+	if not frappe.db.exists("Anticipatory Action Organization", name):
+		frappe.throw("Unknown organization.")
+	doc = frappe.get_doc("Anticipatory Action Organization", name)
+	for field, value in (
+		("name_of_organization", name_of_organization),
+		("type_of_organization", type_of_organization),
+		("primary_contact_person_name", primary_contact_person_name),
+		("primary_phone_contact", primary_phone_contact),
+		("primary_email_contact", primary_email_contact),
+		("organization_phone", organization_phone),
+		("organization_email", organization_email),
+		("organization_website", organization_website),
+		("address", address),
+	):
+		if value is not None:
+			doc.set(field, value)
+	doc.flags.ignore_permissions = True
+	doc.save()
+	frappe.db.commit()
+	return {"success": True}
+
+
+@frappe.whitelist()
+def get_organization(name):
+	"""Full detail of one organization (for the view/edit widget)."""
+	_require_approver()
+	return {"success": True, "data": frappe.get_doc("Anticipatory Action Organization", name).as_dict()}
+
+
 def _select_options(doctype, fieldname):
 	field = frappe.get_meta(doctype).get_field(fieldname)
 	if not field or not field.options:
@@ -1455,7 +1535,7 @@ def _email_request_rejected(req, reason):
 		html = f"""
 		<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;">
 		  <div style="background:#1F2937;border-bottom:3px solid #CC0000;padding:22px 32px;text-align:center;">
-		    <img src="{frappe.utils.get_url('/NDOC.png')}" alt="NDOC" height="40" style="height:40px;margin-bottom:8px;" />
+		    <img src="{frappe.utils.get_url('/ndoc-aa.jpg')}" alt="NDOC" height="40" style="height:40px;margin-bottom:8px;" />
 		    <p style="margin:0;font-size:18px;font-weight:700;color:#fff;">Anticipatory Action</p>
 		    <p style="margin:4px 0 0;font-size:11px;color:#9CA3AF;">Data Collection &amp; Monitoring Platform</p>
 		  </div>
