@@ -1,10 +1,10 @@
 /* ===========================================================================
-   AA public nav — mobile menu
+   AA public nav - mobile menu
    The marketing pages (aa.html + the /aa-* inner pages) hide their desktop
    .nav-links on small screens but ship no replacement, so the whole menu
    vanishes on phones. This self-contained script injects a hamburger button
    and a slide-down drawer built from the page's existing nav markup, plus the
-   CSS it needs — so a single <script src="/aa-nav.js" defer> on each page is
+   CSS it needs - so a single <script src="/aa-nav.js" defer> on each page is
    all that's required, regardless of which stylesheet that page loads.
    =========================================================================== */
 (function () {

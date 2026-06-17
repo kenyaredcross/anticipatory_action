@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign In — Kenya Anticipatory Action</title>
+  <title>Sign In - Kenya Anticipatory Action</title>
   <link rel="preload" as="image" href="/ndoc1.webp" type="image/webp" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -316,7 +316,7 @@
       btnLabel.textContent = on ? 'Signing in…' : 'Sign In';
     }
 
-    // Only allow same-origin redirects (defence in depth) — accept both a
+    // Only allow same-origin redirects (defence in depth) - accept both a
     // relative path and a same-origin absolute URL (Frappe may return either).
     function safeRedirect(value) {
       if (!value) return '';
@@ -387,7 +387,7 @@
       }
     });
 
-    // Forgot password — uses Frappe's reset endpoint, privacy-preserving message
+    // Forgot password - uses Frappe's reset endpoint, privacy-preserving message
     document.getElementById('forgotLink').addEventListener('click', async function (e) {
       e.preventDefault();
       clearAlert();
