@@ -19,7 +19,11 @@
   "section_break_doc",
   "link",
   "attachment",
-  "published"
+  "visibility",
+  "published",
+  "uploaded_by",
+  "removed",
+  "removal_reason"
  ],
  "fields": [
   {
@@ -89,10 +93,40 @@
    "label": "Attached File"
   },
   {
+   "default": "Public",
+   "description": "Public reports appear on the website; Private reports are only visible inside the portal.",
+   "fieldname": "visibility",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Visibility",
+   "options": "Public\nPrivate"
+  },
+  {
    "default": "1",
    "fieldname": "published",
    "fieldtype": "Check",
    "label": "Published"
+  },
+  {
+   "fieldname": "uploaded_by",
+   "fieldtype": "Link",
+   "label": "Uploaded by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "removed",
+   "fieldtype": "Check",
+   "label": "Removed by reviewer",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.removed",
+   "fieldname": "removal_reason",
+   "fieldtype": "Small Text",
+   "label": "Reason for removal",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

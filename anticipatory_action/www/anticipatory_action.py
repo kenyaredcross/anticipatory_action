@@ -4,13 +4,16 @@ import frappe
 def get_context(context):
 	context.no_cache = 1
 
-	# Reporting an anticipatory action requires a sign-in. Send guests to the
-	# branded login and bring them straight back to the form afterwards.
-	if frappe.session.user == "Guest":
-		frappe.local.flags.redirect_location = "/anticipatory-login?redirect-to=/anticipatory-action"
-		raise frappe.Redirect
+	# Guests may now fill the whole form (online-shopping "checkout" style): they
+	# are only asked to create an account or sign in at the final submit step.
+	is_guest = frappe.session.user == "Guest"
+	context.is_logged_in = not is_guest
 
-	context.is_logged_in = True
+	if is_guest:
+		context.reporter_name = ""
+		context.reporter_email = ""
+		context.reporter_phone = ""
+		return
 
 	# Pre-fill the reporter fields from the signed-in user's profile (and the AA
 	# roster as a phone fallback) so members don't retype who they are. Editing a

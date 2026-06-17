@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contact Us — Kenya Anticipatory Action</title>
+  <title>Contact Us - Kenya Anticipatory Action</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -111,7 +111,7 @@
           </div>
           <div class="info-line">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            <div class="info-line-text"><a href="mailto:Info@ndoc.go.ke">Info@ndoc.go.ke</a></div>
+            <div class="info-line-text"><a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a></div>
           </div>
         </div>
         <div class="info-card">
@@ -143,9 +143,9 @@
     btn.disabled = true;
     btn.textContent = 'Sending…';
     try {
-      const res = await fetch('/api/method/anticipatory_action.www.aa-contact.submit_contact', {
+      const res = await fetch('/api/method/anticipatory_action.api.portal.submit_contact', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token},
+        headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': (window.frappe && frappe.csrf_token) || ''},
         body: JSON.stringify({full_name, email, organization: document.getElementById('organization').value.trim(), phone: document.getElementById('phone').value.trim(), subject, message})
       });
       const data = await res.json();
@@ -188,7 +188,7 @@
     </div>
     <div class="footer-col">
       <h4>Contact</h4>
-      <a href="mailto:Info@ndoc.go.ke">Info@ndoc.go.ke</a>
+      <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a>
       <a href="mailto:info@redcross.or.ke">info@redcross.or.ke</a>
       <a href="/aa-contact">Send a Message</a>
     </div>

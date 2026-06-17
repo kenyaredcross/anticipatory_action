@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Profile — Kenya Anticipatory Action</title>
+  <title>My Profile - Kenya Anticipatory Action</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -37,7 +37,7 @@
   <div class="portal-head"><div>
     <div class="portal-kicker">Account</div>
     <h1 class="portal-title">My Profile</h1>
-    <p class="portal-sub">Update your contact details and password. Your email is your sign-in identity and can't be changed here — contact the Secretariat if it needs updating.</p>
+    <p class="portal-sub">Update your contact details and password. Your email is your sign-in identity and can't be changed here - contact the Secretariat if it needs updating.</p>
   </div></div>
 
   <div id="alert" class="alert"></div>
@@ -91,8 +91,8 @@
       document.getElementById('phone').value = d.phone || d.mobile_no || '';
       document.getElementById('email').value = d.email || '';
       var m = (r && r.membership) || {};
-      document.getElementById('organization').value = m.organization_name || '—';
-      document.getElementById('role').value = (m.role ? m.role.replace('Anticipatory Action ', 'AA ') : '—');
+      document.getElementById('organization').value = m.organization_name || '-';
+      document.getElementById('role').value = (m.role ? m.role.replace('Anticipatory Action ', 'AA ') : '-');
     } catch (e) { showAlert(e.message, 'err'); }
   }
 

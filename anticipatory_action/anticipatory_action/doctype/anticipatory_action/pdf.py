@@ -36,24 +36,24 @@ def _logo_data_uri():
 		return None
 
 
-def _val(v, fallback="—"):
+def _val(v, fallback="-"):
 	return v if v else fallback
 
 
 def _fmt_date(d):
-	return format_date(d, "d MMMM yyyy") if d else "—"
+	return format_date(d, "d MMMM yyyy") if d else "-"
 
 
 def _fmt_num(n):
 	try:
-		return f"{int(n):,}" if n else "—"
+		return f"{int(n):,}" if n else "-"
 	except Exception:
 		return str(n)
 
 
 def _fmt_kes(n):
 	try:
-		return f"KES {int(n):,}" if n else "—"
+		return f"KES {int(n):,}" if n else "-"
 	except Exception:
 		return str(n)
 
@@ -98,7 +98,7 @@ def _build_html(doc):
 	# ── Section 1: Organisation ──────────────────────────────────────────────
 	org_type = _val(doc.entity_or_organization_type)
 	if doc.other_organization_entity:
-		org_type += f" — {doc.other_organization_entity}"
+		org_type += f" - {doc.other_organization_entity}"
 
 	sec1 = _grid(
 		_field("Organization Name", _val(doc.implementing_organization)),
@@ -112,7 +112,7 @@ def _build_html(doc):
 	# ── Section 2: Hazard ────────────────────────────────────────────────────
 	hazard = _val(doc.anticipated_hazard)
 	if doc.other_anticipated_hazards:
-		hazard += f" — {doc.other_anticipated_hazards}"
+		hazard += f" - {doc.other_anticipated_hazards}"
 
 	partners = _val(doc.implementing_partners)
 	if doc.other_implementing_partners:

@@ -30,6 +30,44 @@ class AnticipatoryActionUser(Document):
 		# Keep the linked account in step on edits — but never create a second one.
 		if self.user:
 			self._sync_user(create=False)
+		self._notify_role_change()
+
+	def _notify_role_change(self):
+		"""When a member's role changes, leave them an in-app message (shown as a
+		popup the next time they open the portal). Deliberately NOT an email."""
+		before = self.get_doc_before_save()
+		if not before or before.role == self.role:
+			return
+		target = self.user or (self.email if frappe.db.exists("User", self.email) else None)
+		if not target:
+			return
+		labels = {
+			"Anticipatory Action Approver": (
+				"You are now an Approver",
+				"You can now review, approve and request changes to Anticipatory Action submissions.",
+			),
+			"Anticipatory Action Admin": (
+				"You are now an Administrator",
+				"You now have full access to manage users, submissions and content.",
+			),
+			"Anticipatory Action User": (
+				"Your access level changed",
+				"Your role is now Anticipatory Action User.",
+			),
+		}
+		title, body = labels.get(self.role, ("Your access level changed", f"Your role is now {self.role}."))
+		try:
+			frappe.get_doc({
+				"doctype": "Notification Log",
+				"subject": title,
+				"email_content": body,
+				"for_user": target,
+				"type": "Alert",
+				"document_type": "Anticipatory Action User",
+				"document_name": self.name,
+			}).insert(ignore_permissions=True)
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "aa role-change notification")
 
 	def _sync_user(self, create):
 		"""Idempotently mirror this roster record onto its Frappe User.

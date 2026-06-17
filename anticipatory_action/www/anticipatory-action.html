@@ -1,6 +1,6 @@
 {% extends "templates/web.html" %}
 
-{% block title %}Anticipatory Action — Submit{% endblock %}
+{% block title %}Anticipatory Action - Submit{% endblock %}
 
 {% block head_include %}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -333,7 +333,7 @@ select.aa-input {
 <!-- ── Introduction ── -->
 <div class="aa-intro">
   <p>This tool tracks and monitors implementation of Anticipatory Action across Kenya. Partners and government agencies are encouraged to share intervention data to consolidate information, enhance coordination and avoid duplication.</p>
-  <p style="margin-top:8px">For questions: <a href="mailto:datateam@redcross.or.ke">Datateam@icha.net</a> &nbsp;&middot;&nbsp; <a href="mailto:info@ndoc.go.ke">Info@ndoc.go.ke</a></p>
+  <p style="margin-top:8px">For questions: <a href="mailto:datateam@redcross.or.ke">Datateam@icha.net</a> &nbsp;&middot;&nbsp; <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a></p>
 </div>
 
 <!-- ── Form ── -->
@@ -481,6 +481,15 @@ select.aa-input {
         <label>Recommendations for future actions</label>
         <div class="aa-field-hint">Suggest ways to improve anticipatory actions in the future</div>
         <textarea name="recommendations" class="aa-input aa-textarea" rows="3"></textarea>
+      </div>
+      <div class="aa-field">
+        <label>Upload supporting materials (optional)</label>
+        <div class="aa-field-hint">Attach a report, photo, or document (PDF, image, or office file)</div>
+        <input type="file" id="aa-attachment" name="aa_attachment" class="aa-input" style="padding:8px 13px;cursor:pointer" />
+        <div id="aa-attachment-current" style="display:none;margin-top:6px;font-size:13px;color:var(--mid)">
+          Current file: <a id="aa-attachment-link" href="#" target="_blank" rel="noopener" style="color:var(--red)"></a>
+          <span style="color:#9CA3AF"> &middot; choose a new file above to replace it</span>
+        </div>
       </div>
       <div class="aa-field" style="margin-top:8px">
         <label class="aa-check-wrap">
@@ -634,6 +643,64 @@ select.aa-input {
   </div>
 </div>
 
+<!-- ── Guest account step modal ── -->
+<div class="aa-overlay" id="account-overlay">
+  <div class="aa-modal" id="account-modal" style="max-width:560px">
+    <div class="aa-modal-head">
+      <h3 id="account-title">Almost done - create your account to submit</h3>
+      <button type="button" class="aa-modal-close" id="account-close">&times;</button>
+    </div>
+    <div class="aa-modal-body">
+      <div class="aa-modal-section">
+        <div class="aa-modal-section-title">Your details</div>
+        <p style="font-size:14px;color:var(--mid);line-height:1.55;margin:-6px 0 16px">
+          We use this to create your access request. An administrator will review it and email you to set a password once approved.
+        </p>
+        <div class="aa-col-2">
+          <div class="aa-field">
+            <label>First name <span class="req">*</span></label>
+            <input id="acc-first" class="aa-input" autocomplete="given-name" />
+            <div class="aa-field-error">First name is required</div>
+          </div>
+          <div class="aa-field">
+            <label>Last name</label>
+            <input id="acc-last" class="aa-input" autocomplete="family-name" />
+          </div>
+          <div class="aa-field">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" id="acc-email" class="aa-input" autocomplete="email" />
+            <div class="aa-field-error">Please enter a valid email</div>
+          </div>
+          <div class="aa-field">
+            <label>Phone</label>
+            <input type="tel" id="acc-phone" class="aa-input" autocomplete="tel" placeholder="254700000000" />
+          </div>
+          <div class="aa-field">
+            <label>Organization</label>
+            <input id="acc-org" class="aa-input" autocomplete="organization" />
+          </div>
+          <div class="aa-field">
+            <label>Position</label>
+            <input id="acc-position" class="aa-input" autocomplete="organization-title" />
+          </div>
+        </div>
+        <div style="margin-top:6px;font-size:14px">
+          <a href="/anticipatory-login?redirect-to=/anticipatory-action" id="acc-signin" style="color:var(--red);font-weight:600">Already have an account? Sign in</a>
+        </div>
+      </div>
+    </div>
+    <div class="aa-modal-foot">
+      <button type="button" class="aa-btn-cancel" id="account-cancel">Cancel</button>
+      <button type="button" class="aa-btn-save" id="account-submit">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Create account &amp; submit
+      </button>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block script %}
@@ -666,6 +733,24 @@ select.aa-input {
   const modalClose   = document.getElementById('modal-close');
   const modalCancel  = document.getElementById('modal-cancel');
   const modalSave    = document.getElementById('modal-save');
+
+  // attachment
+  const attachInput   = document.getElementById('aa-attachment');
+  const attachCurrent = document.getElementById('aa-attachment-current');
+  const attachLink    = document.getElementById('aa-attachment-link');
+  let existingAttachment = '';   // file_url loaded in edit mode
+
+  // guest account step
+  const accountOverlay = document.getElementById('account-overlay');
+  const accountClose   = document.getElementById('account-close');
+  const accountCancel  = document.getElementById('account-cancel');
+  const accountSubmit  = document.getElementById('account-submit');
+  const accFirst       = document.getElementById('acc-first');
+  const accLast        = document.getElementById('acc-last');
+  const accEmail       = document.getElementById('acc-email');
+  const accPhone       = document.getElementById('acc-phone');
+  const accOrg         = document.getElementById('acc-org');
+  const accPosition    = document.getElementById('acc-position');
 
   // modal fields
   const mSubcountyLevel = document.getElementById('m-subcounty-level');
@@ -768,6 +853,14 @@ select.aa-input {
         details.length = 0;
         (d.anticipatory_action_details || []).forEach(function (row) { details.push(row); });
         renderDetails();
+
+        // Show an already-attached supporting file, with the option to replace it.
+        if (d.supporting_materials) {
+          existingAttachment = d.supporting_materials;
+          attachLink.href = d.supporting_materials;
+          attachLink.textContent = d.supporting_materials.split('/').pop() || 'View file';
+          attachCurrent.style.display = '';
+        }
 
         EDIT_MODE = true;
         submitBtn.innerHTML = 'Save Changes <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
@@ -966,38 +1059,68 @@ select.aa-input {
     });
   }
 
-  // ── Form submission ────────────────────────────────────────────────────────
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    // Validate required fields
+  // ── Validation (reused by both logged-in submit and guest account step) ─────
+  function validateForm() {
     let valid = true;
     form.querySelectorAll('[required]').forEach(function (el) {
       const err = el.nextElementSibling;
       if (!el.value.trim()) {
         el.classList.add('error');
         if (err && err.classList.contains('aa-field-error')) err.style.display = 'block';
-        if (!valid) return;
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        valid = false;
+        if (valid) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          valid = false;
+        }
       } else {
         el.classList.remove('error');
         if (err && err.classList.contains('aa-field-error')) err.style.display = 'none';
       }
     });
+    return valid;
+  }
 
-    if (!valid) return;
-
-    // Collect form data
+  // ── Build the submission data object (parent fields + details array) ────────
+  function buildDataObj() {
     const fd = new FormData(form);
     const data = {};
     for (const [k, v] of fd.entries()) {
+      if (k === 'aa_attachment') continue;        // file handled separately
       if (k === 'email_me_a_copy') { data[k] = 1; continue; }
       data[k] = v;
     }
     if (!data.email_me_a_copy) data.email_me_a_copy = 0;
     data.anticipatory_action_details = details;
+    return data;
+  }
 
+  // ── Upload the selected file (if any) and return its file_url ───────────────
+  // Resolves to the uploaded URL, the existing attachment (edit mode), or ''.
+  function uploadAttachment() {
+    const file = attachInput && attachInput.files && attachInput.files[0];
+    if (!file) return Promise.resolve(existingAttachment || '');
+
+    const upFd = new FormData();
+    upFd.append('file', file);
+    upFd.append('is_private', 0);
+    upFd.append('folder', 'Home/Attachments');
+
+    const headers = {};
+    if (window.frappe && frappe.csrf_token) headers['X-Frappe-CSRF-Token'] = frappe.csrf_token;
+
+    return fetch('/api/method/upload_file', {
+      method: 'POST',
+      headers: headers,
+      body: upFd
+    }).then(function (resp) {
+      return resp.json();
+    }).then(function (json) {
+      const url = json && json.message && json.message.file_url;
+      if (!url) throw new Error('upload failed');
+      return url;
+    });
+  }
+
+  function setSubmittingState() {
     submitBtn.disabled = true;
     submitBtn.innerHTML = `
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -1005,82 +1128,225 @@ select.aa-input {
         <path d="M21 12a9 9 0 11-6.219-8.56"/>
       </svg>
       Submitting…`;
+  }
 
-    // Editing an existing draft → update in place and return to the dashboard.
-    if (EDIT_MODE) {
-      frappe.call({
-        method: 'anticipatory_action.api.portal.update_my_submission',
-        args: { name: EDIT_NAME, data: JSON.stringify(data) },
-        callback: function (r) {
-          var res = r.message;
-          if (res && res.success) {
-            window.location.href = PORTAL_HOME;
-          } else {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Save Changes';
-            frappe.msgprint({ title: 'Update failed', message: (res && res.error) || 'Please try again.', indicator: 'red' });
-          }
-        },
-        error: function () {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = 'Save Changes';
-          frappe.msgprint({ title: 'Error', message: 'Could not save your changes. Please try again.', indicator: 'red' });
-        }
-      });
+  function resetSubmitButton(label) {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = label + ' <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+  }
+
+  function showSuccess(refName, message) {
+    form.reset();
+    details.length = 0;
+    renderDetails();
+    if (attachInput) attachInput.value = '';
+
+    form.style.display = 'none';
+    successBox.style.display = 'block';
+    if (refName) successRef.textContent = refName;
+    if (message) {
+      var msgEl = successBox.querySelector('p');
+      if (msgEl) msgEl.textContent = message;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Replace this history entry so the back button skips the filled form
+    history.replaceState(null, '', window.location.href);
+  }
+
+  // ── Form submission ────────────────────────────────────────────────────────
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    // Guests do not submit directly: collect their account details first.
+    if (!IS_LOGGED_IN && !EDIT_MODE) {
+      openAccountModal();
       return;
     }
 
-    frappe.call({
-      method: 'anticipatory_action.api.anticipatory_action.submit_anticipatory_action',
-      headers: { 'X-Frappe-CSRF-Token': frappe.csrf_token || 'Guest' },
-      args: { data: JSON.stringify(data) },
-      callback: function (r) {
-        const res = r.message;
-        if (res && res.success) {
-          // Clear form data so back-button returns a blank form
-          form.reset();
-          details.length = 0;
-          renderDetails();
+    setSubmittingState();
 
-          form.style.display = 'none';
-          successBox.style.display = 'block';
-          successRef.textContent = res.name;
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+    uploadAttachment().then(function (fileUrl) {
+      const data = buildDataObj();
+      if (fileUrl) data.supporting_materials = fileUrl;
 
-          // Members go back to their dashboard; guests to the public site.
-          var REDIR = PORTAL_HOME;
-          var goNow = successBox.querySelector('a.aa-btn-outline');
-          if (goNow) { goNow.setAttribute('href', REDIR); goNow.textContent = 'Go to my dashboard →'; }
-
-          // Replace this history entry so the back button skips the filled form
-          history.replaceState(null, '', window.location.href);
-          // Countdown redirect
-          var secs = 6;
-          var countEl = document.getElementById('redirect-countdown');
-          if (countEl) countEl.textContent = secs;
-          var timer = setInterval(function () {
-            secs--;
-            if (countEl) countEl.textContent = secs;
-            if (secs <= 0) {
-              clearInterval(timer);
-              window.location.replace(REDIR);
+      // Editing an existing draft → update in place and return to the dashboard.
+      if (EDIT_MODE) {
+        frappe.call({
+          method: 'anticipatory_action.api.portal.update_my_submission',
+          args: { name: EDIT_NAME, data: JSON.stringify(data) },
+          callback: function (r) {
+            var res = r.message;
+            if (res && res.success) {
+              window.location.href = PORTAL_HOME;
+            } else {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = 'Save Changes';
+              frappe.msgprint({ title: 'Update failed', message: (res && res.error) || 'Please try again.', indicator: 'red' });
             }
-          }, 1000);
-        } else {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = 'Submit Anticipatory Action <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
-          frappe.msgprint({
-            title: 'Submission Failed',
-            message: (res && res.error) || 'An unexpected error occurred. Please try again.',
-            indicator: 'red'
-          });
-        }
-      },
-      error: function () {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = 'Submit Anticipatory Action';
-        frappe.msgprint({ title: 'Error', message: 'Could not connect to the server. Please check your connection and try again.', indicator: 'red' });
+          },
+          error: function () {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Save Changes';
+            frappe.msgprint({ title: 'Error', message: 'Could not save your changes. Please try again.', indicator: 'red' });
+          }
+        });
+        return;
       }
+
+      // Logged-in new submission.
+      frappe.call({
+        method: 'anticipatory_action.api.anticipatory_action.submit_anticipatory_action',
+        headers: { 'X-Frappe-CSRF-Token': frappe.csrf_token || 'Guest' },
+        args: { data: JSON.stringify(data) },
+        callback: function (r) {
+          const res = r.message;
+          if (res && res.success) {
+            showSuccess(res.name);
+
+            var REDIR = PORTAL_HOME;
+            var goNow = successBox.querySelector('a.aa-btn-outline');
+            if (goNow) { goNow.setAttribute('href', REDIR); goNow.textContent = 'Go to my dashboard →'; }
+
+            var secs = 6;
+            var countEl = document.getElementById('redirect-countdown');
+            if (countEl) countEl.textContent = secs;
+            var timer = setInterval(function () {
+              secs--;
+              if (countEl) countEl.textContent = secs;
+              if (secs <= 0) {
+                clearInterval(timer);
+                window.location.replace(REDIR);
+              }
+            }, 1000);
+          } else {
+            resetSubmitButton('Submit Anticipatory Action');
+            frappe.msgprint({
+              title: 'Submission Failed',
+              message: (res && res.error) || 'An unexpected error occurred. Please try again.',
+              indicator: 'red'
+            });
+          }
+        },
+        error: function () {
+          resetSubmitButton('Submit Anticipatory Action');
+          frappe.msgprint({ title: 'Error', message: 'Could not connect to the server. Please check your connection and try again.', indicator: 'red' });
+        }
+      });
+    }).catch(function () {
+      resetSubmitButton(EDIT_MODE ? 'Save Changes' : 'Submit Anticipatory Action');
+      frappe.msgprint({ title: 'Upload failed', message: 'Your supporting file could not be uploaded. Please try a different file or remove it.', indicator: 'red' });
+    });
+  });
+
+  // ── Guest account step ──────────────────────────────────────────────────────
+  function openAccountModal() {
+    // Pre-fill from the form's reporter fields when available.
+    var repName  = (form.elements['reporting_person'] && form.elements['reporting_person'].value || '').trim();
+    var repEmail = (form.elements['reporter_email'] && form.elements['reporter_email'].value || '').trim();
+    var repPhone = (form.elements['reporter_phone_number'] && form.elements['reporter_phone_number'].value || '').trim();
+    var repOrg   = (form.elements['implementing_organization'] && form.elements['implementing_organization'].value || '').trim();
+
+    if (repName && !accFirst.value) {
+      var parts = repName.split(/\s+/);
+      accFirst.value = parts.shift() || '';
+      accLast.value  = accLast.value || parts.join(' ');
+    }
+    if (repEmail && !accEmail.value) accEmail.value = repEmail;
+    if (repPhone && !accPhone.value) accPhone.value = repPhone;
+    if (repOrg && !accOrg.value)     accOrg.value   = repOrg;
+
+    accountOverlay.querySelectorAll('.aa-field-error').forEach(function (el) { el.style.display = 'none'; });
+    accountOverlay.querySelectorAll('.aa-input').forEach(function (el) { el.classList.remove('error'); });
+
+    accountOverlay.classList.add('open');
+    setTimeout(function () { accFirst.focus(); }, 100);
+  }
+
+  function closeAccountModal() {
+    accountOverlay.classList.remove('open');
+  }
+
+  if (accountClose)  accountClose.addEventListener('click', closeAccountModal);
+  if (accountCancel) accountCancel.addEventListener('click', closeAccountModal);
+  if (accountOverlay) accountOverlay.addEventListener('click', function (e) {
+    if (e.target === accountOverlay) closeAccountModal();
+  });
+
+  if (accountSubmit) accountSubmit.addEventListener('click', function () {
+    var valid = true;
+
+    function flag(el, ok) {
+      var err = el.parentNode.querySelector('.aa-field-error');
+      if (ok) { el.classList.remove('error'); if (err) err.style.display = 'none'; }
+      else { el.classList.add('error'); if (err) err.style.display = 'block'; valid = false; }
+    }
+
+    var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(accEmail.value.trim());
+    flag(accFirst, !!accFirst.value.trim());
+    flag(accEmail, emailOk);
+    if (!valid) return;
+
+    var account = {
+      first_name:   accFirst.value.trim(),
+      last_name:    accLast.value.trim(),
+      email:        accEmail.value.trim(),
+      phone:        accPhone.value.trim(),
+      organization: accOrg.value.trim(),
+      position:     accPosition.value.trim(),
+      message:      ''
+    };
+
+    accountSubmit.disabled = true;
+    accountSubmit.innerHTML = 'Submitting…';
+
+    uploadAttachment().then(function (fileUrl) {
+      const data = buildDataObj();
+      if (fileUrl) data.supporting_materials = fileUrl;
+
+      // Fall back to the account details for reporter fields if the form left them blank.
+      if (!data.reporter_email) data.reporter_email = account.email;
+      if (!data.reporting_person) {
+        data.reporting_person = (account.first_name + ' ' + account.last_name).trim();
+      }
+
+      frappe.call({
+        method: 'anticipatory_action.api.portal.submit_guest_application',
+        headers: { 'X-Frappe-CSRF-Token': (window.frappe && frappe.csrf_token) || 'Guest' },
+        args: {
+          submission: JSON.stringify(data),
+          account: JSON.stringify(account)
+        },
+        callback: function (r) {
+          var res = r.message;
+          if (res && res.success) {
+            closeAccountModal();
+            showSuccess(res.name, 'Thank you. Your submission and access request have been received. An administrator will review your account and you will get an email to set your password once approved.');
+            var heading = successBox.querySelector('h2');
+            if (heading) heading.textContent = 'Thank you!';
+            var redirectNote = successBox.querySelector('p[style*="Redirecting"]') ||
+              Array.prototype.find.call(successBox.querySelectorAll('p'), function (p) { return /Redirecting/.test(p.textContent); });
+            if (redirectNote) redirectNote.style.display = 'none';
+            var goNow = successBox.querySelector('a.aa-btn-outline');
+            if (goNow) { goNow.setAttribute('href', '/anticipatory-action'); goNow.textContent = 'Submit another →'; }
+          } else {
+            accountSubmit.disabled = false;
+            accountSubmit.innerHTML = 'Create account &amp; submit';
+            frappe.msgprint({ title: 'Submission Failed', message: (res && res.error) || 'An unexpected error occurred. Please try again.', indicator: 'red' });
+          }
+        },
+        error: function () {
+          accountSubmit.disabled = false;
+          accountSubmit.innerHTML = 'Create account &amp; submit';
+          frappe.msgprint({ title: 'Error', message: 'Could not connect to the server. Please check your connection and try again.', indicator: 'red' });
+        }
+      });
+    }).catch(function () {
+      accountSubmit.disabled = false;
+      accountSubmit.innerHTML = 'Create account &amp; submit';
+      frappe.msgprint({ title: 'Upload failed', message: 'Your supporting file could not be uploaded. Please try a different file or remove it.', indicator: 'red' });
     });
   });
 

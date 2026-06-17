@@ -68,6 +68,7 @@ app_license = "mit"
 # Land AA accounts on their portal after login instead of the desk.
 role_home_page = {
 	"Anticipatory Action Admin": "/aa-admin",
+	"Anticipatory Action Approver": "/aa-admin",
 	"Anticipatory Action User": "/aa-portal",
 }
 
@@ -151,7 +152,7 @@ has_permission = {
 # permissions reference them). The workspace itself ships in the module's
 # workspace/ folder and installs on migrate.
 fixtures = [
-	{"dt": "Role", "filters": [["name", "in", ["Anticipatory Action User", "Anticipatory Action Admin"]]]},
+	{"dt": "Role", "filters": [["name", "in", ["Anticipatory Action User", "Anticipatory Action Approver", "Anticipatory Action Admin"]]]},
 ]
 
 # Send AA members/admins to their portal after login (any login path), without
@@ -223,7 +224,9 @@ on_session_creation = [
 
 # Request Events
 # ----------------
-# before_request = ["anticipatory_action.utils.before_request"]
+# Host-scoped: only acts on the anticipatoryaction.ndoc.go.ke subdomain, no-op
+# everywhere else (the main URL and other subdomains are never affected).
+before_request = ["anticipatory_action.api.routing.route_subdomain"]
 # after_request = ["anticipatory_action.utils.after_request"]
 
 # Job Events

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Dashboard — Kenya Anticipatory Action</title>
+  <title>My Dashboard - Kenya Anticipatory Action</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -20,9 +20,10 @@
   <nav class="pb-links" id="pbLinks">
     <a href="/aa-portal" class="active">Dashboard</a>
     <a href="/anticipatory-action">New Submission</a>
+    <a href="/aa-impact">Impact</a>
     {% if is_admin %}<a href="/aa-admin">Admin Console</a>{% endif %}
     <a href="/aa-profile">Profile</a>
-    <a href="/app" title="Open the Frappe desk">Desk ↗</a>
+    {% if is_system_manager %}<a href="/app" title="Open the Frappe desk">Desk ↗</a>{% endif %}
   </nav>
   <div class="pb-end">
     <span class="pb-user">{{ full_name }}</span>
@@ -47,10 +48,10 @@
   </div>
 
   <div class="stat-grid" id="stats">
-    <div class="stat"><div class="v" id="st-total">—</div><div class="l">Total Submissions</div></div>
-    <div class="stat accent"><div class="v" id="st-pending">—</div><div class="l">Pending Review</div></div>
-    <div class="stat"><div class="v" id="st-approved">—</div><div class="l">Approved</div></div>
-    <div class="stat"><div class="v" id="st-people">—</div><div class="l">People Targeted</div></div>
+    <div class="stat"><div class="v" id="st-total">-</div><div class="l">Total Submissions</div></div>
+    <div class="stat accent"><div class="v" id="st-pending">-</div><div class="l">Pending Review</div></div>
+    <div class="stat"><div class="v" id="st-approved">-</div><div class="l">Approved</div></div>
+    <div class="stat"><div class="v" id="st-people">-</div><div class="l">People Targeted</div></div>
   </div>
 
   <div class="tabs">
@@ -68,7 +69,12 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="reportSearch" placeholder="Search reports, publications, keywords…" />
       </div>
+      <button class="btn sm" id="uploadReportBtn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Upload report
+      </button>
     </div>
+    <div id="my-reports-section"></div>
     <div id="reports-body"><div class="loading">Loading library…</div></div>
   </section>
 </main>
@@ -84,6 +90,66 @@
   </div>
   <div class="review-scroll"><div class="review-doc" id="review-body"></div></div>
   <div class="review-foot" id="review-foot"></div>
+</div>
+
+<!-- Member report upload -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Upload report</h3>
+      <button class="modal-close" id="reportModalClose" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert err" id="reportFormErr"></div>
+      <form id="reportForm">
+        <div class="form-grid">
+          <div class="field full">
+            <label for="rf-title">Title <span style="color:#CC0000">*</span></label>
+            <input type="text" id="rf-title" maxlength="240" required />
+          </div>
+          <div class="field full">
+            <label for="rf-desc">Description</label>
+            <textarea id="rf-desc"></textarea>
+          </div>
+          <div class="field">
+            <label for="rf-category">Category</label>
+            <select id="rf-category">
+              <option value="Report">Report</option>
+              <option value="Workshop Report">Workshop Report</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="rf-source">Source</label>
+            <input type="text" id="rf-source" />
+          </div>
+          <div class="field full">
+            <label for="rf-keywords">Key words</label>
+            <input type="text" id="rf-keywords" placeholder="Comma separated" />
+          </div>
+          <div class="field">
+            <label for="rf-link">External link</label>
+            <input type="url" id="rf-link" placeholder="https://…" />
+          </div>
+          <div class="field">
+            <label for="rf-file">Or upload a file</label>
+            <input type="file" id="rf-file" />
+            <div class="hint">Provide a link or a file (at least one).</div>
+          </div>
+          <div class="field full">
+            <label for="rf-visibility">Visibility</label>
+            <select id="rf-visibility">
+              <option value="Private">Private - only visible to you here in the portal</option>
+              <option value="Public">Public - also shown on the public website</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn" type="submit" id="rf-submit">Submit report</button>
+          <button class="btn ghost" type="button" id="rf-cancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <script>window.AA_CSRF = "{{ csrf_token or '' }}";</script>
@@ -106,7 +172,17 @@
   function statusBadge(s) {
     if (s === 'Approved') return '<span class="badge approved">Approved</span>';
     if (s === 'Not Approved') return '<span class="badge rejected">Not Approved</span>';
+    if (s === 'Replied') return '<span class="badge pending">Information requested</span>';
     return '<span class="badge pending">Pending Review</span>';
+  }
+
+  function fmtDate(v) {
+    if (!v) return '';
+    var d = new Date(String(v).replace(' ', 'T'));
+    if (isNaN(d.getTime())) return String(v);
+    try {
+      return d.toLocaleDateString('en-KE', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch (e) { return d.toDateString(); }
   }
 
   function subCard(s) {
@@ -117,22 +193,31 @@
     if (s.activation_start_date) {
       dates = s.activation_start_date + (s.activation_end_date ? ' → ' + s.activation_end_date : '');
     }
+    var editLabel = (s.status === 'Replied' || s.status === 'Not Approved') ? 'Update &amp; resubmit' : 'Edit';
     var actions =
       '<button class="btn sm ghost" data-open="' + AA.esc(s.name) + '">View</button>' +
       '<button class="btn sm ghost" data-pdf="' + AA.esc(s.name) + '">Download PDF</button>';
     if (s.can_edit) {
       actions +=
-        '<button class="btn sm ghost" data-edit="' + AA.esc(s.name) + '">Edit</button>' +
+        '<button class="btn sm ghost" data-edit="' + AA.esc(s.name) + '">' + editLabel + '</button>' +
         '<button class="btn sm danger" data-withdraw="' + AA.esc(s.name) + '">Withdraw</button>';
+    } else if (s.can_update) {
+      actions += '<button class="btn sm" data-update="' + AA.esc(s.name) + '">Update</button>';
     } else {
       actions += '<span class="badge muted">Locked</span>';
     }
-    var reason = (s.status === 'Not Approved' && s.reason_for_rejection)
-      ? '<div class="sc-reason"><b>Reason:</b> ' + AA.esc(s.reason_for_rejection) + '</div>' : '';
+    var note = '';
+    if (s.status === 'Not Approved' && s.reason_for_rejection) {
+      note = '<div class="sc-reason"><b>Reason:</b> ' + AA.esc(s.reason_for_rejection) + '</div>';
+    } else if (s.status === 'Replied' && s.info_request) {
+      note = '<div class="sc-reason"><b>The reviewer asked for more information:</b> ' + AA.esc(s.info_request) + '</div>';
+    }
+    var clip = s.supporting_materials
+      ? ' <span title="Has supporting materials" aria-label="Has supporting materials">&#128206;</span>' : '';
 
     return '<div class="sub-card">' +
       '<div class="sc-top"><div>' +
-        '<div class="sc-org">' + AA.esc(s.implementing_organization || 'Untitled') + '</div>' +
+        '<div class="sc-org">' + AA.esc(s.implementing_organization || 'Untitled') + clip + '</div>' +
         '<div class="sc-ref">' + AA.esc(s.name) + '</div>' +
       '</div>' + statusBadge(s.status) + '</div>' +
       '<div class="sc-meta">' +
@@ -140,7 +225,7 @@
         (counties.length ? '<span><b>Counties:</b> ' + AA.esc(counties.join(', ')) + '</span>' : '') +
         (people ? '<span><b>People:</b> ' + AA.fmtNum(people) + '</span>' : '') +
         (dates ? '<span><b>Window:</b> ' + AA.esc(dates) + '</span>' : '') +
-      '</div>' + reason +
+      '</div>' + note +
       '<div class="sc-actions">' + actions + '</div>' +
     '</div>';
   }
@@ -179,9 +264,21 @@
       body.querySelectorAll('[data-pdf]').forEach(function (b) {
         b.addEventListener('click', function () { downloadPdf(b.dataset.pdf); });
       });
+      body.querySelectorAll('[data-update]').forEach(function (b) {
+        b.addEventListener('click', function () { updateApproved(b.dataset.update); });
+      });
     } catch (e) {
       body.innerHTML = '<div class="empty"><p>' + AA.esc(e.message) + '</p></div>';
     }
+  }
+
+  async function updateApproved(name) {
+    if (!confirm('Update this approved submission? It will be reopened for editing and re-reviewed.')) return;
+    try {
+      var res = await AA.call('anticipatory_action.api.portal.update_my_submission_start', { name: name });
+      var newName = (res && res.name) || name;
+      window.location.href = '/anticipatory-action?name=' + encodeURIComponent(newName);
+    } catch (e) { AA.toast(e.message); }
   }
 
   async function withdraw(name) {
@@ -193,16 +290,23 @@
     } catch (e) { AA.toast(e.message); }
   }
 
+  function visibilityBadge(v) {
+    return v === 'Public'
+      ? '<span class="badge new">Public</span>'
+      : '<span class="badge muted">Private</span>';
+  }
+
   function reportCard(r) {
     var when = [r.month, r.year].filter(Boolean).join(' ');
     var link = r.url
       ? '<a class="btn sm ghost" href="' + AA.esc(r.url) + '" target="_blank" rel="noopener">Open</a>'
       : '<span class="badge muted">No link</span>';
+    var vis = r.visibility ? ' ' + visibilityBadge(r.visibility) : '';
     return '<tr>' +
-      '<td class="strong">' + AA.esc(r.title) + (r.description ? '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(r.description) + '</div>' : '') + '</td>' +
-      '<td>' + AA.esc(r.category || '—') + '</td>' +
-      '<td>' + AA.esc(r.source || '—') + '</td>' +
-      '<td>' + AA.esc(when || '—') + '</td>' +
+      '<td class="strong">' + AA.esc(r.title) + vis + (r.description ? '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(r.description) + '</div>' : '') + '</td>' +
+      '<td>' + AA.esc(r.category || '-') + '</td>' +
+      '<td>' + AA.esc(r.source || '-') + '</td>' +
+      '<td>' + AA.esc(when || '-') + '</td>' +
       '<td class="row-actions">' + link + '</td>' +
     '</tr>';
   }
@@ -228,9 +332,124 @@
     } catch (e) {
       body.innerHTML = '<div class="empty"><p>' + AA.esc(e.message) + '</p></div>';
     }
+    loadMyReports();
   }
 
   document.getElementById('reportSearch').addEventListener('input', renderReports);
+
+  // ---- member's own report uploads ----
+  function myReportRow(r) {
+    var dest = r.link || r.attachment;
+    var open = dest
+      ? '<a class="btn sm ghost" href="' + AA.esc(dest) + '" target="_blank" rel="noopener">Open</a>'
+      : '<span class="badge muted">No link</span>';
+    var removeCell;
+    if (r.removed) {
+      removeCell = '<span class="badge rejected" title="' + AA.esc(r.removal_reason || 'Removed by a reviewer') + '">Removed</span>';
+    } else {
+      removeCell = '<button class="btn sm danger" data-delreport="' + AA.esc(r.name) + '">Remove</button>';
+    }
+    var note = (r.removed && r.removal_reason)
+      ? '<div style="font-weight:400;color:var(--red-dark);font-size:12px;margin-top:4px">Reviewer note: ' + AA.esc(r.removal_reason) + '</div>'
+      : '';
+    return '<tr>' +
+      '<td class="strong">' + AA.esc(r.title) + ' ' + visibilityBadge(r.visibility) +
+        (r.description ? '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(r.description) + '</div>' : '') + note + '</td>' +
+      '<td>' + AA.esc(r.category || '-') + '</td>' +
+      '<td class="row-actions">' + open + ' ' + removeCell + '</td>' +
+    '</tr>';
+  }
+
+  async function loadMyReports() {
+    var host = document.getElementById('my-reports-section');
+    if (!host) return;
+    try {
+      var r = await AA.call('anticipatory_action.api.portal.list_my_reports');
+      var rows = (r && r.data) || [];
+      if (!rows.length) { host.innerHTML = ''; return; }
+      host.innerHTML = '<div class="ov-sec" style="margin-top:0">My uploads</div>' +
+        '<div class="table-wrap" style="margin-bottom:22px"><table class="data"><thead><tr>' +
+        '<th>Title</th><th>Category</th><th></th></tr></thead><tbody>' +
+        rows.map(myReportRow).join('') + '</tbody></table></div>';
+      host.querySelectorAll('[data-delreport]').forEach(function (b) {
+        b.addEventListener('click', function () { deleteMyReport(b.dataset.delreport); });
+      });
+    } catch (e) {
+      host.innerHTML = '';
+    }
+  }
+
+  async function deleteMyReport(name) {
+    if (!confirm('Remove this report? This cannot be undone.')) return;
+    try {
+      await AA.call('anticipatory_action.api.portal.delete_my_report', { name: name });
+      AA.toast('Report removed.', true);
+      loadMyReports();
+    } catch (e) { AA.toast(e.message); }
+  }
+
+  // ---- report upload modal ----
+  var reportModal = document.getElementById('reportModal');
+  var reportForm = document.getElementById('reportForm');
+  var reportFormErr = document.getElementById('reportFormErr');
+
+  function openReportModal() {
+    reportForm.reset();
+    reportFormErr.classList.remove('show');
+    reportFormErr.textContent = '';
+    reportModal.classList.add('open');
+  }
+  function closeReportModal() { reportModal.classList.remove('open'); }
+
+  document.getElementById('uploadReportBtn').addEventListener('click', openReportModal);
+  document.getElementById('reportModalClose').addEventListener('click', closeReportModal);
+  document.getElementById('rf-cancel').addEventListener('click', closeReportModal);
+  reportModal.addEventListener('click', function (e) { if (e.target === reportModal) closeReportModal(); });
+
+  reportForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    reportFormErr.classList.remove('show');
+    var title = (document.getElementById('rf-title').value || '').trim();
+    var link = (document.getElementById('rf-link').value || '').trim();
+    var fileInput = document.getElementById('rf-file');
+    var file = fileInput.files && fileInput.files[0];
+    if (!title) { showReportErr('Please enter a title.'); return; }
+    if (!link && !file) { showReportErr('Provide an external link or upload a file.'); return; }
+
+    var btn = document.getElementById('rf-submit');
+    btn.disabled = true;
+    var original = btn.textContent;
+    btn.innerHTML = '<span class="btn-spin"></span>Submitting…';
+    try {
+      var attachment = '';
+      if (file) attachment = await AA.upload(file, false) || '';
+      var payload = {
+        title: title,
+        description: (document.getElementById('rf-desc').value || '').trim(),
+        category: document.getElementById('rf-category').value,
+        source: (document.getElementById('rf-source').value || '').trim(),
+        key_words: (document.getElementById('rf-keywords').value || '').trim(),
+        link: link,
+        attachment: attachment,
+        visibility: document.getElementById('rf-visibility').value
+      };
+      await AA.call('anticipatory_action.api.portal.submit_my_report', payload);
+      closeReportModal();
+      AA.toast('Report submitted.', true);
+      loadMyReports();
+      loadReports();
+    } catch (err) {
+      showReportErr(err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  });
+
+  function showReportErr(msg) {
+    reportFormErr.textContent = msg;
+    reportFormErr.classList.add('show');
+  }
 
   // ---- read-only submission view + PDF copy ----
   function downloadPdf(name) {
@@ -243,7 +462,7 @@
   function rvField(label, value, opts) {
     opts = opts || {};
     var blank = (value === null || value === undefined || value === '');
-    var val = blank ? '—' : value;
+    var val = blank ? '-' : value;
     return '<div class="rv-field' + (opts.full ? ' full' : '') + '">' +
       '<div class="rv-label">' + AA.esc(label) + '</div>' +
       '<div class="rv-value">' + (opts.html && !blank ? val : AA.esc(val)) + '</div></div>';
@@ -262,9 +481,9 @@
       var d = (r && r.data) || {};
 
       var orgType = d.entity_or_organization_type || '';
-      if (d.other_organization_entity) orgType += ' — ' + d.other_organization_entity;
+      if (d.other_organization_entity) orgType += ' - ' + d.other_organization_entity;
       var hazard = d.anticipated_hazard || '';
-      if (d.other_anticipated_hazards) hazard += ' — ' + d.other_anticipated_hazards;
+      if (d.other_anticipated_hazards) hazard += ' - ' + d.other_anticipated_hazards;
       var partners = d.implementing_partners || '';
       if (d.other_implementing_partners) partners += ': ' + d.other_implementing_partners;
 
@@ -289,11 +508,11 @@
         var st = (x.status_of_the_early_action || 'Planned').toLowerCase();
         var pill = st.indexOf('complete') === 0 ? 'complete' : (st.indexOf('ongoing') === 0 ? 'ongoing' : 'planned');
         return '<div class="rv-card"><div class="rv-card-main">' +
-            '<div class="rv-card-loc">' + AA.esc(x.county || '—') + (x.subcounty ? ' · ' + AA.esc(x.subcounty) : '') + '</div>' +
-            '<div class="rv-card-sector">' + AA.esc(x.sector || '—') + '</div>' +
+            '<div class="rv-card-loc">' + AA.esc(x.county || '-') + (x.subcounty ? ' · ' + AA.esc(x.subcounty) : '') + '</div>' +
+            '<div class="rv-card-sector">' + AA.esc(x.sector || '-') + '</div>' +
             (x.describe_the_anticipatory_action_intervention ? '<div class="rv-card-desc">' + AA.esc(x.describe_the_anticipatory_action_intervention) + '</div>' : '') +
           '</div><div class="rv-card-meta">' +
-            '<div><div class="rv-meta-l">Budget</div><div class="rv-meta-v">' + (x.amount_for_anticipatory_action_kes ? 'KES ' + AA.fmtNum(x.amount_for_anticipatory_action_kes) : '—') + '</div></div>' +
+            '<div><div class="rv-meta-l">Budget</div><div class="rv-meta-v">' + (x.amount_for_anticipatory_action_kes ? 'KES ' + AA.fmtNum(x.amount_for_anticipatory_action_kes) : '-') + '</div></div>' +
             '<div><div class="rv-meta-l">People</div><div class="rv-meta-v">' + AA.fmtNum(x.number_of_people_targeted) + '</div></div>' +
             '<span class="rv-pill ' + pill + '">' + AA.esc(x.status_of_the_early_action || 'Planned') + '</span>' +
           '</div></div>';
@@ -304,32 +523,102 @@
       if (d.lessons_learnt) add += rvField('Key Lessons Learnt', d.lessons_learnt, { full: true });
       if (d.challenges) add += rvField('Challenges Faced', d.challenges, { full: true });
       if (d.recommendations) add += rvField('Recommendations', d.recommendations, { full: true });
+      if (d.supporting_materials) {
+        add += rvField('Supporting materials',
+          '<a href="' + AA.esc(d.supporting_materials) + '" target="_blank" rel="noopener">Open attachment</a>',
+          { full: true, html: true });
+      }
+
+      var alert = '';
+      if (d.status === 'Not Approved' && d.reason_for_rejection) {
+        alert = '<div class="review-alert"><b>Reason for revision:</b> ' + AA.esc(d.reason_for_rejection) + '</div>';
+      } else if (d.status === 'Replied' && d.info_request) {
+        alert = '<div class="review-alert"><b>The reviewer asked for more information:</b> ' + AA.esc(d.info_request) + '</div>';
+      }
 
       var html =
-        (d.status === 'Not Approved' && d.reason_for_rejection ? '<div class="review-alert"><b>Reason for revision:</b> ' + AA.esc(d.reason_for_rejection) + '</div>' : '') +
+        alert +
         rvSection(1, 'Implementing Organization', sec1) +
         rvSection(2, 'Hazard & Anticipatory Actions', sec2) +
         rvSection(3, 'Anticipatory Action Details', sec3) +
         (add ? rvSection(4, 'Additional Information', '<div class="rv-grid">' + add + '</div>') : '');
+
+      var editLabel = (d.status === 'Replied' || d.status === 'Not Approved') ? 'Update & resubmit' : 'Edit submission';
 
       document.getElementById('review-title').textContent = 'Submission ' + d.name;
       document.getElementById('review-sub').innerHTML = statusBadge(d.status);
       document.getElementById('review-body').innerHTML = html;
       document.getElementById('review-foot').innerHTML =
         '<button class="btn ghost" id="rv-pdf">Download PDF copy</button>' +
-        (d.can_edit ? '<button class="btn" id="rv-edit">Edit submission</button>' : '') +
+        (d.can_edit ? '<button class="btn" id="rv-edit">' + AA.esc(editLabel) + '</button>' : '') +
         '<button class="btn ghost" id="rv-close">Close</button>';
 
       document.getElementById('review').classList.add('open');
       document.querySelector('.review-scroll').scrollTop = 0;
       document.getElementById('rv-close').addEventListener('click', closeReview);
       document.getElementById('rv-pdf').addEventListener('click', function () { downloadPdf(name); });
-      var ed = document.getElementById('rv-edit');
-      if (ed) ed.addEventListener('click', function () { window.location.href = '/anticipatory-action?name=' + encodeURIComponent(name); });
+      var ed2 = document.getElementById('rv-edit');
+      if (ed2) ed2.addEventListener('click', function () { window.location.href = '/anticipatory-action?name=' + encodeURIComponent(name); });
+
+      // version history (best effort, non-blocking)
+      try {
+        var vr = await AA.call('anticipatory_action.api.portal.get_my_submission_versions', { name: name });
+        var versions = (vr && vr.data) || [];
+        if (versions.length > 1) {
+          var rows = versions.map(function (v, i) {
+            var label = v.version || (i + 1);
+            return '<div class="rv-card"><div class="rv-card-main">' +
+                '<div class="rv-card-loc">Version ' + AA.esc(label) + '</div>' +
+                '<div class="rv-card-sector">' + AA.esc(v.name) + (v.creation ? ' &middot; ' + AA.esc(fmtDate(v.creation)) : '') + '</div>' +
+              '</div><div class="rv-card-meta">' + statusBadge(v.status) + '</div></div>';
+          }).join('');
+          document.getElementById('review-body').insertAdjacentHTML('beforeend',
+            rvSection('V', 'Version history', '<div class="rv-cards">' + rows + '</div>'));
+        }
+      } catch (e) { /* version history is optional */ }
     } catch (e) { AA.toast(e.message); }
   }
 
+  // ---- in-app notification popups (#9) ----
+  function ensureNotifyStack() {
+    var st = document.getElementById('aa-notify-stack');
+    if (!st) {
+      st = document.createElement('div');
+      st.id = 'aa-notify-stack';
+      st.style.cssText = 'position:fixed;top:80px;right:20px;z-index:210;display:flex;flex-direction:column;gap:10px;max-width:340px;width:calc(100vw - 40px);';
+      document.body.appendChild(st);
+    }
+    return st;
+  }
+
+  function showNotification(n) {
+    var st = ensureNotifyStack();
+    var card = document.createElement('div');
+    card.style.cssText = 'background:#1A1A1A;color:#fff;border-left:3px solid #CC0000;padding:14px 16px 14px 16px;box-shadow:0 8px 24px rgba(0,0,0,0.28);position:relative;';
+    var body = n.email_content ? String(n.email_content).replace(/<[^>]*>/g, '').trim() : '';
+    card.innerHTML =
+      '<button type="button" aria-label="Dismiss" class="aa-notify-x" style="position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(255,255,255,0.6);font-size:18px;line-height:1;cursor:pointer;padding:2px;">&times;</button>' +
+      '<div style="font-weight:700;font-size:13.5px;letter-spacing:0.02em;padding-right:18px;">' + AA.esc(n.subject || 'Notification') + '</div>' +
+      (body ? '<div style="font-size:13px;line-height:1.5;color:rgba(255,255,255,0.82);margin-top:6px;">' + AA.esc(body) + '</div>' : '');
+    card.querySelector('.aa-notify-x').addEventListener('click', function () {
+      card.remove();
+      if (!st.children.length) st.remove();
+    });
+    st.appendChild(card);
+  }
+
+  async function loadNotifications() {
+    try {
+      var r = await AA.call('anticipatory_action.api.portal.get_my_notifications');
+      var rows = (r && r.data) || [];
+      if (!rows.length) return;
+      rows.forEach(showNotification);
+      try { await AA.call('anticipatory_action.api.portal.mark_my_notifications_read'); } catch (e) {}
+    } catch (e) { /* notifications are non-essential */ }
+  }
+
   loadSubs();
+  loadNotifications();
 })();
 </script>
 

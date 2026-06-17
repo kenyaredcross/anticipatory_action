@@ -85,7 +85,7 @@
    "label": "Details"
   },
   {
-   "description": "Superseded by Start Date — kept for historical records.",
+   "description": "Superseded by Start Date - kept for historical records.",
    "fieldname": "date",
    "fieldtype": "Date",
    "hidden": 1,

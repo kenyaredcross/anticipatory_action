@@ -59,7 +59,7 @@ function aaEsc(s) {
 	return frappe.utils.escape_html(s == null ? "" : String(s));
 }
 function aaDate(d) {
-	if (!d) return "—";
+	if (!d) return "-";
 	const dt = frappe.datetime.str_to_obj(d);
 	if (!dt || isNaN(dt)) return aaEsc(d);
 	return dt
@@ -468,10 +468,10 @@ class AAOperations {
 
 			const row = (r) => `<tr data-name="${aaEsc(r.name)}" tabindex="0" role="button">
 				<td class="mono">${aaEsc(r.name)}</td>
-				<td class="strong">${aaEsc(r.organization || "—")}${r.counties ? `<div class="sub">${aaEsc(r.counties)}</div>` : ""}</td>
-				<td>${aaEsc(r.hazard || "—")}</td>
+				<td class="strong">${aaEsc(r.organization || "-")}${r.counties ? `<div class="sub">${aaEsc(r.counties)}</div>` : ""}</td>
+				<td>${aaEsc(r.hazard || "-")}</td>
 				<td class="r">${aaNum(r.people)}</td>
-				<td class="r">${r.funds ? "KSh " + aaMoney(r.funds) : "—"}</td>
+				<td class="r">${r.funds ? "KSh " + aaMoney(r.funds) : "-"}</td>
 				<td>${aaDate(r.start_date)}</td>
 				<td>${this.pill(r.status || "Pending", aaTone(r.status))}</td>
 			</tr>`;
@@ -531,7 +531,7 @@ class AAOperations {
 			const card = (r, upcoming) => {
 				const dt = r.date ? frappe.datetime.str_to_obj(r.date) : null;
 				const day = dt ? dt.toLocaleDateString("en-GB", { day: "2-digit" }) : "--";
-				const mon = dt ? dt.toLocaleDateString("en-GB", { month: "short" }).toUpperCase() : "—";
+				const mon = dt ? dt.toLocaleDateString("en-GB", { month: "short" }).toUpperCase() : "-";
 				const yr = dt ? dt.getFullYear() : "";
 				return `<div class="aa-event ${upcoming ? "is-up" : ""}">
 					<div class="aa-event-date"><span class="d">${day}</span><span class="m">${mon}</span><span class="y">${yr}</span></div>
@@ -709,8 +709,8 @@ class AAOperations {
 				const body = rows
 					.map(
 						(r) => `<tr data-name="${aaEsc(r.name)}" tabindex="0" role="button">
-					<td class="strong">${aaEsc(r.full_name || "—")}${r.organization ? `<div class="sub">${aaEsc(r.organization)}</div>` : ""}</td>
-					<td>${aaEsc(r.subject || "—")}</td>
+					<td class="strong">${aaEsc(r.full_name || "-")}${r.organization ? `<div class="sub">${aaEsc(r.organization)}</div>` : ""}</td>
+					<td>${aaEsc(r.subject || "-")}</td>
 					<td>${aaEsc(r.email || "")}</td>
 					<td>${aaDate(r.submitted_on)}</td>
 					<td>${this.pill(r.status || "New", r.status === "New" ? "alert" : aaTone(r.status))}</td>
@@ -746,9 +746,9 @@ class AAOperations {
 						const [bg, fg] = aaAvatar(nameOf(r));
 						return `<tr data-name="${aaEsc(r.name)}" tabindex="0" role="button">
 					<td class="strong"><span class="aa-avatar aa-avatar-row" style="background:${bg};color:${fg}">${aaEsc(aaInitials(nameOf(r)))}</span>${aaEsc(nameOf(r))}</td>
-					<td>${aaEsc(r.email || "—")}</td>
-					<td>${aaEsc(r.phone || "—")}</td>
-					<td>${aaEsc(r.organization || "—")}</td>
+					<td>${aaEsc(r.email || "-")}</td>
+					<td>${aaEsc(r.phone || "-")}</td>
+					<td>${aaEsc(r.organization || "-")}</td>
 					<td>${this.pill(r.role === "Anticipatory Action Admin" ? "Admin" : "User", r.role === "Anticipatory Action Admin" ? "ok" : "muted")}</td>
 				</tr>`;
 					})
