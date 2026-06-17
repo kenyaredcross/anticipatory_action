@@ -16,7 +16,7 @@ def get_context(context):
 	is_approver = "Anticipatory Action Approver" in roles
 
 	if not (is_admin or is_approver):
-		# Authenticated but neither admin nor approver — send them to the portal.
+		# Authenticated but neither admin nor approver - send them to the portal.
 		frappe.local.flags.redirect_location = "/aa-portal"
 		raise frappe.Redirect
 
@@ -28,4 +28,7 @@ def get_context(context):
 	context.is_approver = is_approver and not is_admin
 	context.can_manage_users = is_admin
 	context.is_system_manager = "System Manager" in roles
+	# Both AA Admins and System Managers may now assign roles (constrained to the
+	# three AA roles server-side); approvers cannot.
+	context.can_set_role = is_admin
 	context.csrf_token = frappe.sessions.get_csrf_token()

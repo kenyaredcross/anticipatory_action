@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Console — Kenya Anticipatory Action</title>
+  <title>Admin Console - Kenya Anticipatory Action</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -40,7 +40,7 @@
     {% if is_approver %}
     <p class="portal-sub">Review and clear the submission queue, and curate the programme's activities, reports and publications.</p>
     {% else %}
-    <p class="portal-sub">Manage Anticipatory Action members, review submissions, and curate the programme's activities, reports and publications — all in one place.</p>
+    <p class="portal-sub">Manage Anticipatory Action members, review submissions, and curate the programme's activities, reports and publications - all in one place.</p>
     {% endif %}
   </div></div>
 
@@ -131,14 +131,15 @@
   <div class="review-foot" id="review-foot"></div>
 </div>
 
-<script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }}; window.AA_IS_ADMIN = {{ 1 if is_admin else 0 }};</script>
+<script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }}; window.AA_IS_ADMIN = {{ 1 if is_admin else 0 }}; window.AA_CAN_SET_ROLE = {{ 1 if can_set_role else 0 }};</script>
 <script src="/aa-portal-ui.js"></script>
 <script>
 (function () {
   'use strict';
   var P = 'anticipatory_action.api.portal.';
-  var IS_SM = !!window.AA_IS_SM;  // System Manager — only they may set/change roles
+  var IS_SM = !!window.AA_IS_SM;  // System Manager
   var IS_ADMIN = !!window.AA_IS_ADMIN;  // full admin (users/orgs/sign-ups); approvers are false
+  var CAN_SET_ROLE = !!window.AA_CAN_SET_ROLE;  // AA Admins and System Managers may set/change roles
   var loaded = {};
   // Select options are loaded live from the server (get_admin_meta) so they
   // never drift from the doctype schema. These are just fallbacks.
@@ -148,7 +149,8 @@
     pillars: ['Pillar 1', 'Pillar 2', 'Pillar 3', 'Pillar 4', 'Pillar 5'],
     activity_statuses: ['Planned', 'Ongoing', 'Completed', 'On Hold', 'Cancelled'],
   };
-  var VISIBILITY = [{ value: '1', label: 'Public — shown on the AA website' }, { value: '0', label: 'Private — hidden from the public site' }];
+  var VISIBILITY = [{ value: '1', label: 'Public - shown on the AA website' }, { value: '0', label: 'Private - hidden from the public site' }];
+  var REPORT_VISIBILITY = [{ value: 'Public', label: 'Public - shown on the AA website' }, { value: 'Private', label: 'Private - hidden from the public site' }];
   var orgCache = [];
 
   // ---------- tabs ----------
@@ -220,7 +222,7 @@
   function kv(label, value, opts) {
     opts = opts || {};
     var blank = (value === null || value === undefined || value === '');
-    var val = blank ? '—' : value;
+    var val = blank ? '-' : value;
     return '<div class="kv' + (opts.full ? ' full' : '') + '"><div class="kv-l">' + AA.esc(label) + '</div>' +
       '<div class="kv-v">' + (opts.html && !blank ? val : AA.esc(val)) + '</div></div>';
   }
@@ -236,7 +238,7 @@
   function errPanel(id, msg) { panelHTML(id, '<div class="empty"><p>' + AA.esc(msg) + '</p></div>'); }
 
   // Disable a button and show a "working…" state while an async action runs.
-  // Returns a restore() fn — call it on failure (on success the panel usually
+  // Returns a restore() fn - call it on failure (on success the panel usually
   // re-renders and replaces the button anyway).
   function busy(btn, label) {
     if (!btn) return function () {};
@@ -300,9 +302,6 @@
         '<div class="ov-sec">Programme impact</div>' +
         '<div class="stat-grid">' +
           stat(d.activations_approved || 0, 'Approved Activations') +
-          stat(AA.fmtNum(d.people_reached), 'People Targeted') +
-          stat(AA.fmtNum(d.households), 'Households') +
-          stat('KES ' + AA.fmtNum(d.funds_kes), 'Funds Mobilised') +
           stat(d.counties_active || 0, 'Counties Active') +
           stat(d.activations_total || 0, 'Total Submissions') +
         '</div>' +
@@ -344,14 +343,15 @@
           var role = (u.role || '').replace('Anticipatory Action ', 'AA ');
           var status = u.enabled ? '<span class="badge approved">Active</span>' : '<span class="badge off">Disabled</span>';
           return '<tr>' +
-            '<td class="strong">' + AA.esc(u.full_name || '—') + '</td>' +
+            '<td class="strong">' + AA.esc(u.full_name || '-') + '</td>' +
             '<td>' + AA.esc(u.email) + '</td>' +
-            '<td>' + AA.esc(u.phone || '—') + '</td>' +
-            '<td>' + AA.esc(u.organization || '—') + '</td>' +
+            '<td>' + AA.esc(u.phone || '-') + '</td>' +
+            '<td>' + AA.esc(u.organization || '-') + '</td>' +
             '<td>' + AA.esc(role) + '</td>' +
             '<td>' + status + '</td>' +
             '<td class="row-actions">' +
               '<button class="btn sm ghost" data-edit-user="' + AA.esc(u.name) + '">Edit</button>' +
+              '<button class="btn sm ghost" data-reset-user="' + AA.esc(u.name) + '">Reset password</button>' +
               '<button class="btn sm ' + (u.enabled ? 'danger' : 'ok') + '" data-toggle-user="' + AA.esc(u.name) + '" data-enabled="' + (u.enabled ? 1 : 0) + '">' + (u.enabled ? 'Disable' : 'Enable') + '</button>' +
             '</td></tr>';
         }).join('');
@@ -373,6 +373,17 @@
           } catch (e) { AA.toast(e.message); }
         });
       });
+      document.querySelectorAll('[data-reset-user]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          if (!confirm('Email this member a password-reset link?')) return;
+          var done = busy(b, 'Sending…');
+          try {
+            var res = await AA.call(P + 'send_password_reset', { name: b.dataset.resetUser });
+            AA.toast('Password reset email sent to ' + ((res && res.email) || 'the member') + '.', true);
+            done();
+          } catch (e) { AA.toast(e.message); done(); }
+        });
+      });
     } catch (e) { errPanel('users', e.message); }
   }
 
@@ -381,9 +392,9 @@
     var orgs = (meta.organizations || []).map(function (o) { return { value: o.name, label: o.name_of_organization }; });
     var roles = (meta.roles || []).map(function (rl) { return { value: rl, label: rl.replace('Anticipatory Action ', 'AA ') }; });
     var editing = !!u;
-    var roleField = IS_SM
+    var roleField = CAN_SET_ROLE
       ? field({ label: 'Role', id: 'u_role', type: 'select', options: roles, value: (u && u.role) || 'Anticipatory Action User', required: true, placeholder: false, full: true })
-      : field({ label: 'Role', id: 'u_role_ro', value: ((u && u.role) || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA '), readonly: true, full: true, hint: 'Only a System Manager can change the role.' });
+      : field({ label: 'Role', id: 'u_role_ro', value: ((u && u.role) || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA '), readonly: true, full: true, hint: 'Only an administrator can change the role.' });
     var f =
       field({ label: 'First Name', id: 'u_first', value: u && u.first_name, required: true }) +
       field({ label: 'Last Name', id: 'u_last', value: u && u.last_name, required: true }) +
@@ -393,7 +404,7 @@
       roleField;
     openModal(editing ? 'Edit User' : 'Add User', f, async function () {
       var payload = { first_name: v('u_first'), last_name: v('u_last'), phone: v('u_phone'), organization: v('u_org') };
-      if (IS_SM) payload.role = v('u_role');
+      if (CAN_SET_ROLE) payload.role = v('u_role');
       if (!payload.first_name || !payload.organization) { modalErr('First name and organization are required.'); return; }
       if (editing) {
         await AA.call(P + 'update_aa_user', Object.assign({ name: u.name }, payload));
@@ -402,7 +413,7 @@
         if (!payload.email) { modalErr('Email is required.'); return; }
         await AA.call(P + 'create_aa_user', payload);
       }
-      closeModal(); AA.toast(editing ? 'User updated.' : 'User created — welcome email sent.', true); loadUsers();
+      closeModal(); AA.toast(editing ? 'User updated.' : 'User created - welcome email sent.', true); loadUsers();
     }, editing ? 'Save Changes' : 'Create User');
   }
 
@@ -413,66 +424,58 @@
       var r = await AA.call(P + 'list_submissions', status ? { status: status } : {});
       var rows = (r && r.data) || [];
       var filterSel = '<select class="filter-select" id="sub-filter" style="min-width:170px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' +
-        ['', 'Pending', 'Approved', 'Not Approved'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
+        ['', 'Pending', 'Replied', 'Approved', 'Not Approved'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s === 'Replied' ? 'Info Requested' : (s || 'All statuses')) + '</option>'; }).join('') + '</select>';
       var html = toolbar('<div class="grow"></div>' + filterSel);
       if (!rows.length) {
         html += '<div class="empty"><p>No submissions found.</p></div>';
       } else {
-        html += tableHead(['Reference', 'Organization', 'Hazard', 'Counties', 'People', 'Funds (KES)', 'Status', '']);
+        html += tableHead(['Reference', 'Organization', 'Hazard', 'Counties', 'People', 'Funds (KES)', 'Date', 'Status', '']);
         html += rows.map(function (s) {
           var badge = s.status === 'Approved' ? '<span class="badge approved">Approved</span>'
             : s.status === 'Not Approved' ? '<span class="badge rejected">Not Approved</span>'
+            : s.status === 'Replied' ? '<span class="badge new">Info Requested</span>'
             : '<span class="badge pending">Pending</span>';
-          var actions = '';
-          if (s.status !== 'Approved') actions += '<button class="btn sm ok" data-approve="' + AA.esc(s.name) + '">Approve</button>';
-          if (s.status !== 'Not Approved') actions += '<button class="btn sm danger" data-reject="' + AA.esc(s.name) + '">Reject</button>';
-          return '<tr class="clickable-row" data-row-open="' + AA.esc(s.name) + '" title="Click to open this submission">' +
-            '<td class="strong">' + AA.esc(s.name) + '</td>' +
-            '<td>' + AA.esc(s.organization || '—') + '</td>' +
-            '<td>' + AA.esc(s.hazard || '—') + '</td>' +
-            '<td>' + AA.esc(s.counties || '—') + '</td>' +
+          var ref = '<span class="strong">' + AA.esc(s.name) + '</span>';
+          if (s.is_update) ref += '<div><span class="badge muted" title="This supersedes an earlier approved submission">Update to a previous submission</span></div>';
+          return '<tr class="clickable-row" data-row-open="' + AA.esc(s.name) + '" title="Click to review this submission">' +
+            '<td>' + ref + '</td>' +
+            '<td>' + AA.esc(s.organization || '-') + '</td>' +
+            '<td>' + AA.esc(s.hazard || '-') + '</td>' +
+            '<td>' + AA.esc(s.counties || '-') + '</td>' +
             '<td>' + AA.fmtNum(s.people) + '</td>' +
             '<td>' + AA.fmtNum(s.funds) + '</td>' +
+            '<td>' + AA.esc(fmtDate(s.submitted_on)) + '</td>' +
             '<td>' + badge + '</td>' +
-            '<td class="row-actions">' + actions + '</td></tr>';
+            '<td class="row-actions"><button class="btn sm ghost" data-row-review="' + AA.esc(s.name) + '">Review</button></td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
       panelHTML('submissions', html);
       document.getElementById('sub-filter').addEventListener('change', function () { loadSubmissions(this.value); });
-      document.querySelectorAll('[data-approve]').forEach(function (b) {
-        b.addEventListener('click', async function (e) {
-          e.stopPropagation();
-          if (!confirm('Approve this submission? It will be locked and published to the dashboards.')) return;
-          var done = busy(b, 'Approving…');
-          try { await AA.call(P + 'set_submission_status', { name: b.dataset.approve, status: 'Approved' }); AA.toast('Submission approved.', true); loaded.overview = false; loadSubmissions(curSubFilter()); }
-          catch (e2) { AA.toast(e2.message); done(); }
-        });
+      // The row and its Review button both open the full detail view; decisions live there.
+      document.querySelectorAll('[data-row-review]').forEach(function (b) {
+        b.addEventListener('click', function (e) { e.stopPropagation(); submissionDetail(b.dataset.rowReview); });
       });
-      document.querySelectorAll('[data-reject]').forEach(function (b) {
-        b.addEventListener('click', function (e) { e.stopPropagation(); rejectSubmission(b.dataset.reject); });
-      });
-      // Whole row opens the review screen (clicks on the action buttons are ignored).
       document.querySelectorAll('#panel-submissions tr.clickable-row').forEach(function (tr) {
         tr.addEventListener('click', function (e) { if (e.target.closest('button')) return; submissionDetail(tr.dataset.rowOpen); });
       });
     } catch (e) { errPanel('submissions', e.message); }
   }
 
-  function rejectSubmission(name) {
-    openModal('Reject Submission', field({ label: 'Reason for rejection', id: 'rej_reason', type: 'textarea', required: true, full: true, hint: 'Shared with the reporter so they can revise and resubmit.' }), async function () {
-      var reason = v('rej_reason');
-      if (!reason) { modalErr('Please give a reason.'); return; }
-      await AA.call(P + 'set_submission_status', { name: name, status: 'Not Approved', reason: reason });
-      closeModal(); AA.toast('Submission rejected.', true); loadSubmissions(curSubFilter());
-    }, 'Reject Submission');
+  // Format a YYYY-MM-DD[ HH:MM:SS] value as a readable date (e.g. "12 Mar 2026").
+  function fmtDate(s) {
+    if (!s) return '-';
+    var m = String(s).slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return String(s).slice(0, 10) || '-';
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return parseInt(m[3], 10) + ' ' + months[parseInt(m[2], 10) - 1] + ' ' + m[1];
   }
 
   // ---------- full-screen, form-style submission review ----------
   function rvField(label, value, opts) {
     opts = opts || {};
     var blank = (value === null || value === undefined || value === '');
-    var val = blank ? '—' : value;
+    var val = blank ? '-' : value;
     return '<div class="rv-field' + (opts.full ? ' full' : '') + '">' +
       '<div class="rv-label">' + AA.esc(label) + '</div>' +
       '<div class="rv-value">' + (opts.html && !blank ? val : AA.esc(val)) + '</div></div>';
@@ -491,13 +494,19 @@
     try {
       var r = await AA.call(P + 'get_submission', { name: name });
       var d = (r && r.data) || {};
-      var statusLabel = d.status === 'Approved' ? 'Approved' : (d.status === 'Not Approved' ? 'Not Approved' : 'Pending Review');
-      var statusCls = d.status === 'Approved' ? 'approved' : (d.status === 'Not Approved' ? 'rejected' : 'pending');
+      var statusLabel = d.status === 'Approved' ? 'Approved'
+        : d.status === 'Not Approved' ? 'Not Approved'
+        : d.status === 'Replied' ? 'Information Requested'
+        : 'Pending Review';
+      var statusCls = d.status === 'Approved' ? 'approved'
+        : d.status === 'Not Approved' ? 'rejected'
+        : d.status === 'Replied' ? 'new'
+        : 'pending';
 
       var orgType = d.entity_or_organization_type || '';
-      if (d.other_organization_entity) orgType += ' — ' + d.other_organization_entity;
+      if (d.other_organization_entity) orgType += ' - ' + d.other_organization_entity;
       var hazard = d.anticipated_hazard || '';
-      if (d.other_anticipated_hazards) hazard += ' — ' + d.other_anticipated_hazards;
+      if (d.other_anticipated_hazards) hazard += ' - ' + d.other_anticipated_hazards;
       var partners = d.implementing_partners || '';
       if (d.other_implementing_partners) partners += ': ' + d.other_implementing_partners;
 
@@ -522,11 +531,11 @@
         var s = (x.status_of_the_early_action || 'Planned').toLowerCase();
         var pill = s.indexOf('complete') === 0 ? 'complete' : (s.indexOf('ongoing') === 0 ? 'ongoing' : 'planned');
         return '<div class="rv-card"><div class="rv-card-main">' +
-            '<div class="rv-card-loc">' + AA.esc(x.county || '—') + (x.subcounty ? ' · ' + AA.esc(x.subcounty) : '') + '</div>' +
-            '<div class="rv-card-sector">' + AA.esc(x.sector || '—') + '</div>' +
+            '<div class="rv-card-loc">' + AA.esc(x.county || '-') + (x.subcounty ? ' · ' + AA.esc(x.subcounty) : '') + '</div>' +
+            '<div class="rv-card-sector">' + AA.esc(x.sector || '-') + '</div>' +
             (x.describe_the_anticipatory_action_intervention ? '<div class="rv-card-desc">' + AA.esc(x.describe_the_anticipatory_action_intervention) + '</div>' : '') +
           '</div><div class="rv-card-meta">' +
-            '<div><div class="rv-meta-l">Budget</div><div class="rv-meta-v">' + (x.amount_for_anticipatory_action_kes ? 'KES ' + AA.fmtNum(x.amount_for_anticipatory_action_kes) : '—') + '</div></div>' +
+            '<div><div class="rv-meta-l">Budget</div><div class="rv-meta-v">' + (x.amount_for_anticipatory_action_kes ? 'KES ' + AA.fmtNum(x.amount_for_anticipatory_action_kes) : '-') + '</div></div>' +
             '<div><div class="rv-meta-l">People</div><div class="rv-meta-v">' + AA.fmtNum(x.number_of_people_targeted) + '</div></div>' +
             '<span class="rv-pill ' + pill + '">' + AA.esc(x.status_of_the_early_action || 'Planned') + '</span>' +
           '</div></div>';
@@ -539,20 +548,44 @@
       if (d.recommendations) add += rvField('Recommendations', d.recommendations, { full: true });
       if (d.supporting_materials) add += rvField('Supporting Materials', '<a href="' + AA.esc(d.supporting_materials) + '" target="_blank" rel="noopener">Open file ↗</a>', { full: true, html: true });
 
+      // Version / amendment history - shows that this supersedes an earlier approved submission.
+      var versionsSec = '';
+      var versions = d.versions || [];
+      if (versions.length > 1 || d.is_update) {
+        var rowsV = versions.map(function (vn) {
+          var vcls = vn.status === 'Approved' ? 'approved' : (vn.status === 'Not Approved' ? 'rejected' : (vn.status === 'Replied' ? 'new' : 'pending'));
+          var isThis = vn.name === d.name;
+          return '<tr' + (isThis ? ' style="font-weight:600"' : '') + '>' +
+            '<td>' + (vn.version != null ? AA.esc(vn.version) : '-') + '</td>' +
+            '<td class="strong">' + AA.esc(vn.name) + (isThis ? ' <span class="badge muted">this</span>' : '') + '</td>' +
+            '<td><span class="badge ' + vcls + '">' + AA.esc(vn.status || '-') + '</span></td>' +
+            '<td>' + AA.esc(fmtDate(vn.creation)) + '</td></tr>';
+        }).join('');
+        versionsSec = rvSection('↺', 'Version History',
+          '<div class="rv-value" style="margin-bottom:12px">This submission is part of an amendment chain and supersedes an earlier approved submission.</div>' +
+          '<div class="table-wrap"><table class="data"><thead><tr><th>Version</th><th>Reference</th><th>Status</th><th>Created</th></tr></thead><tbody>' +
+          (rowsV || '<tr><td colspan="4">No earlier versions recorded.</td></tr>') +
+          '</tbody></table></div>');
+      }
+
       var html =
+        (d.is_update ? '<div class="review-alert" style="background:rgba(0,166,184,0.08);border-color:var(--teal)"><b>Update to a previous submission.</b> This supersedes an earlier approved submission.</div>' : '') +
         (d.status === 'Not Approved' && d.reason_for_rejection ? '<div class="review-alert"><b>Rejection reason:</b> ' + AA.esc(d.reason_for_rejection) + '</div>' : '') +
+        (d.info_request ? '<div class="review-alert" style="background:rgba(0,166,184,0.08);border-color:var(--teal)"><b>Information requested:</b> ' + AA.esc(d.info_request) + '</div>' : '') +
         rvSection(1, 'Implementing Organization', sec1) +
         rvSection(2, 'Hazard & Anticipatory Actions', sec2) +
         rvSection(3, 'Anticipatory Action Details', sec3) +
-        (add ? rvSection(4, 'Additional Information', '<div class="rv-grid">' + add + '</div>') : '');
+        (add ? rvSection(4, 'Additional Information', '<div class="rv-grid">' + add + '</div>') : '') +
+        versionsSec;
 
       document.getElementById('review-title').textContent = 'Submission ' + d.name;
-      document.getElementById('review-sub').innerHTML = 'Submitted by ' + AA.esc(d.owner || '—') + ' &nbsp;·&nbsp; <span class="badge ' + statusCls + '">' + AA.esc(statusLabel) + '</span>';
+      document.getElementById('review-sub').innerHTML = 'Submitted by ' + AA.esc(d.owner || '-') + ' &nbsp;·&nbsp; <span class="badge ' + statusCls + '">' + AA.esc(statusLabel) + '</span>';
       document.getElementById('review-body').innerHTML = html;
 
       var foot = '';
       if (d.status !== 'Approved') foot += '<button class="btn ok" id="rv-approve">Approve</button>';
       if (d.status !== 'Not Approved') foot += '<button class="btn danger" id="rv-reject">Reject</button>';
+      foot += '<button class="btn ghost" id="rv-info">Request more info</button>';
       foot += '<button class="btn ghost" id="rv-cancel">Close</button>';
       document.getElementById('review-foot').innerHTML = foot;
 
@@ -568,10 +601,11 @@
       });
       var rj = document.getElementById('rv-reject');
       if (rj) rj.addEventListener('click', function () { reviewReject(name); });
+      document.getElementById('rv-info').addEventListener('click', function () { reviewRequestInfo(name); });
     } catch (e) { AA.toast(e.message); }
   }
 
-  // Reject from the review screen — reason required, then both layers close.
+  // Reject from the review screen - reason required, then both layers close.
   function reviewReject(name) {
     openModal('Reject Submission', field({ label: 'Reason for rejection', id: 'rej_reason', type: 'textarea', required: true, full: true, hint: 'Shared with the reporter so they can revise and resubmit.' }), async function () {
       var reason = v('rej_reason');
@@ -579,6 +613,16 @@
       await AA.call(P + 'set_submission_status', { name: name, status: 'Not Approved', reason: reason });
       closeModal(); closeReview(); AA.toast('Submission rejected.', true); loadSubmissions(curSubFilter()); loaded.overview = false;
     }, 'Reject Submission');
+  }
+
+  // Request more info from the review screen - a message is required and sent to the reporter.
+  function reviewRequestInfo(name) {
+    openModal('Request More Information', field({ label: 'Message to the reporter', id: 'info_msg', type: 'textarea', required: true, full: true, hint: 'Sent to the reporter, telling them what to add or clarify before this can be decided.' }), async function () {
+      var reason = v('info_msg');
+      if (!reason) { modalErr('Please write a message for the reporter.'); return; }
+      await AA.call(P + 'set_submission_status', { name: name, status: 'Replied', reason: reason });
+      closeModal(); closeReview(); AA.toast('Information request sent to the reporter.', true); loadSubmissions(curSubFilter()); loaded.overview = false;
+    }, 'Send Request');
   }
 
   // ===================== REPORTS =====================
@@ -590,18 +634,37 @@
       var html = toolbar('<button class="btn" id="add-report">+ Add Report</button>');
       if (!rows.length) { html += '<div class="empty"><p>No reports yet.</p></div>'; }
       else {
-        html += tableHead(['Title', 'Category', 'Date', 'Source', 'Document', 'Status', '']);
+        html += tableHead(['Title', 'Category', 'Date', 'Source', 'Visibility', 'Document', 'Status', '']);
         html += rows.map(function (x) {
           var url = x.link || x.attachment;
-          var pub = x.published ? '<span class="badge approved">Published</span>' : '<span class="badge off">Hidden</span>';
-          return '<tr>' +
-            '<td class="strong">' + AA.esc(x.title) + (x.description ? '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(x.description) + '</div>' : '') + '</td>' +
-            '<td>' + AA.esc(x.category || '—') + '</td>' +
-            '<td>' + AA.esc([x.month, x.year].filter(Boolean).join(' ') || '—') + '</td>' +
-            '<td>' + AA.esc(x.source || '—') + '</td>' +
-            '<td>' + (url ? '<a class="btn sm ghost" href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open</a>' : '—') + (x.attachment ? ' <span class="badge muted">file</span>' : '') + '</td>' +
+          var removed = x.removed === 1;
+          var member = !!x.uploaded_by;  // member-uploaded reports are moderated, not edited
+          var vis = (x.visibility === 'Private' || (x.visibility === undefined && !x.published))
+            ? '<span class="badge off">Private</span>' : '<span class="badge approved">Public</span>';
+          var pub = removed ? '<span class="badge rejected">Removed</span>'
+            : (x.published ? '<span class="badge approved">Published</span>' : '<span class="badge off">Hidden</span>');
+          var title = '<span class="strong">' + AA.esc(x.title) + '</span>';
+          if (member) title += ' <span class="badge muted" title="Uploaded by a member">Member upload</span>';
+          if (x.description) title += '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(x.description) + '</div>';
+          if (removed && x.removal_reason) title += '<div style="font-weight:400;color:var(--red-dark);font-size:12px;margin-top:3px">Removed: ' + AA.esc(x.removal_reason) + '</div>';
+          var actions = '';
+          if (!removed) {
+            if (member) {
+              actions = '<button class="btn sm danger" data-remove-report="' + AA.esc(x.name) + '">Remove</button>';
+            } else {
+              actions = '<button class="btn sm ghost" data-open-report="' + AA.esc(x.name) + '">Edit</button>' +
+                '<button class="btn sm danger" data-del-report="' + AA.esc(x.name) + '">Remove</button>';
+            }
+          }
+          return '<tr' + (removed ? ' style="opacity:.55"' : '') + '>' +
+            '<td>' + title + '</td>' +
+            '<td>' + AA.esc(x.category || '-') + '</td>' +
+            '<td>' + AA.esc([x.month, x.year].filter(Boolean).join(' ') || '-') + '</td>' +
+            '<td>' + AA.esc(x.source || '-') + '</td>' +
+            '<td>' + vis + '</td>' +
+            '<td>' + (url ? '<a class="btn sm ghost" href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open</a>' : '-') + (x.attachment ? ' <span class="badge muted">file</span>' : '') + '</td>' +
             '<td>' + pub + '</td>' +
-            '<td class="row-actions"><button class="btn sm ghost" data-open-report="' + AA.esc(x.name) + '">Edit</button><button class="btn sm danger" data-del-report="' + AA.esc(x.name) + '">Remove</button></td></tr>';
+            '<td class="row-actions">' + (actions || '-') + '</td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
@@ -617,7 +680,20 @@
           catch (e) { AA.toast(e.message); }
         });
       });
+      // Member-uploaded reports are soft-removed with a required reason (never hard-deleted).
+      document.querySelectorAll('[data-remove-report]').forEach(function (b) {
+        b.addEventListener('click', function () { removeMemberReport(b.dataset.removeReport); });
+      });
     } catch (e) { errPanel('reports', e.message); }
+  }
+
+  function removeMemberReport(name) {
+    openModal('Remove Member Report', field({ label: 'Reason for removal', id: 'rm_reason', type: 'textarea', required: true, full: true, hint: 'Recorded against the report and shared with the member who uploaded it.' }), async function () {
+      var reason = v('rm_reason');
+      if (!reason) { modalErr('Please give a reason for removal.'); return; }
+      await AA.call(P + 'remove_report', { name: name, reason: reason });
+      closeModal(); AA.toast('Report removed.', true); loadReports();
+    }, 'Remove Report');
   }
 
   function reportModal(report) {
@@ -627,19 +703,20 @@
       field({ label: 'Year', id: 'r_year', type: 'number', value: report && report.year }) +
       field({ label: 'Month', id: 'r_month', placeholder: 'e.g. March', value: report && report.month }) +
       field({ label: 'Category', id: 'r_cat', type: 'select', options: META.report_categories, value: (report && report.category) || 'Report', placeholder: false }) +
-      field({ label: 'Visibility', id: 'r_pub', type: 'select', options: VISIBILITY, value: editing ? (report.published ? '1' : '0') : '1', placeholder: false }) +
+      field({ label: 'Visibility', id: 'r_vis', type: 'select', options: REPORT_VISIBILITY, value: editing ? (report.visibility || (report.published ? 'Public' : 'Private')) : 'Public', placeholder: false }) +
       field({ label: 'Source', id: 'r_source', value: report && report.source }) +
       field({ label: 'Keywords', id: 'r_keywords', full: true, value: report && report.key_words }) +
       field({ label: 'External Link (URL)', id: 'r_link', type: 'url', full: true, value: report && report.link, hint: 'Provide a link OR upload a file below.' }) +
-      field({ label: (editing && report.attachment ? 'Replace File' : 'Upload File'), id: 'r_file', type: 'file', full: true, hint: editing && report.attachment ? 'A file is attached — uploading replaces it.' : '' }) +
+      field({ label: (editing && report.attachment ? 'Replace File' : 'Upload File'), id: 'r_file', type: 'file', full: true, hint: editing && report.attachment ? 'A file is attached - uploading replaces it.' : '' }) +
       field({ label: 'Description', id: 'r_desc', type: 'textarea', full: true, value: report && report.description });
     openModal(editing ? 'Edit Report' : 'Add Report', f, async function () {
       if (!v('r_title')) { modalErr('Title is required.'); return; }
       var fileEl = document.getElementById('r_file');
+      var vis = v('r_vis');
       var payload = {
         title: v('r_title'), year: v('r_year'), month: v('r_month'), description: v('r_desc'),
         category: v('r_cat'), source: v('r_source'), key_words: v('r_keywords'), link: v('r_link'),
-        published: v('r_pub')
+        visibility: vis, published: vis === 'Public' ? '1' : '0'
       };
       if (fileEl && fileEl.files && fileEl.files[0]) { payload.attachment = await AA.upload(fileEl.files[0], false); }
       if (editing) { await AA.call(P + 'update_report', Object.assign({ name: report.name }, payload)); }
@@ -659,15 +736,15 @@
       else {
         html += tableHead(['Dates', 'Pillar', 'Activity', 'Milestone', 'Status', 'Visibility', '']);
         html += rows.map(function (x) {
-          var dates = x.start_date ? (AA.esc(x.start_date) + (x.end_date ? ' → ' + AA.esc(x.end_date) : '')) : '—';
+          var dates = x.start_date ? (AA.esc(x.start_date) + (x.end_date ? ' → ' + AA.esc(x.end_date) : '')) : '-';
           var st = (x.status || 'Planned');
           var stCls = st.toLowerCase().replace(/ /g, '-');
           var vis = x.published ? '<span class="badge approved">Public</span>' : '<span class="badge off">Private</span>';
           return '<tr>' +
             '<td>' + dates + '</td>' +
-            '<td>' + AA.esc(x.pillar || '—') + '</td>' +
-            '<td class="strong">' + AA.esc(x.activity || '—') + (x.activity_reference ? '<div style="font-weight:400;color:var(--muted);font-size:12px;margin-top:3px">Ref: ' + AA.esc(x.activity_reference) + '</div>' : '') + '</td>' +
-            '<td>' + AA.esc(x.milestone || '—') + '</td>' +
+            '<td>' + AA.esc(x.pillar || '-') + '</td>' +
+            '<td class="strong">' + AA.esc(x.activity || '-') + (x.activity_reference ? '<div style="font-weight:400;color:var(--muted);font-size:12px;margin-top:3px">Ref: ' + AA.esc(x.activity_reference) + '</div>' : '') + '</td>' +
+            '<td>' + AA.esc(x.milestone || '-') + '</td>' +
             '<td><span class="status-badge ' + stCls + '">' + AA.esc(st) + '</span></td>' +
             '<td>' + vis + '</td>' +
             '<td class="row-actions"><button class="btn sm ghost" data-open-act="' + AA.esc(x.name) + '">Edit</button><button class="btn sm danger" data-del-act="' + AA.esc(x.name) + '">Remove</button></td></tr>';
@@ -728,10 +805,10 @@
         html += rows.map(function (o) {
           return '<tr>' +
             '<td class="strong">' + AA.esc(o.name_of_organization) + '</td>' +
-            '<td>' + AA.esc(o.type_of_organization || '—') + '</td>' +
-            '<td>' + AA.esc(o.primary_contact_person_name || '—') + '</td>' +
-            '<td>' + AA.esc(o.primary_email_contact || o.organization_email || '—') + '</td>' +
-            '<td>' + AA.esc(o.organization_phone || '—') + '</td></tr>';
+            '<td>' + AA.esc(o.type_of_organization || '-') + '</td>' +
+            '<td>' + AA.esc(o.primary_contact_person_name || '-') + '</td>' +
+            '<td>' + AA.esc(o.primary_email_contact || o.organization_email || '-') + '</td>' +
+            '<td>' + AA.esc(o.organization_phone || '-') + '</td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
@@ -777,10 +854,10 @@
           var url = x.publication_url || x.attach_publication;
           return '<tr>' +
             '<td class="strong">' + AA.esc(x.title) + '</td>' +
-            '<td>' + AA.esc(x.type || '—') + '</td>' +
-            '<td>' + AA.esc(x.publication_date || '—') + '</td>' +
-            '<td>' + AA.esc(x.publishing_authority || '—') + '</td>' +
-            '<td>' + (url ? '<a class="btn sm ghost" href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open</a>' : '—') + '</td>' +
+            '<td>' + AA.esc(x.type || '-') + '</td>' +
+            '<td>' + AA.esc(x.publication_date || '-') + '</td>' +
+            '<td>' + AA.esc(x.publishing_authority || '-') + '</td>' +
+            '<td>' + (url ? '<a class="btn sm ghost" href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open</a>' : '-') + '</td>' +
             '<td class="row-actions"><button class="btn sm ghost" data-view-pub="' + AA.esc(x.name) + '">View</button><button class="btn sm danger" data-del-pub="' + AA.esc(x.name) + '">Remove</button></td></tr>';
         }).join('');
         html += '</tbody></table></div>';
@@ -810,7 +887,7 @@
           kv('Type', d.type) + kv('Publication Date', d.publication_date) +
           kv('Publishing Authority', d.publishing_authority) +
           kv('State', d.docstatus === 1 ? 'Submitted' : 'Draft') +
-          kv('Link / File', url ? '<a href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open document ↗</a>' : '—', { full: true, html: true }) +
+          kv('Link / File', url ? '<a href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open document ↗</a>' : '-', { full: true, html: true }) +
         '</div>' +
         '<div class="form-actions"><button class="btn danger" id="d-del">Remove</button><button class="btn ghost" id="d-close">Close</button></div>';
       detailModal('Publication · ' + name, body);
@@ -861,7 +938,7 @@
           var sb = m.status === 'New' ? 'new' : (m.status === 'Closed' ? 'off' : 'muted');
           return '<tr>' +
             '<td class="strong">' + AA.esc(m.full_name) + '<div style="font-weight:400;color:var(--muted);font-size:12px">' + AA.esc(m.email) + '</div></td>' +
-            '<td>' + AA.esc(m.subject || '—') + '</td>' +
+            '<td>' + AA.esc(m.subject || '-') + '</td>' +
             '<td>' + AA.esc((m.submitted_on || m.creation || '').slice(0, 16).replace('T', ' ')) + '</td>' +
             '<td><span class="badge ' + sb + '">' + AA.esc(m.status) + '</span></td>' +
             '<td class="row-actions"><button class="btn sm ghost" data-view-msg="' + AA.esc(m.name) + '">View</button></td></tr>';
@@ -918,9 +995,9 @@
                     '<button class="btn sm danger" data-reject-req="' + AA.esc(q.name) + '">Reject</button>';
           }
           return '<tr>' +
-            '<td class="strong">' + AA.esc(q.full_name || '—') + '</td>' +
+            '<td class="strong">' + AA.esc(q.full_name || '-') + '</td>' +
             '<td>' + AA.esc(q.email) + '</td>' +
-            '<td>' + AA.esc(q.organization || '—') + '</td>' +
+            '<td>' + AA.esc(q.organization || '-') + '</td>' +
             '<td>' + AA.esc((q.creation || '').slice(0, 10)) + '</td>' +
             '<td><span class="badge ' + sb + '">' + AA.esc(q.status) + '</span></td>' +
             '<td class="row-actions">' + acts + '</td></tr>';
@@ -948,9 +1025,9 @@
       var d = (r && r.data) || {};
       if (d.status === 'Approved') { AA.toast('This request is already approved.'); return; }
       var orgs = (await ensureOrgs()).map(function (o) { return { value: o.name, label: o.name_of_organization }; });
-      var roleField = IS_SM
+      var roleField = CAN_SET_ROLE
         ? field({ label: 'Role', id: 'q_role', type: 'select', options: META.roles.map(function (rl) { return { value: rl, label: rl.replace('Anticipatory Action ', 'AA ') }; }), value: d.role || 'Anticipatory Action User', placeholder: false })
-        : field({ label: 'Role', id: 'q_role_ro', value: (d.role || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA '), readonly: true, hint: 'Set by a System Manager.' });
+        : field({ label: 'Role', id: 'q_role_ro', value: (d.role || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA '), readonly: true, hint: 'Only an administrator can change the role.' });
       var f =
         '<div class="alert show info" style="grid-column:1/-1;margin-bottom:2px">Approving creates an Anticipatory Action account for <b>' + AA.esc(d.full_name || d.email) + '</b> and emails them a link to set a password and sign in.</div>' +
         field({ label: 'Assign Organisation', id: 'q_org', type: 'select', options: orgs, value: '', required: true, full: true, hint: 'Add it under Organizations first if it is missing.' }) +
@@ -960,9 +1037,9 @@
         var org = v('q_org');
         if (!org) { modalErr('Choose an organisation to assign.'); return; }
         var args = { name: name, organization: org, notes: v('q_notes') };
-        if (IS_SM) args.role = v('q_role');
+        if (CAN_SET_ROLE) args.role = v('q_role');
         await AA.call(P + 'approve_request', args);
-        closeModal(); AA.toast('Approved — account created, welcome email sent.', true);
+        closeModal(); AA.toast('Approved - account created, welcome email sent.', true);
         loadRequests(curReqFilter()); loaded.users = false; loaded.overview = false;
       }, 'Approve & Create Account');
     } catch (e) { AA.toast(e.message); }
@@ -972,9 +1049,9 @@
   function rejectRequestModal(name) {
     openModal('Reject Sign-up Request', field({ label: 'Reason for rejection', id: 'rej_req_reason', type: 'textarea', required: true, full: true, hint: 'Emailed to the applicant so they know why.' }), async function () {
       var reason = v('rej_req_reason');
-      if (!reason) { modalErr('Please give a reason — it is emailed to the applicant.'); return; }
+      if (!reason) { modalErr('Please give a reason - it is emailed to the applicant.'); return; }
       await AA.call(P + 'reject_request', { name: name, notes: reason });
-      closeModal(); AA.toast('Request rejected — applicant emailed.', true);
+      closeModal(); AA.toast('Request rejected - applicant emailed.', true);
       loadRequests(curReqFilter()); loaded.overview = false;
     }, 'Reject & Email Applicant');
   }
@@ -996,9 +1073,9 @@
           (d.review_notes ? kv('Review Notes', d.review_notes, { full: true }) : '') +
         '</div>';
       if (pending) {
-        var roleQ = IS_SM
+        var roleQ = CAN_SET_ROLE
           ? field({ label: 'Role', id: 'q_role', type: 'select', options: META.roles.map(function (rl) { return { value: rl, label: rl.replace('Anticipatory Action ', 'AA ') }; }), value: d.role || 'Anticipatory Action User', placeholder: false })
-          : field({ label: 'Role', id: 'q_role_ro', value: (d.role || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA '), readonly: true, hint: 'Set by a System Manager.' });
+          : field({ label: 'Role', id: 'q_role_ro', value: (d.role || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA '), readonly: true, hint: 'Only an administrator can change the role.' });
         body += '<h3 class="card-title" style="margin-top:22px">Decision</h3>' +
           '<div class="form-grid">' +
             field({ label: 'Assign Organisation', id: 'q_org', type: 'select', options: orgs, required: true, full: true, hint: 'The member will be linked to this organisation. Add it under Organizations first if it is missing.' }) +
@@ -1022,9 +1099,9 @@
           var done = busy(this, 'Creating account…');
           try {
             var args = { name: name, organization: org, notes: v('q_notes') };
-            if (IS_SM) args.role = v('q_role');
+            if (CAN_SET_ROLE) args.role = v('q_role');
             await AA.call(P + 'approve_request', args);
-            closeModal(); AA.toast('Approved — account created, welcome email sent.', true);
+            closeModal(); AA.toast('Approved - account created, welcome email sent.', true);
             loadRequests(curReqFilter()); loaded.users = false; loaded.overview = false;
           } catch (e) { AA.toast(e.message); done(); }
         });
@@ -1035,7 +1112,7 @@
 
   // ===================== FORM BUILDER (concept preview) =====================
   var FB_DOCTYPE = 'Anticipatory Action';
-  function fbSoon() { AA.toast('Form editing is coming soon — this is a concept preview.'); }
+  function fbSoon() { AA.toast('Form editing is coming soon - this is a concept preview.'); }
 
   function fbFieldCard(f) {
     var badges = '';
@@ -1077,7 +1154,7 @@
         forms.map(function (fm) { return '<option value="' + AA.esc(fm.doctype) + '"' + (fm.doctype === FB_DOCTYPE ? ' selected' : '') + '>' + AA.esc(fm.label) + '</option>'; }).join('') + '</select>';
 
       var html =
-        '<div class="fb-note"><div class="fb-note-i">✦</div><div><b>Concept preview.</b> This is the live structure of the selected form, read straight from the system. The idea is to add, reorder, edit and remove fields right here. <b>Editing isn’t enabled yet</b> — the buttons preview the experience.</div></div>' +
+        '<div class="fb-note"><div class="fb-note-i">✦</div><div><b>Concept preview.</b> This is the live structure of the selected form, read straight from the system. The idea is to add, reorder, edit and remove fields right here. <b>Editing isn’t enabled yet</b> - the buttons preview the experience.</div></div>' +
         toolbar('<div class="grow"><label class="fb-pick-l">Form</label>' + formSel + '</div>' +
           '<button class="btn fb-soon" type="button">+ Add Section</button>') +
         sections.map(function (s, i) {
