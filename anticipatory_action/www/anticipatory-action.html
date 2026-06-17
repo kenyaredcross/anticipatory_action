@@ -150,6 +150,35 @@ select.aa-input {
 .aa-check-wrap { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500 !important; }
 .aa-checkbox { width: 18px; height: 18px; accent-color: var(--red); flex-shrink: 0; cursor: pointer; }
 
+/* -- File upload control -- */
+.aa-file { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.aa-file input[type="file"] { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.aa-file-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 8px;
+  border: 1.5px solid var(--light); background: var(--white);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 600;
+  color: #374151; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.aa-file-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+.aa-file-btn svg { flex-shrink: 0; }
+.aa-file-name { font-size: 14px; color: var(--charcoal); word-break: break-all; }
+.aa-file-name.empty { color: var(--mid); }
+.aa-file-clear {
+  background: none; border: none; padding: 4px; border-radius: 6px;
+  color: #9CA3AF; cursor: pointer; display: inline-flex; align-items: center; transition: all 0.15s;
+}
+.aa-file-clear:hover { color: #DC2626; background: #FEE2E2; }
+.aa-file-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 12px; border-radius: 999px;
+  background: var(--red-soft); border: 1px solid #FECACA;
+  font-size: 13px; font-weight: 600; color: var(--red); text-decoration: none; max-width: 100%;
+}
+.aa-file-chip svg { flex-shrink: 0; }
+.aa-file-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
+.aa-file-chip:hover { background: #FEE2E2; }
+
 /* ── Child table ── */
 .details-list { margin-bottom: 16px; }
 .aa-empty-state {
@@ -323,7 +352,7 @@ select.aa-input {
 
 <!-- ── Header with logos ── -->
 <div class="aa-header">
-  <img src="/NDOC.png" alt="NDOC" class="aa-logo" />
+  <img src="/ndoc-aa.jpg" alt="NDOC" class="aa-logo" />
   <div class="aa-header-center">
     <div class="aa-header-title">Anticipatory Action</div>
     <div class="aa-header-sub">Data Collection &amp; Monitoring Platform</div>
@@ -484,11 +513,32 @@ select.aa-input {
       </div>
       <div class="aa-field">
         <label>Upload supporting materials (optional)</label>
-        <div class="aa-field-hint">Attach a report, photo, or document (PDF, image, or office file)</div>
-        <input type="file" id="aa-attachment" name="aa_attachment" class="aa-input" style="padding:8px 13px;cursor:pointer" />
-        <div id="aa-attachment-current" style="display:none;margin-top:6px;font-size:13px;color:var(--mid)">
-          Current file: <a id="aa-attachment-link" href="#" target="_blank" rel="noopener" style="color:var(--red)"></a>
-          <span style="color:#9CA3AF"> &middot; choose a new file above to replace it</span>
+        <div class="aa-field-hint">PDF, image or document - optional</div>
+
+        <!-- Existing file shown in edit mode; choosing a new file replaces it -->
+        <div id="aa-attachment-current" style="display:none;margin-bottom:10px">
+          <a id="aa-attachment-link" href="#" target="_blank" rel="noopener" class="aa-file-chip">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span id="aa-attachment-name">View current file</span>
+          </a>
+        </div>
+
+        <div class="aa-file">
+          <input type="file" id="aa-attachment" name="aa_attachment" />
+          <label for="aa-attachment" class="aa-file-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span id="aa-file-btn-label">Choose file</span>
+          </label>
+          <span id="aa-file-name" class="aa-file-name empty">No file chosen</span>
+          <button type="button" id="aa-file-clear" class="aa-file-clear" title="Remove selected file" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
       </div>
       <div class="aa-field" style="margin-top:8px">
@@ -735,10 +785,35 @@ select.aa-input {
   const modalSave    = document.getElementById('modal-save');
 
   // attachment
-  const attachInput   = document.getElementById('aa-attachment');
-  const attachCurrent = document.getElementById('aa-attachment-current');
-  const attachLink    = document.getElementById('aa-attachment-link');
+  const attachInput    = document.getElementById('aa-attachment');
+  const attachCurrent  = document.getElementById('aa-attachment-current');
+  const attachLink     = document.getElementById('aa-attachment-link');
+  const attachLinkName = document.getElementById('aa-attachment-name');
+  const attachFileName = document.getElementById('aa-file-name');
+  const attachBtnLabel = document.getElementById('aa-file-btn-label');
+  const attachClear    = document.getElementById('aa-file-clear');
   let existingAttachment = '';   // file_url loaded in edit mode
+
+  // Reflect the picked file's name beside the "Choose file" button; clear button removes it.
+  function refreshAttachmentName() {
+    var file = attachInput && attachInput.files && attachInput.files[0];
+    if (file) {
+      attachFileName.textContent = file.name;
+      attachFileName.classList.remove('empty');
+      if (attachBtnLabel) attachBtnLabel.textContent = existingAttachment ? 'Replace file' : 'Change file';
+      if (attachClear) attachClear.style.display = '';
+    } else {
+      attachFileName.textContent = existingAttachment ? 'Keeping current file' : 'No file chosen';
+      attachFileName.classList.toggle('empty', !existingAttachment);
+      if (attachBtnLabel) attachBtnLabel.textContent = existingAttachment ? 'Replace file' : 'Choose file';
+      if (attachClear) attachClear.style.display = 'none';
+    }
+  }
+  if (attachInput) attachInput.addEventListener('change', refreshAttachmentName);
+  if (attachClear) attachClear.addEventListener('click', function () {
+    if (attachInput) attachInput.value = '';
+    refreshAttachmentName();
+  });
 
   // guest account step
   const accountOverlay = document.getElementById('account-overlay');
@@ -854,12 +929,13 @@ select.aa-input {
         (d.anticipatory_action_details || []).forEach(function (row) { details.push(row); });
         renderDetails();
 
-        // Show an already-attached supporting file, with the option to replace it.
+        // Show an already-attached supporting file as a chip, with the option to replace it.
         if (d.supporting_materials) {
           existingAttachment = d.supporting_materials;
           attachLink.href = d.supporting_materials;
-          attachLink.textContent = d.supporting_materials.split('/').pop() || 'View file';
+          attachLinkName.textContent = (d.supporting_materials.split('/').pop() || 'View current file');
           attachCurrent.style.display = '';
+          refreshAttachmentName();
         }
 
         EDIT_MODE = true;
@@ -1140,6 +1216,9 @@ select.aa-input {
     details.length = 0;
     renderDetails();
     if (attachInput) attachInput.value = '';
+    existingAttachment = '';
+    if (attachCurrent) attachCurrent.style.display = 'none';
+    refreshAttachmentName();
 
     form.style.display = 'none';
     successBox.style.display = 'block';

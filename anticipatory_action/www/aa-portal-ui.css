@@ -10,6 +10,7 @@ body.portal {
   background: var(--paper-2);
   color: var(--text);
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
 
