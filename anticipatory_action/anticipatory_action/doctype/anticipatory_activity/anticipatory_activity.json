@@ -19,6 +19,7 @@
   "status",
   "image",
   "details",
+  "narrative",
   "date"
  ],
  "fields": [
@@ -90,6 +91,12 @@
    "fieldname": "details",
    "fieldtype": "Small Text",
    "label": "Details"
+  },
+  {
+   "description": "A longer story or narrative about this activity, shown on the public Activities page.",
+   "fieldname": "narrative",
+   "fieldtype": "Text",
+   "label": "Story / narrative"
   },
   {
    "description": "Superseded by Start Date - kept for historical records.",

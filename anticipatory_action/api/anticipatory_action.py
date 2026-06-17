@@ -221,13 +221,13 @@ def get_activities_events():
 	out = []
 	for a in frappe.get_all(
 		"Anticipatory Activity", filters={"published": 1},
-		fields=["name", "activity", "details", "pillar", "start_date", "end_date",
+		fields=["name", "activity", "details", "narrative", "pillar", "start_date", "end_date",
 				"status", "activity_reference", "milestone", "image"],
 		limit=500,
 	):
 		out.append({
 			"kind": "activity", "name": a.name, "title": a.activity,
-			"description": a.details, "pillar": a.pillar, "location": None,
+			"description": a.details, "narrative": a.narrative, "pillar": a.pillar, "location": None,
 			"start_date": str(a.start_date) if a.start_date else None,
 			"end_date": str(a.end_date) if a.end_date else None,
 			"status": _status(a.status, a.start_date, a.end_date),
@@ -242,7 +242,7 @@ def get_activities_events():
 	):
 		out.append({
 			"kind": "event", "name": e.name, "title": e.title,
-			"description": e.description, "pillar": e.pillar, "location": e.location,
+			"description": e.description, "narrative": None, "pillar": e.pillar, "location": e.location,
 			"start_date": str(e.start_date) if e.start_date else None,
 			"end_date": str(e.end_date) if e.end_date else None,
 			"status": _status(e.status, e.start_date, e.end_date),

@@ -10,9 +10,11 @@
   "type_of_organization",
   "website_display_section",
   "about",
+  "narrative",
   "logo",
   "column_break_web",
   "pillars_involved",
+  "aa_support",
   "show_on_website",
   "contact_person_details_section",
   "primary_contact_person_name",
@@ -55,15 +57,22 @@
    "label": "Website Profile"
   },
   {
-   "description": "A short description shown on the public Member Organisations page.",
+   "description": "A short one-line description shown under the organisation name.",
    "fieldname": "about",
    "fieldtype": "Small Text",
    "label": "About the organisation"
   },
   {
+   "description": "A longer story about the organisation, shown in the profile popout.",
+   "fieldname": "narrative",
+   "fieldtype": "Text",
+   "label": "Story / narrative"
+  },
+  {
+   "description": "A photo or logo of the organisation, shown on the public Member Organisations page.",
    "fieldname": "logo",
    "fieldtype": "Attach Image",
-   "label": "Logo"
+   "label": "Logo / photo"
   },
   {
    "fieldname": "column_break_web",
@@ -74,6 +83,12 @@
    "fieldname": "pillars_involved",
    "fieldtype": "Small Text",
    "label": "Pillars involved"
+  },
+  {
+   "description": "A summary of this organisation's overall support to Anticipatory Action.",
+   "fieldname": "aa_support",
+   "fieldtype": "Small Text",
+   "label": "Support to Anticipatory Action"
   },
   {
    "default": "1",

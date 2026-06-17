@@ -934,7 +934,7 @@ def list_activities():
 	rows = frappe.get_all(
 		"Anticipatory Activity",
 		fields=["name", "start_date", "end_date", "pillar", "activity", "activity_reference",
-				"milestone", "status", "published", "details", "image"],
+				"milestone", "status", "published", "details", "narrative", "image"],
 		order_by="start_date desc, modified desc",
 		limit=1000,
 	)
@@ -949,7 +949,7 @@ def get_activity(name):
 
 @frappe.whitelist()
 def add_activity(activity, start_date=None, end_date=None, pillar=None, activity_reference=None,
-				 milestone=None, status=None, details=None, published=1, image=None):
+				 milestone=None, status=None, details=None, published=1, image=None, narrative=None):
 	_require_approver()
 	if not (activity or "").strip():
 		frappe.throw("Activity is required.")
@@ -961,7 +961,7 @@ def add_activity(activity, start_date=None, end_date=None, pillar=None, activity
 		"doctype": "Anticipatory Activity",
 		"activity": activity, "start_date": start_date or None, "end_date": end_date or None,
 		"pillar": pillar, "activity_reference": activity_reference, "milestone": milestone,
-		"status": status or "Planned", "details": details, "image": image,
+		"status": status or "Planned", "details": details, "image": image, "narrative": narrative,
 		"published": _as_bool(published),
 	})
 	doc.flags.ignore_permissions = True
@@ -973,7 +973,7 @@ def add_activity(activity, start_date=None, end_date=None, pillar=None, activity
 @frappe.whitelist()
 def update_activity(name, activity=None, start_date=None, end_date=None, pillar=None,
 					activity_reference=None, milestone=None, status=None, details=None,
-					published=None, image=None):
+					published=None, image=None, narrative=None):
 	_require_approver()
 	if pillar and pillar not in _PILLARS:
 		frappe.throw("Invalid pillar.")
@@ -983,7 +983,7 @@ def update_activity(name, activity=None, start_date=None, end_date=None, pillar=
 	for field, value in (("activity", activity), ("start_date", start_date), ("end_date", end_date),
 						 ("pillar", pillar), ("activity_reference", activity_reference),
 						 ("milestone", milestone), ("status", status), ("details", details),
-						 ("image", image)):
+						 ("image", image), ("narrative", narrative)):
 		if value is not None:
 			doc.set(field, value)
 	if published is not None:
@@ -1114,6 +1114,8 @@ def add_organization(
 	name_of_organization, type_of_organization=None, primary_contact_person_name=None,
 	primary_phone_contact=None, primary_email_contact=None, organization_phone=None,
 	organization_email=None, organization_website=None, address=None,
+	about=None, narrative=None, logo=None, pillars_involved=None, aa_support=None,
+	show_on_website=None,
 ):
 	_require_admin()
 	if not (name_of_organization or "").strip():
@@ -1129,6 +1131,9 @@ def add_organization(
 		"organization_email": organization_email,
 		"organization_website": organization_website,
 		"address": address,
+		"about": about, "narrative": narrative, "logo": logo,
+		"pillars_involved": pillars_involved, "aa_support": aa_support,
+		"show_on_website": _as_bool(show_on_website) if show_on_website is not None else 1,
 	})
 	doc.flags.ignore_permissions = True
 	doc.insert()
@@ -1293,6 +1298,8 @@ def update_organization(
 	name, name_of_organization=None, type_of_organization=None, primary_contact_person_name=None,
 	primary_phone_contact=None, primary_email_contact=None, organization_phone=None,
 	organization_email=None, organization_website=None, address=None,
+	about=None, narrative=None, logo=None, pillars_involved=None, aa_support=None,
+	show_on_website=None,
 ):
 	"""Edit an organization (full admins only; approvers are read-only)."""
 	_require_admin()
@@ -1309,9 +1316,16 @@ def update_organization(
 		("organization_email", organization_email),
 		("organization_website", organization_website),
 		("address", address),
+		("about", about),
+		("narrative", narrative),
+		("logo", logo),
+		("pillars_involved", pillars_involved),
+		("aa_support", aa_support),
 	):
 		if value is not None:
 			doc.set(field, value)
+	if show_on_website is not None:
+		doc.show_on_website = _as_bool(show_on_website)
 	doc.flags.ignore_permissions = True
 	doc.save()
 	frappe.db.commit()
