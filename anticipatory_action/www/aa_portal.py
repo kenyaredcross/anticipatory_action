@@ -14,4 +14,7 @@ def get_context(context):
 	roles = set(frappe.get_roles())
 	context.full_name = get_fullname(frappe.session.user)
 	context.is_admin = bool({"Anticipatory Action Admin", "System Manager"} & roles)
+	# Approvers reach the review console via /aa-admin; only true desk users (System
+	# Managers) see the raw Frappe desk link. AA Approvers and Users never do.
+	context.is_system_manager = "System Manager" in roles
 	context.csrf_token = frappe.sessions.get_csrf_token()
