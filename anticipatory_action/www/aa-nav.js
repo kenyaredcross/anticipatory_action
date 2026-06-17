@@ -10,11 +10,36 @@
 (function () {
   'use strict';
 
+  // The nav is duplicated inline on every page and the logo now carries the
+  // wordmark, so we add the cross-cutting "Home" and "FAQ" links here once
+  // instead of editing every page. Done before the mobile drawer is built so
+  // the drawer (cloned from .nav-links) inherits them too.
+  function injectLinks(navLinks) {
+    if (navLinks.querySelector('.aa-home-link')) return;
+    var here = location.pathname.replace(/\/+$/, '') || '/aa';
+    var home = document.createElement('a');
+    home.className = 'nav-link aa-home-link';
+    home.href = '/aa';
+    home.textContent = 'Home';
+    if (here === '/aa') home.classList.add('active');
+    navLinks.insertBefore(home, navLinks.firstChild);
+
+    if (!navLinks.querySelector('.aa-faq-link')) {
+      var faq = document.createElement('a');
+      faq.className = 'nav-link aa-faq-link';
+      faq.href = '/aa-faq';
+      faq.textContent = 'FAQ';
+      if (here === '/aa-faq') faq.classList.add('active');
+      navLinks.appendChild(faq);
+    }
+  }
+
   function init() {
     var navLinks = document.querySelector('nav .nav-links');
     var nav = navLinks ? navLinks.closest('nav') : null;
     if (!nav || !navLinks || nav.querySelector('.aa-burger')) return;
 
+    injectLinks(navLinks);
     injectStyle();
 
     // --- hamburger button ----------------------------------------------------

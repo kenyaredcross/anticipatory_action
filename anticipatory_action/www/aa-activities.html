@@ -8,13 +8,193 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    /* ===== Activities & Events cards (client-side rendered) ===== */
+    .ae-toolbar { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
+    .ae-filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .ae-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 18px;
+    }
+
+    .ae-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      display: flex; flex-direction: column;
+      text-align: left;
+      cursor: pointer;
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    .ae-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 3px; background: var(--red);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.4s var(--ease);
+    }
+    .ae-card:hover { border-color: var(--text); transform: translateY(-4px); box-shadow: 0 14px 34px rgba(11,11,14,0.08); }
+    .ae-card:hover::after { transform: scaleX(1); }
+    .ae-card:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
+    .ae-thumb {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: var(--paper-2);
+      overflow: hidden;
+    }
+    .ae-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transition: transform 0.5s var(--ease);
+    }
+    .ae-card:hover .ae-thumb img { transform: scale(1.05); }
+    .ae-thumb.is-empty {
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--paper-2) 0%, var(--paper-3) 100%);
+      color: var(--stone);
+    }
+    .ae-thumb.is-empty svg { width: 46px; height: 46px; opacity: 0.55; }
+
+    .ae-kind-tag {
+      position: absolute; top: 12px; left: 12px;
+      font-size: 10px; font-weight: 800;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      padding: 4px 9px;
+      color: #fff; background: var(--ink);
+    }
+    .ae-kind-tag.is-event { background: var(--red); }
+
+    .ae-body { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .ae-date {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .ae-title {
+      font-size: 17px; font-weight: 700; line-height: 1.28;
+      color: var(--text); letter-spacing: -0.005em;
+    }
+    .ae-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: auto; padding-top: 4px; }
+    .ae-loc {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--text-2);
+    }
+    .ae-loc svg { width: 13px; height: 13px; color: var(--muted); flex-shrink: 0; }
+
+    /* Task-specified status colours (scoped, do not clash with base table badges) */
+    .ae-status {
+      display: inline-block;
+      font-size: 10.5px; font-weight: 800;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 4px 10px; white-space: nowrap;
+    }
+    .ae-status.s-planned   { background: rgba(181,132,24,0.14);  color: var(--gold); }
+    .ae-status.s-ongoing   { background: rgba(31,140,76,0.14);   color: #1F8C4C; }
+    .ae-status.s-completed { background: rgba(0,0,0,0.06);        color: var(--muted); }
+    .ae-status.s-on-hold   { background: rgba(0,0,0,0.06);        color: var(--muted); }
+    .ae-status.s-cancelled { background: rgba(230,24,50,0.10);    color: var(--red); text-decoration: line-through; }
+
+    .ae-loading { text-align: center; padding: 80px 24px; color: var(--muted); font-size: 14px; letter-spacing: 0.04em; }
+
+    /* ===== Modal / popout ===== */
+    .ae-modal {
+      position: fixed; inset: 0; z-index: 2000;
+      display: none;
+      align-items: flex-start; justify-content: center;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+    .ae-modal.open { display: flex; }
+    .ae-overlay {
+      position: fixed; inset: 0;
+      background: rgba(11,11,14,0.62);
+      backdrop-filter: blur(3px);
+      animation: ae-fade 0.2s var(--ease);
+    }
+    .ae-dialog {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 680px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: 0 30px 80px rgba(11,11,14,0.4);
+      animation: ae-rise 0.28s var(--ease);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    @keyframes ae-fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes ae-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    .ae-close {
+      position: absolute; top: 14px; right: 14px; z-index: 2;
+      width: 38px; height: 38px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--line);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ae-close:hover { background: var(--red); border-color: var(--red); color: #fff; }
+    .ae-close svg { width: 18px; height: 18px; }
+
+    .ae-modal-img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--paper-2); }
+    .ae-modal-img-empty {
+      width: 100%; aspect-ratio: 16 / 6;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--paper-2) 0%, var(--paper-3) 100%);
+      color: var(--stone);
+    }
+    .ae-modal-img-empty svg { width: 54px; height: 54px; opacity: 0.5; }
+
+    .ae-modal-body { padding: 30px 34px 36px; }
+    .ae-modal-tags { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+    .ae-modal-kind {
+      font-size: 10px; font-weight: 800;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      padding: 4px 9px; color: #fff; background: var(--ink);
+    }
+    .ae-modal-kind.is-event { background: var(--red); }
+    .ae-modal-title {
+      font-size: 28px; font-weight: 800; line-height: 1.12;
+      letter-spacing: -0.015em; color: var(--text);
+      margin-bottom: 18px;
+    }
+    .ae-detail-grid {
+      display: grid; grid-template-columns: 130px 1fr;
+      gap: 10px 18px;
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 20px;
+    }
+    .ae-detail-grid dt {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .ae-detail-grid dd { font-size: 14px; color: var(--text); line-height: 1.5; }
+    .ae-modal-desc {
+      font-size: 15px; line-height: 1.7; color: var(--text-2);
+      white-space: pre-line;
+    }
+    .ae-modal-desc.is-muted { color: var(--muted); font-style: italic; }
+
+    @media (max-width: 560px) {
+      .ae-detail-grid { grid-template-columns: 1fr; gap: 4px 0; }
+      .ae-detail-grid dd { margin-bottom: 8px; }
+      .ae-modal-body { padding: 24px 22px 28px; }
+      .ae-modal-title { font-size: 23px; }
+    }
+  </style>
 </head>
 <body>
 
 <nav class="aa-nav">
   <a href="/aa" class="nav-brand">
-    <img src="/ndoc-aa.jpg" alt="NDOC" />
-    <div class="nav-brand-text">Anticipatory Action<span>Kenya · NDOC / KRCS</span></div>
+    <img src="/aadashboard.png" alt="NDOC" />
   </a>
   <div class="nav-links">
     <div class="nav-item">
@@ -69,71 +249,283 @@
 
 <section class="section">
   <div class="container">
-    {% if activities %}
-    <div class="filter-bar" id="filterBar">
-      <span class="filter-label">Pillar:</span>
-      <button class="filter-btn active" data-filter="all">All</button>
-      {% for pillar in pillars %}
-      <button class="filter-btn" data-filter="{{ pillar }}">{{ pillar }}</button>
-      {% endfor %}
+    <div class="ae-toolbar" id="aeToolbar" hidden>
+      <div class="ae-filter-group" id="aeKindFilter">
+        <span class="filter-label">Show:</span>
+        <button class="filter-btn active" data-kind="all">All</button>
+        <button class="filter-btn" data-kind="activity">Activities</button>
+        <button class="filter-btn" data-kind="event">Events</button>
+      </div>
+      <div class="ae-filter-group" id="aeStatusFilter">
+        <span class="filter-label">Status:</span>
+        <button class="filter-btn active" data-status="all">All</button>
+        <button class="filter-btn" data-status="Ongoing">Ongoing</button>
+        <button class="filter-btn" data-status="Planned">Planned</button>
+        <button class="filter-btn" data-status="Completed">Completed</button>
+        <button class="filter-btn" data-status="On Hold">On Hold</button>
+        <button class="filter-btn" data-status="Cancelled">Cancelled</button>
+      </div>
     </div>
-    <div class="act-table-wrap">
-      <table class="act-table">
-        <thead>
-          <tr>
-            <th>Dates</th><th>Pillar</th><th>Activity</th><th>Milestone</th><th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="actBody">
-          {% for a in activities %}
-          <tr data-pillar="{{ a.pillar or '' }}">
-            <td style="white-space:nowrap">{% if a.start_date %}{{ frappe.utils.formatdate(a.start_date, "d MMM yyyy") }}{% if a.end_date %} <span style="color:var(--muted)">→</span> {{ frappe.utils.formatdate(a.end_date, "d MMM yyyy") }}{% endif %}{% else %}-{% endif %}</td>
-            <td>{% if a.pillar %}<span class="pillar-tag">{{ a.pillar }}</span>{% else %}-{% endif %}</td>
-            <td class="bold">
-              {{ a.activity or '-' }}
-              {% if a.activity_reference %}<br><span style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 400; color: var(--muted);">Ref: {{ a.activity_reference }}</span>{% endif %}
-            </td>
-            <td>{{ a.milestone or '-' }}</td>
-            <td>
-              {% if a.status %}
-              <span class="status-badge {{ a.status | lower | replace(' ', '-') }}">{{ a.status }}</span>
-              {% else %}-{% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="empty-state">
+
+    <div class="ae-loading" id="aeLoading">Loading activities and events...</div>
+    <div class="ae-grid" id="aeGrid"></div>
+
+    <div class="empty-state" id="aeEmpty" hidden>
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      <p>No activities have been recorded yet.</p>
+      <p id="aeEmptyText">No activities or events have been published yet.</p>
     </div>
-    {% endif %}
   </div>
 </section>
 
+<!-- Detail popout -->
+<div class="ae-modal" id="aeModal" role="dialog" aria-modal="true" aria-labelledby="aeModalTitle" aria-hidden="true">
+  <div class="ae-overlay" data-close></div>
+  <div class="ae-dialog" role="document">
+    <button class="ae-close" type="button" data-close aria-label="Close detail">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div id="aeModalMedia"></div>
+    <div class="ae-modal-body" id="aeModalBody"></div>
+  </div>
+</div>
+
 <script>
-  const filterBar = document.getElementById('filterBar');
-  if (filterBar) {
-    filterBar.addEventListener('click', e => {
-      const btn = e.target.closest('.filter-btn');
-      if (!btn) return;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const f = btn.dataset.filter;
-      document.querySelectorAll('#actBody tr').forEach(row => {
-        row.style.display = (f === 'all' || row.dataset.pillar === f) ? '' : 'none';
-      });
+(function () {
+  'use strict';
+
+  var GRID = document.getElementById('aeGrid');
+  var LOADING = document.getElementById('aeLoading');
+  var TOOLBAR = document.getElementById('aeToolbar');
+  var EMPTY = document.getElementById('aeEmpty');
+  var EMPTY_TEXT = document.getElementById('aeEmptyText');
+  var MODAL = document.getElementById('aeModal');
+  var MODAL_MEDIA = document.getElementById('aeModalMedia');
+  var MODAL_BODY = document.getElementById('aeModalBody');
+
+  var ITEMS = [];           // all fetched items
+  var FILTER = { kind: 'all', status: 'all' };
+  var lastFocused = null;
+
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  // Order used to group cards: Ongoing first, then upcoming/Planned, then On Hold, Completed, Cancelled.
+  var STATUS_RANK = { 'Ongoing': 0, 'Planned': 1, 'On Hold': 2, 'Completed': 3, 'Cancelled': 4 };
+
+  var PLACEHOLDER_SVG =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">' +
+    '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/>' +
+    '<path d="M21 15l-5-5L5 21"/></svg>';
+
+  var PIN_SVG =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function statusClass(status) {
+    return 's-' + String(status || 'Planned').toLowerCase().replace(/\s+/g, '-');
+  }
+
+  // Parse "YYYY-MM-DD" without timezone surprises.
+  function fmtOne(d) {
+    if (!d) return '';
+    var p = String(d).split('-');
+    if (p.length < 3) return esc(d);
+    var y = p[0], m = parseInt(p[1], 10), day = parseInt(p[2], 10);
+    if (!m || !day) return esc(d);
+    return day + ' ' + MONTHS[m - 1] + ' ' + y;
+  }
+
+  function fmtRange(start, end) {
+    if (!start && !end) return 'Date to be confirmed';
+    if (start && end && end !== start) return fmtOne(start) + ' - ' + fmtOne(end);
+    return fmtOne(start || end);
+  }
+
+  function kindLabel(kind) { return kind === 'event' ? 'Event' : 'Activity'; }
+
+  function cardHTML(item, idx) {
+    var isEvent = item.kind === 'event';
+    var thumb;
+    if (item.image) {
+      thumb = '<div class="ae-thumb"><img src="' + esc(item.image) + '" alt="' + esc(item.title) +
+        '" loading="lazy" onerror="this.parentNode.classList.add(\'is-empty\');this.outerHTML=\'' +
+        PLACEHOLDER_SVG.replace(/'/g, "\\'") + '\'" />' +
+        '<span class="ae-kind-tag' + (isEvent ? ' is-event' : '') + '">' + kindLabel(item.kind) + '</span></div>';
+    } else {
+      thumb = '<div class="ae-thumb is-empty">' + PLACEHOLDER_SVG +
+        '<span class="ae-kind-tag' + (isEvent ? ' is-event' : '') + '">' + kindLabel(item.kind) + '</span></div>';
+    }
+
+    var loc = (isEvent && item.location)
+      ? '<span class="ae-loc">' + PIN_SVG + esc(item.location) + '</span>' : '';
+    var pillar = item.pillar ? '<span class="pillar-tag">' + esc(item.pillar) + '</span>' : '';
+
+    return '<button class="ae-card" type="button" data-idx="' + idx + '" aria-label="View details: ' + esc(item.title) + '">' +
+      thumb +
+      '<div class="ae-body">' +
+        '<div class="ae-date">' + esc(fmtRange(item.start_date, item.end_date)) + '</div>' +
+        '<div class="ae-title">' + esc(item.title || 'Untitled') + '</div>' +
+        '<div class="ae-meta">' +
+          '<span class="ae-status ' + statusClass(item.status) + '">' + esc(item.status || 'Planned') + '</span>' +
+          pillar + loc +
+        '</div>' +
+      '</div>' +
+    '</button>';
+  }
+
+  function applyFilter() {
+    var visible = ITEMS.filter(function (it) {
+      var okKind = FILTER.kind === 'all' || it.kind === FILTER.kind;
+      var okStatus = FILTER.status === 'all' || it.status === FILTER.status;
+      return okKind && okStatus;
+    });
+
+    if (!visible.length) {
+      GRID.innerHTML = '';
+      EMPTY.hidden = false;
+      EMPTY_TEXT.textContent = ITEMS.length
+        ? 'No items match the selected filters.'
+        : 'No activities or events have been published yet.';
+      return;
+    }
+
+    EMPTY.hidden = true;
+    GRID.innerHTML = visible.map(function (it) {
+      return cardHTML(it, ITEMS.indexOf(it));
+    }).join('');
+  }
+
+  function sortItems(list) {
+    return list.slice().sort(function (a, b) {
+      var ra = STATUS_RANK[a.status] !== undefined ? STATUS_RANK[a.status] : 9;
+      var rb = STATUS_RANK[b.status] !== undefined ? STATUS_RANK[b.status] : 9;
+      if (ra !== rb) return ra - rb;
+      // Within a group, most-recent / soonest start_date first (API already desc).
+      var da = a.start_date || '', db = b.start_date || '';
+      if (da === db) return 0;
+      return da < db ? 1 : -1;
     });
   }
+
+  // ---------- Modal ----------
+  function row(label, value) {
+    if (!value) return '';
+    return '<dt>' + esc(label) + '</dt><dd>' + esc(value) + '</dd>';
+  }
+
+  function openModal(item) {
+    var isEvent = item.kind === 'event';
+
+    if (item.image) {
+      MODAL_MEDIA.innerHTML = '<img class="ae-modal-img" src="' + esc(item.image) + '" alt="' + esc(item.title) +
+        '" onerror="this.outerHTML=\'<div class=&quot;ae-modal-img-empty&quot;>' +
+        PLACEHOLDER_SVG.replace(/"/g, '&quot;').replace(/'/g, "\\'") + '</div>\'" />';
+    } else {
+      MODAL_MEDIA.innerHTML = '<div class="ae-modal-img-empty">' + PLACEHOLDER_SVG + '</div>';
+    }
+
+    var details = '';
+    details += row('Dates', fmtRange(item.start_date, item.end_date));
+    if (item.pillar) details += row('Pillar', item.pillar);
+    if (isEvent && item.location) details += row('Location', item.location);
+    if (!isEvent && item.reference) details += row('Reference', item.reference);
+    if (!isEvent && item.milestone) details += row('Milestone', item.milestone);
+
+    var desc = item.description
+      ? '<div class="ae-modal-desc">' + esc(item.description) + '</div>'
+      : '<div class="ae-modal-desc is-muted">No description provided.</div>';
+
+    MODAL_BODY.innerHTML =
+      '<div class="ae-modal-tags">' +
+        '<span class="ae-modal-kind' + (isEvent ? ' is-event' : '') + '">' + kindLabel(item.kind) + '</span>' +
+        '<span class="ae-status ' + statusClass(item.status) + '">' + esc(item.status || 'Planned') + '</span>' +
+      '</div>' +
+      '<h2 class="ae-modal-title" id="aeModalTitle">' + esc(item.title || 'Untitled') + '</h2>' +
+      '<dl class="ae-detail-grid">' + details + '</dl>' +
+      desc;
+
+    lastFocused = document.activeElement;
+    MODAL.classList.add('open');
+    MODAL.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    var closeBtn = MODAL.querySelector('.ae-close');
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function closeModal() {
+    MODAL.classList.remove('open');
+    MODAL.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+  }
+
+  // ---------- Events ----------
+  GRID.addEventListener('click', function (e) {
+    var card = e.target.closest('.ae-card');
+    if (!card) return;
+    var item = ITEMS[parseInt(card.dataset.idx, 10)];
+    if (item) openModal(item);
+  });
+
+  MODAL.addEventListener('click', function (e) {
+    if (e.target.closest('[data-close]')) closeModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && MODAL.classList.contains('open')) closeModal();
+  });
+
+  document.getElementById('aeKindFilter').addEventListener('click', function (e) {
+    var btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    this.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    FILTER.kind = btn.dataset.kind;
+    applyFilter();
+  });
+
+  document.getElementById('aeStatusFilter').addEventListener('click', function (e) {
+    var btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    this.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    FILTER.status = btn.dataset.status;
+    applyFilter();
+  });
+
+  // ---------- Load ----------
+  fetch('/api/method/anticipatory_action.api.anticipatory_action.get_activities_events', {
+    headers: { 'Accept': 'application/json' }
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (payload) {
+      var msg = payload && payload.message;
+      var data = (msg && msg.success && Array.isArray(msg.data)) ? msg.data : [];
+      ITEMS = sortItems(data);
+      LOADING.hidden = true;
+      LOADING.style.display = 'none';
+      if (ITEMS.length) TOOLBAR.hidden = false;
+      applyFilter();
+    })
+    .catch(function () {
+      LOADING.style.display = 'none';
+      EMPTY.hidden = false;
+      EMPTY_TEXT.textContent = 'Unable to load activities and events right now. Please try again later.';
+    });
+})();
 </script>
 
 <footer class="aa-footer">
   <div class="footer-top">
     <div>
       <div class="footer-brand-row">
-        <img src="/ndoc-aa.jpg" alt="NDOC" />
+        <img src="/aadashboard.png" alt="NDOC" />
         <div class="footer-brand-name">Kenya Anticipatory Action</div>
       </div>
       <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Operations Centre with the Kenya Red Cross Society.</p>
@@ -141,27 +533,25 @@
     <div class="footer-col">
       <h4>Programme</h4>
       <a href="/aa-about">About Us</a>
-      <a href="/aa-membership">Membership</a>
+      <a href="/aa-membership">Member Organisations</a>
       <a href="/aa-activities">Activities</a>
-      <a href="/aa-reports">Reports</a>
+      <a href="/aa-faq">FAQ</a>
     </div>
     <div class="footer-col">
-      <h4>Pillars</h4>
-      <a href="/aa-early-warning">Early Warning</a>
-      <a href="/aa-early-action">Early Action</a>
-      <a href="/aa-coordination">Coordination</a>
-      <a href="/aa-financing">Financing</a>
+      <h4>Knowledge</h4>
+      <a href="/aa-dashboard">Results Dashboard</a>
+      <a href="/aa-reports">Reports &amp; Documents</a>
+      <a href="/aa-impact">Programme Impact</a>
     </div>
     <div class="footer-col">
       <h4>Contact</h4>
       <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a>
-      <a href="mailto:info@redcross.or.ke">info@redcross.or.ke</a>
       <a href="/aa-contact">Send a Message</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Kenya Anticipatory Action TWG · National Disaster Operations Centre</span>
-    <span>Powered by <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross Society</a></span>
+    <span>&copy; 2026 Kenya Anticipatory Action TWG &middot; National Disaster Operations Centre</span>
+    <span>Developed and maintained by <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross</a></span>
   </div>
 </footer>
 

@@ -8,13 +8,111 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    /* ---- Clickable org cards ---- */
+    .org-card-clickable { cursor: pointer; }
+    .org-logo {
+      width: 56px; height: 56px; margin-bottom: 4px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--line); background: #fff; padding: 6px;
+    }
+    .org-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .org-card-cue {
+      margin-top: auto; padding-top: 8px;
+      display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--red);
+      opacity: 0; transform: translateY(4px);
+      transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+    }
+    .org-card-clickable:hover .org-card-cue,
+    .org-card-clickable:focus-visible .org-card-cue { opacity: 1; transform: translateY(0); }
+    .org-card-clickable:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+    /* ---- Org profile modal ---- */
+    .org-modal { position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .org-modal[hidden] { display: none; }
+    .org-modal-overlay { position: absolute; inset: 0; background: rgba(11,11,14,0.62); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+    .org-modal-panel {
+      position: relative; z-index: 1;
+      width: min(560px, 100%); max-height: 88vh; overflow-y: auto;
+      background: var(--paper); border: 1px solid var(--line);
+      border-top: 3px solid var(--red);
+      padding: 40px 36px 36px;
+      box-shadow: 0 30px 80px rgba(11,11,14,0.32);
+      animation: orgModalIn 0.28s var(--ease);
+    }
+    @keyframes orgModalIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) { .org-modal-panel { animation: none; } }
+    .org-modal-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+      background: transparent; border: 1px solid var(--line); color: var(--text-2);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .org-modal-close:hover { border-color: var(--red); color: var(--red); }
+    .org-modal-head { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 8px; padding-right: 40px; }
+    .org-modal-logo {
+      flex-shrink: 0; width: 72px; height: 72px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--line); background: #fff; padding: 8px;
+    }
+    .org-modal-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .org-modal-head-txt { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+    .org-modal-title { font-size: 26px; font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; color: var(--text); }
+    .org-modal-about { margin-top: 18px; font-size: 14.5px; line-height: 1.7; color: var(--text-2); }
+    .org-modal-pillars { margin-top: 22px; }
+    .org-pillar-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .org-pillar-tag {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+      color: var(--red); background: var(--red-tint); padding: 5px 11px;
+    }
+    .org-modal-rows { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; border-top: 1px solid var(--line); padding-top: 24px; }
+    .org-modal-row { display: flex; align-items: flex-start; gap: 12px; }
+    .org-modal-row-ic { flex-shrink: 0; color: var(--muted); margin-top: 1px; }
+    .org-modal-row-txt { display: flex; flex-direction: column; gap: 2px; }
+    .org-modal-row-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+    .org-modal-row-val { font-size: 14px; color: var(--text); line-height: 1.5; word-break: break-word; }
+    .org-modal-row-val a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--line); }
+    .org-modal-row-val a:hover { color: var(--red); border-color: var(--red); }
+    .org-modal-visit { margin-top: 28px; width: 100%; justify-content: center; }
+
+    /* ---- Get Involved options ---- */
+    .get-involved-options { display: flex; flex-direction: column; gap: 14px; }
+    .involve-card {
+      display: flex; gap: 18px; align-items: flex-start;
+      padding: 22px 22px; text-decoration: none;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.16);
+      transition: all 0.25s var(--ease);
+    }
+    .involve-card:hover { background: #fff; border-color: #fff; transform: translateX(4px); }
+    .involve-num {
+      flex-shrink: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--red); padding-top: 2px;
+    }
+    .involve-body { display: flex; flex-direction: column; gap: 6px; }
+    .involve-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.25; }
+    .involve-card:hover .involve-title { color: var(--ink); }
+    .involve-desc { font-size: 13px; line-height: 1.55; color: rgba(255,255,255,0.72); }
+    .involve-card:hover .involve-desc { color: var(--text-2); }
+    .involve-cta {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--red);
+    }
+
+    @media (max-width: 640px) {
+      .org-modal-panel { padding: 36px 22px 28px; }
+      .org-modal-head { flex-direction: column; padding-right: 36px; }
+      .org-modal-title { font-size: 22px; }
+    }
+  </style>
 </head>
 <body>
 
 <nav class="aa-nav">
   <a href="/aa" class="nav-brand">
-    <img src="/ndoc-aa.jpg" alt="NDOC" />
-    <div class="nav-brand-text">Anticipatory Action<span>Kenya · NDOC / KRCS</span></div>
+    <img src="/aadashboard.png" alt="NDOC" />
   </a>
   <div class="nav-links">
     <div class="nav-item">
@@ -77,7 +175,10 @@
     {% if organizations %}
     <div class="org-grid" id="orgGrid">
       {% for org in organizations %}
-      <div class="org-card" data-type="{{ org.type_of_organization or '' }}">
+      <div class="org-card org-card-clickable" data-type="{{ org.type_of_organization or '' }}" data-idx="{{ loop.index0 }}" role="button" tabindex="0" aria-haspopup="dialog" aria-label="View profile for {{ org.name_of_organization }}">
+        {% if org.logo %}
+        <div class="org-logo"><img src="{{ org.logo }}" alt="{{ org.name_of_organization }} logo" loading="lazy" /></div>
+        {% endif %}
         {% if org.type_of_organization %}<div class="org-type">{{ org.type_of_organization }}</div>{% endif %}
         <div class="org-name">{{ org.name_of_organization }}</div>
         {% if org.primary_contact_person_name %}
@@ -98,6 +199,9 @@
           <a href="{{ org.organization_website }}" target="_blank" rel="noopener">{{ org.organization_website }}</a>
         </div>
         {% endif %}
+        <div class="org-card-cue">View profile
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+        </div>
       </div>
       {% endfor %}
     </div>
@@ -110,23 +214,67 @@
   </div>
 </section>
 
-<section class="cta-strip">
+<section class="cta-strip" id="getInvolved">
   <div class="cta-strip-inner">
     <div>
-      <div class="kicker on-dark" style="color: rgba(255,255,255,0.85); margin-bottom: 20px;">Join the Movement</div>
-      <h2>Join the <em>TWG.</em></h2>
-      <p>Is your organisation working on disaster risk or humanitarian response in Kenya? Apply to join the Technical Working Group.</p>
+      <div class="kicker on-dark" style="color: rgba(255,255,255,0.85); margin-bottom: 20px;">Get Involved</div>
+      <h2>Take the <em>next step.</em></h2>
+      <p>Whether you work in disaster risk, humanitarian response, or anticipatory action in Kenya, there is a way to take part. Choose what fits you below.</p>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-      <a href="/aa-signup" class="btn-white">Apply for Access
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+    <div class="get-involved-options">
+      <a href="/aa-signup" class="involve-card">
+        <span class="involve-num">01</span>
+        <span class="involve-body">
+          <span class="involve-title">Report an anticipatory action</span>
+          <span class="involve-desc">Request access to the platform to submit and track your organisation's anticipatory actions.</span>
+          <span class="involve-cta">Request access
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+          </span>
+        </span>
       </a>
-      <a href="/aa-contact" class="btn-ghost" style="border-color: rgba(255,255,255,0.4); color:#fff;">Get in Touch</a>
+      <a href="/aa-contact" class="involve-card">
+        <span class="involve-num">02</span>
+        <span class="involve-body">
+          <span class="involve-title">Join a pillar or partner with us</span>
+          <span class="involve-desc">Tell us which pillar you want to support and how your organisation can contribute to the TWG.</span>
+          <span class="involve-cta">Get in touch
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+          </span>
+        </span>
+      </a>
+      <a href="/aa-contact" class="involve-card">
+        <span class="involve-num">03</span>
+        <span class="involve-body">
+          <span class="involve-title">Send us a message</span>
+          <span class="involve-desc">Have a question about the programme or membership? Reach the coordination team directly.</span>
+          <span class="involve-cta">Contact us
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"/></svg>
+          </span>
+        </span>
+      </a>
     </div>
   </div>
 </section>
 
+<!-- Org profile modal -->
+<div class="org-modal" id="orgModal" hidden>
+  <div class="org-modal-overlay" data-close></div>
+  <div class="org-modal-panel" role="dialog" aria-modal="true" aria-labelledby="orgModalName" tabindex="-1">
+    <button class="org-modal-close" type="button" data-close aria-label="Close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="org-modal-body" id="orgModalBody"></div>
+  </div>
+</div>
+
+{% if organizations %}
 <script>
+  var ORGS = {{ organizations | tojson }};
+</script>
+{% endif %}
+
+<script>
+  // ---- Type filter bar ----
   const cards = document.querySelectorAll('.org-card[data-type]');
   const types = [...new Set([...cards].map(c => c.dataset.type).filter(Boolean))].sort();
   const bar = document.getElementById('filterBar');
@@ -143,13 +291,153 @@
     const f = btn.dataset.filter;
     cards.forEach(c => { c.style.display = (f === 'all' || c.dataset.type === f) ? '' : 'none'; });
   });
+
+  // ---- Org profile modal ----
+  (function () {
+    var data = (typeof ORGS !== 'undefined' && Array.isArray(ORGS)) ? ORGS : [];
+    if (!data.length) return;
+
+    var modal = document.getElementById('orgModal');
+    var panel = modal.querySelector('.org-modal-panel');
+    var bodyEl = document.getElementById('orgModalBody');
+    var lastFocused = null;
+
+    function esc(v) {
+      if (v === null || v === undefined) return '';
+      return String(v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    // Only allow http(s) / mailto / tel links; otherwise drop the href.
+    function safeUrl(v) {
+      if (!v) return '';
+      var s = String(v).trim();
+      if (/^(https?:|mailto:|tel:)/i.test(s)) return s;
+      if (/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(s)) return 'https://' + s;
+      return '';
+    }
+
+    function row(svg, label, valueHtml) {
+      return '<div class="org-modal-row">' +
+        '<span class="org-modal-row-ic">' + svg + '</span>' +
+        '<span class="org-modal-row-txt"><span class="org-modal-row-label">' + esc(label) + '</span>' +
+        '<span class="org-modal-row-val">' + valueHtml + '</span></span></div>';
+    }
+
+    var IC_USER = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    var IC_MAIL = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>';
+    var IC_PHONE = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"/></svg>';
+    var IC_PIN = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+
+    function render(org) {
+      var html = '';
+      html += '<div class="org-modal-head">';
+      if (org.logo) {
+        html += '<div class="org-modal-logo"><img src="' + esc(org.logo) + '" alt="' + esc(org.name_of_organization || '') + ' logo" /></div>';
+      }
+      html += '<div class="org-modal-head-txt">';
+      if (org.type_of_organization) {
+        html += '<div class="org-type">' + esc(org.type_of_organization) + '</div>';
+      }
+      html += '<h2 id="orgModalName" class="org-modal-title">' + esc(org.name_of_organization || 'Organisation') + '</h2>';
+      html += '</div></div>';
+
+      if (org.about) {
+        html += '<p class="org-modal-about">' + esc(org.about) + '</p>';
+      }
+
+      if (org.pillars_involved) {
+        var tags = String(org.pillars_involved).split(',')
+          .map(function (p) { return p.trim(); }).filter(Boolean);
+        if (tags.length) {
+          html += '<div class="org-modal-pillars"><span class="org-modal-row-label">Pillars involved</span><div class="org-pillar-tags">';
+          tags.forEach(function (t) { html += '<span class="org-pillar-tag">' + esc(t) + '</span>'; });
+          html += '</div></div>';
+        }
+      }
+
+      var rows = '';
+      if (org.primary_contact_person_name) {
+        rows += row(IC_USER, 'Contact person', esc(org.primary_contact_person_name));
+      }
+      var email = org.primary_email_contact || org.organization_email;
+      if (email) {
+        rows += row(IC_MAIL, 'Email', '<a href="mailto:' + esc(email) + '">' + esc(email) + '</a>');
+      }
+      var phone = org.primary_phone_contact || org.organization_phone;
+      if (phone) {
+        rows += row(IC_PHONE, 'Phone', '<a href="tel:' + esc(String(phone).replace(/\s+/g, '')) + '">' + esc(phone) + '</a>');
+      }
+      if (org.address) {
+        rows += row(IC_PIN, 'Address', esc(org.address));
+      }
+      if (rows) {
+        html += '<div class="org-modal-rows">' + rows + '</div>';
+      }
+
+      var site = safeUrl(org.organization_website);
+      if (site) {
+        html += '<a class="btn-red org-modal-visit" href="' + esc(site) + '" target="_blank" rel="noopener">Visit website' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg></a>';
+      }
+
+      bodyEl.innerHTML = html;
+    }
+
+    function open(idx) {
+      var org = data[idx];
+      if (!org) return;
+      lastFocused = document.activeElement;
+      render(org);
+      modal.hidden = false;
+      document.body.style.overflow = 'hidden';
+      panel.focus();
+      document.addEventListener('keydown', onKey);
+    }
+
+    function close() {
+      modal.hidden = true;
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKey);
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+    }
+
+    function onKey(e) {
+      if (e.key === 'Escape') { close(); return; }
+      if (e.key === 'Tab') {
+        var f = panel.querySelectorAll('a[href], button:not([disabled])');
+        if (!f.length) { e.preventDefault(); panel.focus(); return; }
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+
+    cards.forEach(function (card) {
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('a')) return; // let explicit links work
+        open(card.dataset.idx);
+      });
+      card.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          if (e.target.closest('a')) return;
+          e.preventDefault();
+          open(card.dataset.idx);
+        }
+      });
+    });
+
+    modal.querySelectorAll('[data-close]').forEach(function (el) {
+      el.addEventListener('click', close);
+    });
+  })();
 </script>
 
 <footer class="aa-footer">
   <div class="footer-top">
     <div>
       <div class="footer-brand-row">
-        <img src="/ndoc-aa.jpg" alt="NDOC" />
+        <img src="/aadashboard.png" alt="NDOC" />
         <div class="footer-brand-name">Kenya Anticipatory Action</div>
       </div>
       <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Operations Centre with the Kenya Red Cross Society.</p>
@@ -157,27 +445,25 @@
     <div class="footer-col">
       <h4>Programme</h4>
       <a href="/aa-about">About Us</a>
-      <a href="/aa-membership">Membership</a>
+      <a href="/aa-membership">Member Organisations</a>
       <a href="/aa-activities">Activities</a>
-      <a href="/aa-reports">Reports</a>
+      <a href="/aa-faq">FAQ</a>
     </div>
     <div class="footer-col">
-      <h4>Pillars</h4>
-      <a href="/aa-early-warning">Early Warning</a>
-      <a href="/aa-early-action">Early Action</a>
-      <a href="/aa-coordination">Coordination</a>
-      <a href="/aa-financing">Financing</a>
+      <h4>Knowledge</h4>
+      <a href="/aa-dashboard">Results Dashboard</a>
+      <a href="/aa-reports">Reports &amp; Documents</a>
+      <a href="/aa-impact">Programme Impact</a>
     </div>
     <div class="footer-col">
       <h4>Contact</h4>
       <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a>
-      <a href="mailto:info@redcross.or.ke">info@redcross.or.ke</a>
       <a href="/aa-contact">Send a Message</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Kenya Anticipatory Action TWG · National Disaster Operations Centre</span>
-    <span>Powered by <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross Society</a></span>
+    <span>&copy; 2026 Kenya Anticipatory Action TWG &middot; National Disaster Operations Centre</span>
+    <span>Developed and maintained by <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross</a></span>
   </div>
 </footer>
 

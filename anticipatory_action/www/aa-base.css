@@ -184,7 +184,7 @@ nav.aa-nav {
 
 .page-hero-title {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: clamp(40px, 7vw, 90px);
+  font-size: clamp(32px, 5vw, 58px);
   font-weight: 900; line-height: 0.88;
   text-transform: uppercase; letter-spacing: -0.022em;
   color: #fff;
@@ -194,7 +194,7 @@ nav.aa-nav {
 
 .page-hero-sub {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: clamp(15px, 1.4vw, 18px); font-weight: 300;
+  font-size: clamp(14px, 1.1vw, 16px); font-weight: 300;
   color: rgba(255,255,255,0.7); line-height: 1.65;
   max-width: 60ch;
 }
@@ -202,7 +202,7 @@ nav.aa-nav {
 .hero-pillar-num {
   position: absolute; bottom: 28px; right: 80px;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: clamp(110px, 15vw, 200px);
+  font-size: clamp(64px, 9vw, 120px);
   font-weight: 900; line-height: 0.8;
   color: rgba(255,255,255,0.05);
   pointer-events: none;
@@ -226,7 +226,7 @@ nav.aa-nav {
 
 .h2 {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: clamp(30px, 4.2vw, 52px);
+  font-size: clamp(26px, 3.2vw, 40px);
   font-weight: 800; line-height: 0.95;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -237,7 +237,7 @@ nav.aa-nav {
 
 .h3 {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: clamp(22px, 2.1vw, 28px);
+  font-size: clamp(19px, 1.8vw, 24px);
   font-weight: 700; line-height: 1.1;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -288,7 +288,7 @@ nav.aa-nav {
 .fact-item:first-child { padding-top: 0; }
 .fact-val {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 44px; font-weight: 900; line-height: 1;
+  font-size: 34px; font-weight: 900; line-height: 1;
   color: #fff; letter-spacing: -0.02em;
 }
 .fact-val .u { font-size: 22px; color: var(--red); margin-left: 2px; }
@@ -422,7 +422,7 @@ nav.aa-nav {
 .pillar-list-row:hover .pl-arrow { transform: translate(4px, -4px); color: var(--red); }
 .pl-num {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 48px; font-weight: 900; line-height: 1;
+  font-size: 38px; font-weight: 900; line-height: 1;
   color: var(--red); letter-spacing: -0.02em;
 }
 .pl-name {
@@ -848,7 +848,7 @@ nav.aa-nav {
 }
 .cta-strip h2 {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: clamp(28px, 3.6vw, 46px); font-weight: 800;
+  font-size: clamp(24px, 2.9vw, 36px); font-weight: 800;
   line-height: 0.95; letter-spacing: -0.02em;
   margin-bottom: 16px;
 }
