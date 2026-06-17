@@ -32,21 +32,128 @@
     }
     .test-switch.on .test-knob { left: 23px; }
     .test-switch:focus-visible { outline: 2px solid #B45309; outline-offset: 2px; }
+
+    /* ===== Modern report form (scoped .rpt-) - shared shape with the portal ===== */
+    .rpt-form { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    /* grid-column 1/-1 lets it span the full width when nested inside openModal's .form-grid */
+    .rpt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; grid-column: 1 / -1; width: 100%; }
+    .rpt-field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+    .rpt-field.full { grid-column: 1 / -1; }
+    .rpt-label {
+      font-weight: 700; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); display: flex; align-items: center; gap: 6px;
+    }
+    .rpt-label .req { color: var(--red); font-size: 12px; line-height: 1; }
+    .rpt-input, .rpt-textarea, .rpt-select {
+      width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; color: var(--text);
+      background: var(--paper); border: 1px solid var(--line); border-radius: 0;
+      padding: 10px 12px; transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      -webkit-appearance: none; appearance: none;
+    }
+    .rpt-textarea { min-height: 92px; resize: vertical; line-height: 1.5; }
+    .rpt-select {
+      cursor: pointer; padding-right: 36px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A8980' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+    }
+    .rpt-input::placeholder, .rpt-textarea::placeholder { color: var(--stone); }
+    .rpt-input:focus, .rpt-textarea:focus, .rpt-select:focus {
+      outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-tint);
+    }
+    .rpt-input:hover:not(:focus), .rpt-textarea:hover:not(:focus), .rpt-select:hover:not(:focus) { border-color: var(--rule); }
+    .rpt-hint { font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+    /* Dropzone */
+    .rpt-drop {
+      position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; text-align: center; padding: 24px 18px; cursor: pointer;
+      border: 1.5px dashed var(--rule); background: var(--paper-2);
+      transition: border-color 0.16s ease, background 0.16s ease;
+    }
+    .rpt-drop:hover { border-color: var(--red); background: var(--red-tint); }
+    .rpt-drop.is-drag { border-color: var(--red); background: var(--red-tint); box-shadow: 0 0 0 3px var(--red-tint); }
+    .rpt-drop svg { color: var(--muted); transition: color 0.16s ease; }
+    .rpt-drop:hover svg, .rpt-drop.is-drag svg { color: var(--red); }
+    .rpt-drop-title { font-size: 13.5px; color: var(--text); }
+    .rpt-drop-title b { color: var(--red); font-weight: 600; }
+    .rpt-drop-sub { font-size: 12px; color: var(--muted); }
+    .rpt-file-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    /* Chosen / attached file chip */
+    .rpt-file {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+      border: 1px solid var(--line); background: var(--paper);
+    }
+    .rpt-file-ic {
+      flex-shrink: 0; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      background: var(--red-tint); color: var(--red);
+    }
+    .rpt-file-meta { flex: 1; min-width: 0; }
+    .rpt-file-name {
+      font-size: 13.5px; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .rpt-file-name a { color: var(--red); text-decoration: none; }
+    .rpt-file-name a:hover { text-decoration: underline; }
+    .rpt-file-size { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .rpt-file-x {
+      flex-shrink: 0; appearance: none; background: none; border: none; cursor: pointer;
+      font: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--muted); padding: 6px 8px;
+    }
+    .rpt-file-x:hover { color: var(--red); }
+    .rpt-busy { font-size: 12.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; padding: 4px 0; }
+
+    /* "or" divider between link and file */
+    .rpt-or {
+      display: flex; align-items: center; gap: 12px; color: var(--stone);
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; margin: 2px 0;
+    }
+    .rpt-or::before, .rpt-or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+    /* Segmented Public / Private toggle */
+    .rpt-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); }
+    .rpt-seg-btn {
+      appearance: none; cursor: pointer; font: inherit; text-align: left;
+      background: var(--paper); border: none; padding: 11px 14px;
+      display: flex; flex-direction: column; gap: 2px; transition: background 0.16s ease, color 0.16s ease;
+    }
+    .rpt-seg-btn + .rpt-seg-btn { border-left: 1px solid var(--line); }
+    .rpt-seg-t { font-size: 13px; font-weight: 600; color: var(--text); }
+    .rpt-seg-s { font-size: 11.5px; color: var(--muted); }
+    .rpt-seg-btn:hover:not(.on) { background: var(--paper-2); }
+    .rpt-seg-btn.on { background: var(--red); }
+    .rpt-seg-btn.on .rpt-seg-t, .rpt-seg-btn.on .rpt-seg-s { color: #fff; }
+    .rpt-seg-btn.on .rpt-seg-s { color: rgba(255,255,255,0.82); }
+    .rpt-seg-btn:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+
+    /* Footer actions */
+    .rpt-actions { display: flex; gap: 10px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .rpt-actions .btn { flex: 0 0 auto; }
+    .rpt-spin {
+      width: 13px; height: 13px; border: 2px solid var(--line); border-top-color: var(--red);
+      border-radius: 50%; display: inline-block; animation: rpt-spin 0.7s linear infinite;
+    }
+    @keyframes rpt-spin { to { transform: rotate(360deg); } }
+    @media (max-width: 560px) {
+      .rpt-grid { grid-template-columns: 1fr; }
+      .rpt-seg { grid-template-columns: 1fr; }
+      .rpt-seg-btn + .rpt-seg-btn { border-left: none; border-top: 1px solid var(--line); }
+    }
   </style>
 </head>
 <body class="portal">
 
 <header class="portal-bar">
   <a href="/aa-portal" class="pb-brand">
-    <img src="/ndoc-aa.jpg" alt="NDOC" />
-    <div class="pb-name">Anticipatory Action<span>Admin Console</span></div>
+    <img src="/aadashboard.png" alt="NDOC" />
+    <div class="pb-name">Admin Console</div>
   </a>
   <nav class="pb-links" id="pbLinks">
     <a href="/aa-portal">Dashboard</a>
     <a href="/aa-admin" class="active">Admin Console</a>
     <a href="/anticipatory-action">New Submission</a>
     <a href="/aa-profile">Profile</a>
-    <a href="/app" title="Open the Frappe desk">Desk ↗</a>
+    {% if is_system_manager %}<a href="/app" title="Open the Frappe desk">Desk ↗</a>{% endif %}
   </nav>
   <div class="pb-end">
     <span class="pb-user">{{ full_name }}</span>
@@ -58,15 +165,21 @@
 </header>
 
 <main class="portal-wrap admin-wrap">
-  <div class="portal-head"><div>
-    <div class="portal-kicker">Secretariat</div>
-    <h1 class="portal-title">{% if is_approver %}Approver Console{% else %}Admin Console{% endif %}</h1>
-    {% if is_approver %}
-    <p class="portal-sub">Review and clear the submission queue, and curate the programme's activities, reports and publications.</p>
-    {% else %}
-    <p class="portal-sub">Manage Anticipatory Action members, review submissions, and curate the programme's activities, reports and publications - all in one place.</p>
-    {% endif %}
-  </div></div>
+  <div class="portal-head">
+    <div>
+      <div class="portal-kicker">Secretariat</div>
+      <h1 class="portal-title">{% if is_approver %}Approver Console{% else %}Admin Console{% endif %}</h1>
+      {% if is_approver %}
+      <p class="portal-sub">Review and clear the submission queue, and curate the programme's activities, reports and publications.</p>
+      {% else %}
+      <p class="portal-sub">Manage Anticipatory Action members, review submissions, and curate the programme's activities, reports and publications - all in one place.</p>
+      {% endif %}
+    </div>
+    <button class="btn ghost" id="raiseRequestBtn" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Raise a request
+    </button>
+  </div>
 
   <div class="admin-shell">
     <aside class="admin-side">
@@ -84,6 +197,14 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="11" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
           <span>Requests</span><span class="count" id="cnt-reqs" style="display:none"></span>
         </button>
+        <button class="tab" data-tab="support">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6h-5a3 3 0 0 0-3 3v9"/><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M3 21h18"/></svg>
+          <span>Support</span><span class="count" id="cnt-support" style="display:none"></span>
+        </button>
+        <button class="tab" data-tab="pillars">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+          <span>Pillar Leads</span>
+        </button>
         {% endif %}
         <button class="tab" data-tab="submissions">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
@@ -96,6 +217,10 @@
         <button class="tab" data-tab="activities">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span>Activities</span>
+        </button>
+        <button class="tab" data-tab="events">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 8 12 8 12s8-6.6 8-12a8 8 0 0 0-8-8z"/></svg>
+          <span>Events</span>
         </button>
         {% if can_manage_users %}
         <button class="tab" data-tab="orgs">
@@ -124,9 +249,12 @@
       <section class="tab-panel active" id="panel-overview"><div class="loading">Loading…</div></section>
       <section class="tab-panel" id="panel-users"></section>
       <section class="tab-panel" id="panel-requests"></section>
+      <section class="tab-panel" id="panel-support"></section>
+      <section class="tab-panel" id="panel-pillars"></section>
       <section class="tab-panel" id="panel-submissions"></section>
       <section class="tab-panel" id="panel-reports"></section>
       <section class="tab-panel" id="panel-activities"></section>
+      <section class="tab-panel" id="panel-events"></section>
       <section class="tab-panel" id="panel-orgs"></section>
       <section class="tab-panel" id="panel-pubs"></section>
       <section class="tab-panel" id="panel-messages"></section>
@@ -194,8 +322,9 @@
   function loadTab(tab, force) {
     if (loaded[tab] && !force) return;
     loaded[tab] = true;
-    ({ overview: loadOverview, users: loadUsers, requests: loadRequests, submissions: loadSubmissions,
-       reports: loadReports, activities: loadActivities, orgs: loadOrgs,
+    ({ overview: loadOverview, users: loadUsers, requests: loadRequests, support: loadSupport,
+       pillars: loadPillars, submissions: loadSubmissions,
+       reports: loadReports, activities: loadActivities, events: loadEvents, orgs: loadOrgs,
        pubs: loadPubs, messages: loadMessages, formbuilder: loadFormBuilder }[tab] || function () {})();
   }
 
@@ -566,6 +695,77 @@
     return parseInt(m[3], 10) + ' ' + months[parseInt(m[2], 10) - 1] + ' ' + m[1];
   }
 
+  // Same as fmtDate but keeps the time of day when present (e.g. "12 Mar 2026, 14:30").
+  function fmtDateTime(s) {
+    if (!s) return '-';
+    var date = fmtDate(s);
+    var t = String(s).slice(11, 16);
+    return /^\d{2}:\d{2}$/.test(t) ? date + ', ' + t : date;
+  }
+
+  // ---------- change history (audit timeline) ----------
+  // Renders a collapsible "Change history" panel for any auditable doctype.
+  // `mountEl` is the container; `targetClass` lets the markup reuse the host's
+  // section styling (e.g. 'rv-section' for the review screen, 'card' for modals).
+  function renderChangeLog(entries) {
+    if (!entries || !entries.length) {
+      return '<div class="ch-empty" style="font-size:13px;color:var(--muted)">No change history recorded yet.</div>';
+    }
+    return '<ol class="ch-timeline" style="list-style:none;margin:0;padding:0">' + entries.map(function (e) {
+      var changes = e.changes || [];
+      var lines = changes.map(function (c) {
+        var from = (c.from === null || c.from === undefined || c.from === '') ? '(empty)' : c.from;
+        var to = (c.to === null || c.to === undefined || c.to === '') ? '(empty)' : c.to;
+        return '<div class="ch-change" style="font-size:12.5px;color:var(--text-2);line-height:1.5">' +
+          '<span style="font-weight:600;color:var(--text)">' + AA.esc(c.field) + ':</span> ' +
+          AA.esc(from) + ' <span aria-hidden="true">-&gt;</span> ' + AA.esc(to) + '</div>';
+      }).join('');
+      if (!lines && e.detail_changed) {
+        lines = '<div class="ch-change" style="font-size:12.5px;color:var(--text-2)">Updated detail rows</div>';
+      }
+      var dot = (e.action === 'Created') ? 'var(--red)' : 'var(--muted)';
+      return '<li class="ch-item" style="position:relative;padding:0 0 16px 20px;border-left:2px solid var(--line);margin-left:4px">' +
+          '<span style="position:absolute;left:-6px;top:3px;width:10px;height:10px;border-radius:50%;background:' + dot + ';border:2px solid var(--paper)"></span>' +
+          '<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:8px">' +
+            '<span style="font-weight:600;font-size:13px;color:var(--text)">' + AA.esc(e.by_name || e.by || 'System') + '</span>' +
+            '<span style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:' + (e.action === 'Created' ? 'var(--red)' : 'var(--muted)') + '">' + AA.esc(e.action || 'Updated') + '</span>' +
+            '<span style="font-size:12px;color:var(--muted)">' + AA.esc(fmtDateTime(e.on)) + '</span>' +
+          '</div>' +
+          (lines ? '<div class="ch-changes" style="margin-top:6px;display:flex;flex-direction:column;gap:2px">' + lines + '</div>' : '') +
+        '</li>';
+    }).join('') + '</ol>';
+  }
+
+  // Fetch + lazily render the change log into a host element when expanded.
+  async function loadChangeLog(hostEl, doctype, name) {
+    if (!hostEl) return;
+    hostEl.innerHTML = '<div class="loading">Loading change history…</div>';
+    try {
+      var r = await AA.call(P + 'get_change_log', { doctype: doctype, name: name });
+      hostEl.innerHTML = renderChangeLog((r && r.data) || []);
+    } catch (e) { hostEl.innerHTML = '<div class="ch-empty" style="font-size:13px;color:var(--muted)">' + AA.esc(e.message) + '</div>'; }
+  }
+
+  // Build a collapsible <details> "Change history" block and wire lazy loading.
+  // Returns the HTML; call wireChangeHistory(rootEl, doctype, name) after inserting.
+  function changeHistoryHTML(extraStyle) {
+    return '<details class="ch-panel" style="margin-top:18px;border:1px solid var(--line);background:var(--paper);' + (extraStyle || '') + '">' +
+        '<summary style="cursor:pointer;list-style:none;padding:12px 16px;font-family:\'Helvetica Neue\',Helvetica,Arial,sans-serif;font-weight:700;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text);display:flex;align-items:center;gap:8px">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+          'Change history</summary>' +
+        '<div class="ch-body" style="padding:4px 16px 16px"></div>' +
+      '</details>';
+  }
+  function wireChangeHistory(rootEl, doctype, name) {
+    if (!rootEl) return;
+    var det = rootEl.querySelector('.ch-panel');
+    if (!det) return;
+    var loadedOnce = false;
+    det.addEventListener('toggle', function () {
+      if (det.open && !loadedOnce) { loadedOnce = true; loadChangeLog(det.querySelector('.ch-body'), doctype, name); }
+    });
+  }
+
   // ---------- full-screen, form-style submission review ----------
   function rvField(label, value, opts) {
     opts = opts || {};
@@ -671,11 +871,13 @@
         rvSection(2, 'Hazard & Anticipatory Actions', sec2) +
         rvSection(3, 'Anticipatory Action Details', sec3) +
         (add ? rvSection(4, 'Additional Information', '<div class="rv-grid">' + add + '</div>') : '') +
-        versionsSec;
+        versionsSec +
+        changeHistoryHTML();
 
       document.getElementById('review-title').textContent = 'Submission ' + d.name;
       document.getElementById('review-sub').innerHTML = 'Submitted by ' + AA.esc(d.owner || '-') + ' &nbsp;·&nbsp; <span class="badge ' + statusCls + '">' + AA.esc(statusLabel) + '</span>';
       document.getElementById('review-body').innerHTML = html;
+      wireChangeHistory(document.getElementById('review-body'), 'Anticipatory Action', d.name);
 
       var foot = '';
       if (d.status !== 'Approved') foot += '<button class="btn ok" id="rv-approve">Approve</button>';
@@ -792,31 +994,207 @@
 
   function reportModal(report) {
     var editing = report && report.name;
-    var f =
-      field({ label: 'Title', id: 'r_title', required: true, full: true, value: report && report.title }) +
-      field({ label: 'Year', id: 'r_year', type: 'number', value: report && report.year }) +
-      field({ label: 'Month', id: 'r_month', placeholder: 'e.g. March', value: report && report.month }) +
-      field({ label: 'Category', id: 'r_cat', type: 'select', options: META.report_categories, value: (report && report.category) || 'Report', placeholder: false }) +
-      field({ label: 'Visibility', id: 'r_vis', type: 'select', options: REPORT_VISIBILITY, value: editing ? (report.visibility || (report.published ? 'Public' : 'Private')) : 'Public', placeholder: false }) +
-      field({ label: 'Source', id: 'r_source', value: report && report.source }) +
-      field({ label: 'Keywords', id: 'r_keywords', full: true, value: report && report.key_words }) +
-      field({ label: 'External Link (URL)', id: 'r_link', type: 'url', full: true, value: report && report.link, hint: 'Provide a link OR upload a file below.' }) +
-      field({ label: (editing && report.attachment ? 'Replace File' : 'Upload File'), id: 'r_file', type: 'file', full: true, hint: editing && report.attachment ? 'A file is attached - uploading replaces it.' : '' }) +
-      field({ label: 'Description', id: 'r_desc', type: 'textarea', full: true, value: report && report.description });
+    // Visibility default: Public for the admin form, or the report's saved value when editing.
+    var rptState = {
+      visibility: editing ? (report.visibility || (report.published ? 'Public' : 'Private')) : 'Public',
+      fileUrl: (editing && report.attachment) || '',   // currently-attached / newly-uploaded file_url
+      fileName: '', fileSize: 0
+    };
+    var f = reportFormHTML({
+      title: report && report.title, year: report && report.year, month: report && report.month,
+      category: (report && report.category) || 'Report', categories: META.report_categories,
+      source: report && report.source, keywords: report && report.key_words,
+      link: report && report.link, description: report && report.description,
+      attachmentUrl: rptState.fileUrl, visibility: rptState.visibility, segMode: 'admin'
+    });
     openModal(editing ? 'Edit Report' : 'Add Report', f, async function () {
       if (!v('r_title')) { modalErr('Title is required.'); return; }
-      var fileEl = document.getElementById('r_file');
-      var vis = v('r_vis');
       var payload = {
         title: v('r_title'), year: v('r_year'), month: v('r_month'), description: v('r_desc'),
         category: v('r_cat'), source: v('r_source'), key_words: v('r_keywords'), link: v('r_link'),
-        visibility: vis, published: vis === 'Public' ? '1' : '0'
+        attachment: rptState.fileUrl || '',
+        visibility: rptState.visibility, published: rptState.visibility === 'Public' ? '1' : '0'
       };
-      if (fileEl && fileEl.files && fileEl.files[0]) { payload.attachment = await AA.upload(fileEl.files[0], false); }
       if (editing) { await AA.call(P + 'update_report', Object.assign({ name: report.name }, payload)); }
       else { await AA.call(P + 'add_report', payload); }
       closeModal(); AA.toast(editing ? 'Report updated.' : 'Report added.', true); loadReports();
     }, editing ? 'Save Changes' : 'Add Report');
+    wireReportForm(document.getElementById('modal-body'), rptState, modalErr);
+    // Change history for an existing report - appended below the form, collapsed.
+    if (editing) {
+      var rBody = document.getElementById('modal-body');
+      rBody.insertAdjacentHTML('beforeend', changeHistoryHTML());
+      wireChangeHistory(rBody, 'Anticipatory Report', report.name);
+    }
+  }
+
+  // ---------- shared modern report-form builder + wiring (admin) ----------
+  // Renders the inner form markup (scoped .rpt-) for openModal's `fields` slot.
+  // `o.segMode` chooses the visibility default styling; `o.attachmentUrl` pre-fills
+  // the file area in edit mode. Wired afterwards by wireReportForm().
+  function reportFormHTML(o) {
+    o = o || {};
+    function opt(list, val) {
+      return (list || []).map(function (c) {
+        return '<option value="' + AA.esc(c) + '"' + (String(val) === String(c) ? ' selected' : '') + '>' + AA.esc(c) + '</option>';
+      }).join('');
+    }
+    var pub = o.visibility === 'Public';
+    return '<div class="rpt-grid">' +
+        '<div class="rpt-field full"><label class="rpt-label" for="r_title">Title <span class="req">*</span></label>' +
+          '<input class="rpt-input" type="text" id="r_title" maxlength="240" placeholder="Give the report a clear, descriptive title" value="' + AA.esc(o.title || '') + '" /></div>' +
+
+        '<div class="rpt-field"><label class="rpt-label" for="r_cat">Category</label>' +
+          '<select class="rpt-select" id="r_cat">' + opt(o.categories, o.category) + '</select></div>' +
+        '<div class="rpt-field"><label class="rpt-label" for="r_year">Year</label>' +
+          '<input class="rpt-input" type="number" id="r_year" placeholder="e.g. 2026" value="' + AA.esc(o.year == null ? '' : o.year) + '" /></div>' +
+
+        '<div class="rpt-field"><label class="rpt-label" for="r_month">Month</label>' +
+          '<input class="rpt-input" type="text" id="r_month" placeholder="e.g. March" value="' + AA.esc(o.month || '') + '" /></div>' +
+        '<div class="rpt-field"><label class="rpt-label" for="r_source">Source</label>' +
+          '<input class="rpt-input" type="text" id="r_source" placeholder="Publishing body or author" value="' + AA.esc(o.source || '') + '" /></div>' +
+
+        '<div class="rpt-field full"><label class="rpt-label" for="r_desc">Description</label>' +
+          '<textarea class="rpt-textarea" id="r_desc" placeholder="A short summary of what this report covers">' + AA.esc(o.description || '') + '</textarea></div>' +
+
+        '<div class="rpt-field full"><label class="rpt-label" for="r_keywords">Keywords</label>' +
+          '<input class="rpt-input" type="text" id="r_keywords" placeholder="Comma separated, e.g. drought, livestock, Turkana" value="' + AA.esc(o.keywords || '') + '" /></div>' +
+
+        '<div class="rpt-field full"><label class="rpt-label" for="r_link">External link (URL)</label>' +
+          '<input class="rpt-input" type="url" id="r_link" placeholder="https://..." value="' + AA.esc(o.link || '') + '" />' +
+          '<div class="rpt-hint">A report can have a link or a file - provide at least one.</div></div>' +
+
+        '<div class="rpt-field full"><div class="rpt-or">or attach a file</div>' +
+          reportDropzoneHTML(o.attachmentUrl) + '</div>' +
+
+        '<div class="rpt-field full"><label class="rpt-label">Visibility</label>' +
+          reportSegHTML(pub) + '</div>' +
+      '</div>';
+  }
+
+  // The file area: dropzone when empty, a file chip when something is attached.
+  function reportDropzoneHTML(attachmentUrl) {
+    var inner;
+    if (attachmentUrl) {
+      inner = reportFileChip({ url: attachmentUrl, name: 'Attached file', existing: true });
+    } else {
+      inner =
+        '<div class="rpt-drop" id="r_drop" tabindex="0" role="button" aria-label="Add a file">' +
+          '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
+          '<div class="rpt-drop-title"><b>Drag a file here</b> or click to browse</div>' +
+          '<div class="rpt-drop-sub">PDF, Word, images and more</div>' +
+        '</div>';
+    }
+    return '<div id="r_filearea">' + inner + '</div>' +
+      '<input class="rpt-file-input" type="file" id="r_file" />';
+  }
+
+  // A single chosen-file chip. `existing` marks a pre-attached file (Replace / Remove);
+  // otherwise it shows the picked name + size with a Remove control.
+  function reportFileChip(o) {
+    var sizeStr = o.size ? '<div class="rpt-file-size">' + fmtBytes(o.size) + '</div>' : '';
+    var nameHTML = o.existing
+      ? '<a href="' + AA.esc(o.url) + '" target="_blank" rel="noopener" title="Open the attached file">' + AA.esc(o.name) + '</a>'
+      : AA.esc(o.name);
+    return '<div class="rpt-file">' +
+        '<span class="rpt-file-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>' +
+        '<div class="rpt-file-meta"><div class="rpt-file-name">' + nameHTML + '</div>' + sizeStr + '</div>' +
+        '<button type="button" class="rpt-file-x" id="r_file_x">' + (o.existing ? 'Replace' : 'Remove') + '</button>' +
+      '</div>';
+  }
+
+  // Segmented Public / Private toggle. `pub` = Public selected.
+  function reportSegHTML(pub) {
+    return '<div class="rpt-seg" id="r_seg" role="group" aria-label="Visibility">' +
+        '<button type="button" class="rpt-seg-btn' + (pub ? ' on' : '') + '" data-vis="Public" aria-pressed="' + (pub ? 'true' : 'false') + '">' +
+          '<span class="rpt-seg-t">Public</span><span class="rpt-seg-s">Shown on the website</span></button>' +
+        '<button type="button" class="rpt-seg-btn' + (pub ? '' : ' on') + '" data-vis="Private" aria-pressed="' + (pub ? 'false' : 'true') + '">' +
+          '<span class="rpt-seg-t">Private</span><span class="rpt-seg-s">Portal only</span></button>' +
+      '</div>';
+  }
+
+  // Wire dropzone, file picker, drag/drop, remove/replace, and the segmented toggle.
+  // Mutates `state.fileUrl/fileName/fileSize` and `state.visibility`. `errFn` shows a form error.
+  function wireReportForm(root, state, errFn) {
+    if (!root) return;
+    var fileInput = root.querySelector('#r_file');
+    var area = root.querySelector('#r_filearea');
+
+    function renderEmpty() {
+      area.innerHTML =
+        '<div class="rpt-drop" id="r_drop" tabindex="0" role="button" aria-label="Add a file">' +
+          '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
+          '<div class="rpt-drop-title"><b>Drag a file here</b> or click to browse</div>' +
+          '<div class="rpt-drop-sub">PDF, Word, images and more</div>' +
+        '</div>';
+      wireDrop();
+    }
+    function renderBusy() {
+      area.innerHTML = '<div class="rpt-file"><span class="rpt-busy"><span class="rpt-spin"></span>Uploading file...</span></div>';
+    }
+    function renderChip(o) { area.innerHTML = reportFileChip(o); wireChip(); }
+
+    function wireDrop() {
+      var drop = area.querySelector('#r_drop');
+      if (!drop) return;
+      drop.addEventListener('click', function () { fileInput.click(); });
+      drop.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+      ['dragenter', 'dragover'].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); drop.classList.add('is-drag'); });
+      });
+      ['dragleave', 'dragend'].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); drop.classList.remove('is-drag'); });
+      });
+      drop.addEventListener('drop', function (e) {
+        e.preventDefault(); e.stopPropagation(); drop.classList.remove('is-drag');
+        var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) handleFile(f);
+      });
+    }
+    function wireChip() {
+      var x = area.querySelector('#r_file_x');
+      if (x) x.addEventListener('click', function () {
+        state.fileUrl = ''; state.fileName = ''; state.fileSize = 0;
+        try { fileInput.value = ''; } catch (e) {}
+        renderEmpty();
+        if (x.textContent === 'Replace') fileInput.click();
+      });
+    }
+    async function handleFile(file) {
+      renderBusy();
+      try {
+        var url = await AA.upload(file, false);
+        state.fileUrl = url || ''; state.fileName = file.name; state.fileSize = file.size;
+        if (state.fileUrl) { renderChip({ url: state.fileUrl, name: file.name, size: file.size }); }
+        else { renderEmpty(); }
+      } catch (e) { if (errFn) errFn(e.message); renderEmpty(); }
+    }
+
+    fileInput.addEventListener('change', function () {
+      var f = fileInput.files && fileInput.files[0];
+      if (f) handleFile(f);
+    });
+    // Initial state: dropzone (empty) or chip (pre-attached in edit mode).
+    if (state.fileUrl) wireChip(); else wireDrop();
+
+    // Segmented visibility toggle.
+    var seg = root.querySelector('#r_seg');
+    if (seg) seg.querySelectorAll('.rpt-seg-btn').forEach(function (b) {
+      b.addEventListener('click', function () {
+        state.visibility = b.dataset.vis;
+        seg.querySelectorAll('.rpt-seg-btn').forEach(function (x) {
+          var on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+      });
+    });
+  }
+
+  // Human-readable byte size (e.g. "1.4 MB").
+  function fmtBytes(n) {
+    n = Number(n) || 0;
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1048576).toFixed(1) + ' MB';
   }
 
   // ===================== ACTIVITIES =====================
@@ -828,13 +1206,17 @@
       var html = toolbar('<button class="btn" id="add-act">+ Add Activity</button>');
       if (!rows.length) { html += '<div class="empty"><p>No activities yet.</p></div>'; }
       else {
-        html += tableHead(['Dates', 'Pillar', 'Activity', 'Milestone', 'Status', 'Visibility', '']);
+        html += tableHead(['', 'Dates', 'Pillar', 'Activity', 'Milestone', 'Status', 'Visibility', '']);
         html += rows.map(function (x) {
           var dates = x.start_date ? (AA.esc(x.start_date) + (x.end_date ? ' → ' + AA.esc(x.end_date) : '')) : '-';
           var st = (x.status || 'Planned');
           var stCls = st.toLowerCase().replace(/ /g, '-');
           var vis = x.published ? '<span class="badge approved">Public</span>' : '<span class="badge off">Private</span>';
+          var thumb = x.image
+            ? '<img src="' + AA.esc(x.image) + '" alt="" style="width:42px;height:42px;object-fit:cover;border:1px solid var(--line);display:block" />'
+            : '<span style="color:var(--muted)">-</span>';
           return '<tr>' +
+            '<td>' + thumb + '</td>' +
             '<td>' + dates + '</td>' +
             '<td>' + AA.esc(x.pillar || '-') + '</td>' +
             '<td class="strong">' + AA.esc(x.activity || '-') + (x.activity_reference ? '<div style="font-weight:400;color:var(--muted);font-size:12px;margin-top:3px">Ref: ' + AA.esc(x.activity_reference) + '</div>' : '') + '</td>' +
@@ -862,6 +1244,12 @@
 
   function activityModal(activity) {
     var editing = activity && activity.name;
+    var existingImg = (activity && activity.image) || '';
+    var imgPreview = existingImg
+      ? '<div class="field full" id="a_img_preview"><label>Current image</label>' +
+          '<img src="' + AA.esc(existingImg) + '" alt="" style="max-width:160px;max-height:120px;object-fit:cover;border:1px solid var(--line);display:block" />' +
+        '</div>'
+      : '';
     var f =
       field({ label: 'Activity', id: 'a_activity', required: true, full: true, value: activity && activity.activity }) +
       field({ label: 'Start Date', id: 'a_start', type: 'date', value: activity && activity.start_date }) +
@@ -871,18 +1259,112 @@
       field({ label: 'Activity Reference', id: 'a_ref', value: activity && activity.activity_reference }) +
       field({ label: 'Milestone', id: 'a_milestone', value: activity && activity.milestone }) +
       field({ label: 'Visibility', id: 'a_pub', type: 'select', options: VISIBILITY, value: editing ? (activity.published ? '1' : '0') : '1', placeholder: false, full: true }) +
+      imgPreview +
+      field({ label: (existingImg ? 'Replace Image' : 'Image'), id: 'a_image', type: 'file', accept: 'image/*', full: true, hint: existingImg ? 'An image is set - uploading replaces it.' : 'Optional. Shown alongside the activity.' }) +
       field({ label: 'Details', id: 'a_details', type: 'textarea', full: true, value: activity && activity.details });
     openModal(editing ? 'Edit Activity' : 'Add Activity', f, async function () {
       if (!v('a_activity')) { modalErr('Activity is required.'); return; }
+      var imgEl = document.getElementById('a_image');
+      var image = existingImg;
+      if (imgEl && imgEl.files && imgEl.files[0]) { image = await AA.upload(imgEl.files[0], false); }
       var payload = {
         activity: v('a_activity'), start_date: v('a_start'), end_date: v('a_end'), pillar: v('a_pillar'),
         activity_reference: v('a_ref'), milestone: v('a_milestone'), status: v('a_status'),
-        published: v('a_pub'), details: v('a_details')
+        published: v('a_pub'), details: v('a_details'), image: image
       };
       if (editing) { await AA.call(P + 'update_activity', Object.assign({ name: activity.name }, payload)); }
       else { await AA.call(P + 'add_activity', payload); }
       closeModal(); AA.toast(editing ? 'Activity updated.' : 'Activity added.', true); loadActivities();
     }, editing ? 'Save Changes' : 'Add Activity');
+  }
+
+  // ===================== EVENTS =====================
+  // The 7 pillar options for events (Select on the server).
+  var EVENT_PILLARS = ['Early Warning', 'Early Action', 'Coordination and Governance', 'Research and Learning', 'Policy and Advocacy', 'Financing', 'Monitoring and Evaluation'];
+
+  // Status is auto-derived server-side; render it as a coloured badge.
+  function eventStatusBadge(status) {
+    var s = status || 'Planned';
+    var cls = s.toLowerCase().replace(/ /g, '-');
+    return '<span class="status-badge ' + cls + '">' + AA.esc(s) + '</span>';
+  }
+
+  async function loadEvents() {
+    panelHTML('events', '<div class="loading">Loading events…</div>');
+    try {
+      var r = await AA.call(P + 'list_events');
+      var rows = (r && r.data) || [];
+      var html = toolbar('<button class="btn" id="add-event">+ Add event</button>');
+      if (!rows.length) { html += '<div class="empty"><p>No events yet.</p></div>'; }
+      else {
+        html += tableHead(['', 'Title', 'Dates', 'Location', 'Pillar', 'Status', 'Visibility', '']);
+        html += rows.map(function (x) {
+          var dates = x.start_date ? (AA.esc(x.start_date) + (x.end_date ? ' → ' + AA.esc(x.end_date) : '')) : '-';
+          var vis = x.published ? '<span class="badge approved">Public</span>' : '<span class="badge off">Private</span>';
+          var thumb = x.image
+            ? '<img src="' + AA.esc(x.image) + '" alt="" style="width:42px;height:42px;object-fit:cover;border:1px solid var(--line);display:block" />'
+            : '<span style="color:var(--muted)">-</span>';
+          var title = '<span class="strong">' + AA.esc(x.title || '-') + '</span>' +
+            (x.description ? '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(x.description) + '</div>' : '');
+          return '<tr>' +
+            '<td>' + thumb + '</td>' +
+            '<td>' + title + '</td>' +
+            '<td>' + dates + '</td>' +
+            '<td>' + AA.esc(x.location || '-') + '</td>' +
+            '<td>' + AA.esc(x.pillar || '-') + '</td>' +
+            '<td>' + eventStatusBadge(x.status) + '</td>' +
+            '<td>' + vis + '</td>' +
+            '<td class="row-actions"><button class="btn sm ghost" data-open-event="' + AA.esc(x.name) + '">Edit</button><button class="btn sm danger" data-del-event="' + AA.esc(x.name) + '">Remove</button></td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('events', html);
+      document.getElementById('add-event').addEventListener('click', function () { eventModal(); });
+      document.querySelectorAll('[data-open-event]').forEach(function (b) {
+        b.addEventListener('click', function () { eventModal(rows.find(function (x) { return x.name === b.dataset.openEvent; })); });
+      });
+      document.querySelectorAll('[data-del-event]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          if (!confirm('Remove this event?')) return;
+          try { await AA.call(P + 'delete_event', { name: b.dataset.delEvent }); AA.toast('Event removed.', true); loadEvents(); }
+          catch (e) { AA.toast(e.message); }
+        });
+      });
+    } catch (e) { errPanel('events', e.message); }
+  }
+
+  function eventModal(event) {
+    var editing = event && event.name;
+    var existingImg = (event && event.image) || '';
+    var imgPreview = existingImg
+      ? '<div class="field full" id="e_img_preview"><label>Current image</label>' +
+          '<img src="' + AA.esc(existingImg) + '" alt="" style="max-width:160px;max-height:120px;object-fit:cover;border:1px solid var(--line);display:block" />' +
+        '</div>'
+      : '';
+    var f =
+      field({ label: 'Title', id: 'e_title', required: true, full: true, value: event && event.title }) +
+      field({ label: 'Date', id: 'e_start', type: 'date', required: true, value: event && event.start_date }) +
+      field({ label: 'End date', id: 'e_end', type: 'date', value: event && event.end_date, hint: 'Leave blank for single-day events.' }) +
+      field({ label: 'Location', id: 'e_location', value: event && event.location }) +
+      field({ label: 'Pillar', id: 'e_pillar', type: 'select', options: EVENT_PILLARS, value: event && event.pillar }) +
+      field({ label: 'Visibility', id: 'e_pub', type: 'select', options: VISIBILITY, value: editing ? (event.published ? '1' : '0') : '1', placeholder: false, full: true }) +
+      imgPreview +
+      field({ label: (existingImg ? 'Replace Image' : 'Image'), id: 'e_image', type: 'file', accept: 'image/*', full: true, hint: existingImg ? 'An image is set - uploading replaces it.' : 'Optional. Shown alongside the event.' }) +
+      field({ label: 'Description', id: 'e_desc', type: 'textarea', full: true, value: event && event.description });
+    openModal(editing ? 'Edit event' : 'Add event', f, async function () {
+      if (!v('e_title')) { modalErr('Title is required.'); return; }
+      if (!v('e_start')) { modalErr('A date is required.'); return; }
+      var imgEl = document.getElementById('e_image');
+      var image = existingImg;
+      if (imgEl && imgEl.files && imgEl.files[0]) { image = await AA.upload(imgEl.files[0], false); }
+      var payload = {
+        title: v('e_title'), start_date: v('e_start'), end_date: v('e_end'), location: v('e_location'),
+        pillar: v('e_pillar'), description: v('e_desc'), published: v('e_pub'), image: image
+      };
+      if (editing) { await AA.call(P + 'update_event', Object.assign({ name: event.name }, payload)); }
+      else { await AA.call(P + 'add_event', payload); }
+      closeModal(); AA.toast(editing ? 'Event updated.' : 'Event added.', true); loadEvents();
+    }, editing ? 'Save Changes' : 'Add event');
   }
 
   // ===================== ORGANIZATIONS =====================
@@ -945,6 +1427,7 @@
         // disable every input so the read-only state is obvious even where readonly does not apply (textarea/select)
         document.querySelectorAll('#modal-body input, #modal-body select, #modal-body textarea').forEach(function (el) { el.disabled = true; });
         document.getElementById('org-close').addEventListener('click', closeModal);
+        orgChangeHistory(name);
         return;
       }
       openModal('Edit Organization', f, async function () {
@@ -958,7 +1441,16 @@
         });
         closeModal(); AA.toast('Organization updated.', true); orgCache = []; loadOrgs();
       }, 'Save Changes');
+      orgChangeHistory(name);
     } catch (e) { AA.toast(e.message); }
+  }
+
+  // Append a collapsed change-history block to the open organisation modal.
+  function orgChangeHistory(name) {
+    var body = document.getElementById('modal-body');
+    if (!body) return;
+    body.insertAdjacentHTML('beforeend', changeHistoryHTML());
+    wireChangeHistory(body, 'Anticipatory Action Organization', name);
   }
 
   function orgModal() {
@@ -1260,6 +1752,154 @@
     } catch (e) { AA.toast(e.message); }
   }
 
+  // ===================== RAISE A REQUEST (approvers + admins) =====================
+  // Available to everyone with console access via the header button. Members use the
+  // portal; here the request is typed as "Request" so the secretariat can triage it.
+  function raiseRequestModal() {
+    var f =
+      field({ label: 'Subject', id: 'sr_subject', required: true, full: true }) +
+      field({ label: 'Details', id: 'sr_message', type: 'textarea', required: true, full: true }) +
+      field({ label: 'Priority', id: 'sr_priority', type: 'select', options: ['Low', 'Medium', 'High'], value: 'Medium', placeholder: false });
+    openModal('Raise a request', f, async function () {
+      var subject = v('sr_subject'), message = v('sr_message');
+      if (!subject) { modalErr('Please enter a subject.'); return; }
+      if (!message) { modalErr('Please describe what you need.'); return; }
+      await AA.call(P + 'submit_support_request', { subject: subject, message: message, request_type: 'Request', priority: v('sr_priority') });
+      closeModal(); AA.toast('Request submitted. The secretariat will follow up.', true);
+      if (CAN_MANAGE && loaded.support) { loaded.support = false; if (document.getElementById('panel-support').classList.contains('active')) loadSupport(curSupportFilter()); }
+    }, 'Submit request');
+  }
+  document.getElementById('raiseRequestBtn').addEventListener('click', raiseRequestModal);
+
+  // ===================== SUPPORT TRIAGE (admins only) =====================
+  function curSupportFilter() { var f = document.getElementById('support-filter'); return f ? f.value : ''; }
+
+  function supportBadge(s) {
+    var cls = s === 'Resolved' ? 'approved' : (s === 'Closed' ? 'off' : (s === 'Open' ? 'new' : 'pending'));
+    return '<span class="badge ' + cls + '">' + AA.esc(s || 'New') + '</span>';
+  }
+
+  async function loadSupport(status) {
+    if (!CAN_MANAGE) { panelHTML('support', '<div class="empty"><p>Not available.</p></div>'); return; }
+    panelHTML('support', '<div class="loading">Loading support requests…</div>');
+    try {
+      var r = await AA.call(P + 'list_support_requests', status ? { status: status } : {});
+      var rows = (r && r.data) || [];
+      var filterSel = '<select class="filter-select" id="support-filter" style="min-width:160px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' +
+        ['', 'New', 'Open', 'Resolved', 'Closed'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
+      var html = toolbar('<div class="grow"></div>' + filterSel);
+      if (!rows.length) { html += '<div class="empty"><p>No support requests.</p></div>'; }
+      else {
+        html += tableHead(['Subject', 'Type', 'Raised by', 'Priority', 'Date', 'Status', '']);
+        html += rows.map(function (q) {
+          var who = AA.esc(q.raised_by || '-') + (q.raised_by_role ? '<div style="font-weight:400;color:var(--muted);font-size:12px">' + AA.esc(q.raised_by_role.replace('Anticipatory Action ', 'AA ')) + '</div>' : '');
+          return '<tr class="clickable-row" data-row-support="' + AA.esc(q.name) + '" title="Click to triage this request">' +
+            '<td class="strong">' + AA.esc(q.subject || '-') + '</td>' +
+            '<td>' + AA.esc(q.request_type || '-') + '</td>' +
+            '<td>' + who + '</td>' +
+            '<td>' + AA.esc(q.priority || '-') + '</td>' +
+            '<td>' + AA.esc(fmtDate(q.submitted_on || q.creation)) + '</td>' +
+            '<td>' + supportBadge(q.status) + '</td>' +
+            '<td class="row-actions"><button class="btn sm ghost" data-view-support="' + AA.esc(q.name) + '">Open</button></td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('support', html);
+      var fs = document.getElementById('support-filter');
+      if (fs) fs.addEventListener('change', function () { loadSupport(this.value); });
+      document.querySelectorAll('#panel-support tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function (e) { if (e.target.closest('button')) return; supportDetail(rows.find(function (x) { return x.name === tr.dataset.rowSupport; })); });
+      });
+      document.querySelectorAll('[data-view-support]').forEach(function (b) {
+        b.addEventListener('click', function (e) { e.stopPropagation(); supportDetail(rows.find(function (x) { return x.name === b.dataset.viewSupport; })); });
+      });
+    } catch (e) { errPanel('support', e.message); }
+  }
+
+  function supportDetail(q) {
+    if (!q) return;
+    var meta = '<div class="sc-meta" style="margin-bottom:14px;font-size:13.5px;color:var(--text-2)">' +
+        '<span><b>Type:</b> ' + AA.esc(q.request_type || '-') + '</span>' +
+        '<span><b>Raised by:</b> ' + AA.esc(q.raised_by || '-') + '</span>' +
+        (q.raised_by_role ? '<span><b>Role:</b> ' + AA.esc(q.raised_by_role.replace('Anticipatory Action ', 'AA ')) + '</span>' : '') +
+        (q.priority ? '<span><b>Priority:</b> ' + AA.esc(q.priority) + '</span>' : '') +
+        '<span><b>Date:</b> ' + AA.esc(fmtDate(q.submitted_on || q.creation)) + '</span>' +
+      '</div>';
+    var f =
+      field({ label: 'Status', id: 's_status', type: 'select', options: ['New', 'Open', 'Resolved', 'Closed'], value: q.status || 'New', placeholder: false }) +
+      field({ label: 'Response to the requester', id: 's_response', type: 'textarea', full: true, value: q.response || '', hint: 'Shared with the person who raised this request.' });
+    document.getElementById('modal-title').textContent = q.subject || 'Support request';
+    document.getElementById('modal-body').innerHTML =
+      '<div id="modal-alert" class="alert"></div>' +
+      meta +
+      '<div class="card" style="white-space:pre-wrap;line-height:1.6;margin-bottom:16px">' + AA.esc(q.message || '') + '</div>' +
+      '<form id="modal-form" novalidate><div class="form-grid">' + f + '</div>' +
+      '<div class="form-actions"><button type="submit" class="btn" id="modal-submit">Save</button>' +
+      '<button type="button" class="btn ghost" id="modal-cancel">Cancel</button></div></form>';
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('modal-cancel').addEventListener('click', closeModal);
+    document.getElementById('modal-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var btn = document.getElementById('modal-submit');
+      var done = busy(btn, 'Saving…');
+      Promise.resolve((async function () {
+        await AA.call(P + 'update_support_request', { name: q.name, status: v('s_status'), response: v('s_response') });
+        closeModal(); AA.toast('Support request updated.', true); loadSupport(curSupportFilter()); loaded.overview = false;
+      })()).catch(function (err) { modalErr(err.message); done(); });
+    });
+  }
+
+  // ===================== PILLAR LEADS (admins only) =====================
+  var pillarUsers = [];
+  async function loadPillars() {
+    if (!CAN_MANAGE) { panelHTML('pillars', '<div class="empty"><p>Not available.</p></div>'); return; }
+    panelHTML('pillars', '<div class="loading">Loading pillar leads…</div>');
+    try {
+      var r = await AA.call(P + 'list_pillar_leads');
+      var rows = (r && r.data) || [];
+      // Only Approvers and Admins are eligible to lead a pillar.
+      var ur = await AA.call(P + 'list_aa_reviewers', {});
+      pillarUsers = (ur && ur.data) || [];
+      var opts = '<option value="">Not set</option>' + pillarUsers.map(function (u) {
+        var label = (u.full_name || u.name) + (u.email ? ' (' + u.email + ')' : '');
+        return '<option value="' + AA.esc(u.name) + '">' + AA.esc(label) + '</option>';
+      }).join('');
+      var html = '<div class="table-wrap"><table class="data"><thead><tr>' +
+        '<th>Pillar</th><th>Current lead</th><th>Assign lead</th><th></th></tr></thead><tbody>';
+      html += rows.map(function (p) {
+        var current = p.lead_name
+          ? '<span class="strong">' + AA.esc(p.lead_name) + '</span>' + (p.lead_email ? '<div style="font-weight:400;color:var(--muted);font-size:12px">' + AA.esc(p.lead_email) + '</div>' : '')
+          : '<span class="badge muted">Not set</span>';
+        var sel = '<select class="filter-select" data-pillar-sel="' + AA.esc(p.pillar) + '" style="min-width:240px;padding:9px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' + opts + '</select>';
+        return '<tr>' +
+          '<td class="strong">' + AA.esc(p.pillar) + '</td>' +
+          '<td>' + current + '</td>' +
+          '<td>' + sel + '</td>' +
+          '<td class="row-actions"><button class="btn sm" data-pillar-save="' + AA.esc(p.pillar) + '">Save</button></td></tr>';
+      }).join('');
+      html += '</tbody></table></div>';
+      panelHTML('pillars', html);
+      // Preselect the current lead for each pillar.
+      rows.forEach(function (p) {
+        var sel = document.querySelector('[data-pillar-sel="' + (window.CSS && CSS.escape ? CSS.escape(p.pillar) : p.pillar) + '"]');
+        if (sel && p.lead) sel.value = p.lead;
+      });
+      document.querySelectorAll('[data-pillar-save]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          var pillar = b.dataset.pillarSave;
+          var sel = document.querySelector('[data-pillar-sel="' + (window.CSS && CSS.escape ? CSS.escape(pillar) : pillar) + '"]');
+          var lead = sel ? sel.value : '';
+          var done = busy(b, 'Saving…');
+          try {
+            await AA.call(P + 'set_pillar_lead', { pillar: pillar, lead: lead });
+            AA.toast('Pillar lead ' + (lead ? 'assigned.' : 'cleared.'), true);
+            loadPillars();
+          } catch (e) { AA.toast(e.message); done(); }
+        });
+      });
+    } catch (e) { errPanel('pillars', e.message); }
+  }
+
   // ===================== FORM BUILDER (concept preview) =====================
   var FB_DOCTYPE = 'Anticipatory Action';
   function fbSoon() { AA.toast('Form editing is coming soon - this is a concept preview.'); }
@@ -1409,6 +2049,40 @@
   })();
 })();
 </script>
+
+<footer class="aa-footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-row">
+        <img src="/aadashboard.png" alt="NDOC" />
+        <div class="footer-brand-name">Kenya Anticipatory Action</div>
+      </div>
+      <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Operations Centre with the Kenya Red Cross Society.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Programme</h4>
+      <a href="/aa-about">About Us</a>
+      <a href="/aa-membership">Member Organisations</a>
+      <a href="/aa-activities">Activities</a>
+      <a href="/aa-faq">FAQ</a>
+    </div>
+    <div class="footer-col">
+      <h4>Knowledge</h4>
+      <a href="/aa-dashboard">Results Dashboard</a>
+      <a href="/aa-reports">Reports &amp; Documents</a>
+      <a href="/aa-impact">Programme Impact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a>
+      <a href="/aa-contact">Send a Message</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Kenya Anticipatory Action TWG &middot; National Disaster Operations Centre</span>
+    <span>Developed and maintained by <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross</a></span>
+  </div>
+</footer>
 
 </body>
 </html>

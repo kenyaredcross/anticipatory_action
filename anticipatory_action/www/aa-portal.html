@@ -9,13 +9,152 @@
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
   <link rel="stylesheet" href="/aa-portal-ui.css" />
+  <style>
+    /* Submission card actions: keep "View" primary, fold the rest into a "More" menu. */
+    .sub-card .sc-actions { align-items: center; }
+    .sc-menu { position: relative; display: inline-flex; }
+    .sc-menu-btn { display: inline-flex; align-items: center; gap: 5px; }
+    .sc-menu-btn svg { transition: transform 0.15s ease; }
+    .sc-menu.open .sc-menu-btn svg { transform: rotate(180deg); }
+    .sc-menu-list {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 168px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 28px rgba(20, 20, 15, 0.14);
+      padding: 5px;
+      z-index: 60;
+      display: none;
+      flex-direction: column;
+    }
+    .sc-menu.open .sc-menu-list { display: flex; }
+    .sc-menu-item {
+      appearance: none;
+      background: none;
+      border: none;
+      text-align: left;
+      width: 100%;
+      padding: 8px 11px;
+      font: inherit;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .sc-menu-item:hover, .sc-menu-item:focus-visible { background: var(--paper-2); outline: none; }
+    .sc-menu-item.danger { color: var(--red-dark); }
+    .sc-menu-item.danger:hover, .sc-menu-item.danger:focus-visible { background: var(--red-tint); }
+    .sc-menu-note { display: block; padding: 8px 11px; font-size: 12.5px; color: var(--muted); }
+
+    /* ===== Modern report-upload form (scoped .rpt-) ===== */
+    #reportModal .modal-body { padding: 24px; }
+    .rpt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+    .rpt-field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+    .rpt-field.full { grid-column: 1 / -1; }
+    .rpt-label {
+      font-weight: 700; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); display: flex; align-items: center; gap: 6px;
+    }
+    .rpt-label .req { color: var(--red); font-size: 12px; line-height: 1; }
+    .rpt-input, .rpt-textarea, .rpt-select {
+      width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; color: var(--text);
+      background: var(--paper); border: 1px solid var(--line); border-radius: 0;
+      padding: 10px 12px; transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      -webkit-appearance: none; appearance: none;
+    }
+    .rpt-textarea { min-height: 92px; resize: vertical; line-height: 1.5; }
+    .rpt-select {
+      cursor: pointer; padding-right: 36px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A8980' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+    }
+    .rpt-input::placeholder, .rpt-textarea::placeholder { color: var(--stone); }
+    .rpt-input:focus, .rpt-textarea:focus, .rpt-select:focus {
+      outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-tint);
+    }
+    .rpt-input:hover:not(:focus), .rpt-textarea:hover:not(:focus), .rpt-select:hover:not(:focus) { border-color: var(--rule); }
+    .rpt-hint { font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+    /* Dropzone */
+    .rpt-drop {
+      position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; text-align: center; padding: 24px 18px; cursor: pointer;
+      border: 1.5px dashed var(--rule); background: var(--paper-2);
+      transition: border-color 0.16s ease, background 0.16s ease;
+    }
+    .rpt-drop:hover { border-color: var(--red); background: var(--red-tint); }
+    .rpt-drop.is-drag { border-color: var(--red); background: var(--red-tint); box-shadow: 0 0 0 3px var(--red-tint); }
+    .rpt-drop svg { color: var(--muted); transition: color 0.16s ease; }
+    .rpt-drop:hover svg, .rpt-drop.is-drag svg { color: var(--red); }
+    .rpt-drop-title { font-size: 13.5px; color: var(--text); }
+    .rpt-drop-title b { color: var(--red); font-weight: 600; }
+    .rpt-drop-sub { font-size: 12px; color: var(--muted); }
+    .rpt-file-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    .rpt-file {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+      border: 1px solid var(--line); background: var(--paper);
+    }
+    .rpt-file-ic {
+      flex-shrink: 0; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      background: var(--red-tint); color: var(--red);
+    }
+    .rpt-file-meta { flex: 1; min-width: 0; }
+    .rpt-file-name {
+      font-size: 13.5px; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .rpt-file-size { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .rpt-file-x {
+      flex-shrink: 0; appearance: none; background: none; border: none; cursor: pointer;
+      font: inherit; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--muted); padding: 6px 8px;
+    }
+    .rpt-file-x:hover { color: var(--red); }
+    .rpt-busy { font-size: 12.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; padding: 4px 0; }
+
+    .rpt-or {
+      display: flex; align-items: center; gap: 12px; color: var(--stone);
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; margin: 2px 0;
+    }
+    .rpt-or::before, .rpt-or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+    /* Segmented Public / Private toggle */
+    .rpt-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); }
+    .rpt-seg-btn {
+      appearance: none; cursor: pointer; font: inherit; text-align: left;
+      background: var(--paper); border: none; padding: 11px 14px;
+      display: flex; flex-direction: column; gap: 2px; transition: background 0.16s ease, color 0.16s ease;
+    }
+    .rpt-seg-btn + .rpt-seg-btn { border-left: 1px solid var(--line); }
+    .rpt-seg-t { font-size: 13px; font-weight: 600; color: var(--text); }
+    .rpt-seg-s { font-size: 11.5px; color: var(--muted); }
+    .rpt-seg-btn:hover:not(.on) { background: var(--paper-2); }
+    .rpt-seg-btn.on { background: var(--red); }
+    .rpt-seg-btn.on .rpt-seg-t { color: #fff; }
+    .rpt-seg-btn.on .rpt-seg-s { color: rgba(255,255,255,0.82); }
+    .rpt-seg-btn:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+
+    .rpt-actions { display: flex; gap: 10px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .rpt-spin {
+      width: 13px; height: 13px; border: 2px solid var(--line); border-top-color: var(--red);
+      border-radius: 50%; display: inline-block; animation: rpt-spin 0.7s linear infinite;
+    }
+    @keyframes rpt-spin { to { transform: rotate(360deg); } }
+    @media (max-width: 560px) {
+      .rpt-grid { grid-template-columns: 1fr; }
+      .rpt-seg { grid-template-columns: 1fr; }
+      .rpt-seg-btn + .rpt-seg-btn { border-left: none; border-top: 1px solid var(--line); }
+    }
+  </style>
 </head>
 <body class="portal">
 
 <header class="portal-bar">
   <a href="/aa-portal" class="pb-brand">
-    <img src="/ndoc-aa.jpg" alt="NDOC" />
-    <div class="pb-name">Anticipatory Action<span>Member Portal</span></div>
+    <img src="/aadashboard.png" alt="NDOC" />
+    <div class="pb-name">Member Portal</div>
   </a>
   <nav class="pb-links" id="pbLinks">
     <a href="/aa-portal" class="active">Dashboard</a>
@@ -57,6 +196,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="subs">My Submissions</button>
     <button class="tab" data-tab="reports">Knowledge Library</button>
+    <button class="tab" data-tab="support">Support</button>
   </div>
 
   <section class="tab-panel active" id="panel-subs">
@@ -76,6 +216,20 @@
     </div>
     <div id="my-reports-section"></div>
     <div id="reports-body"><div class="loading">Loading library…</div></div>
+  </section>
+
+  <section class="tab-panel" id="panel-support">
+    <div class="toolbar">
+      <div class="grow">
+        <h2 class="card-title" style="margin:0">Report a problem</h2>
+        <p style="margin:4px 0 0;color:var(--muted);font-size:13.5px">Tell the secretariat about anything that isn't working, and track their response here.</p>
+      </div>
+      <button class="btn sm" id="reportProblemBtn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Report a problem
+      </button>
+    </div>
+    <div id="support-body"><div class="loading">Loading your reports…</div></div>
   </section>
 </main>
 
@@ -101,51 +255,106 @@
     </div>
     <div class="modal-body">
       <div class="alert err" id="reportFormErr"></div>
-      <form id="reportForm">
-        <div class="form-grid">
-          <div class="field full">
-            <label for="rf-title">Title <span style="color:#CC0000">*</span></label>
-            <input type="text" id="rf-title" maxlength="240" required />
+      <form id="reportForm" novalidate>
+        <div class="rpt-grid">
+          <div class="rpt-field full">
+            <label class="rpt-label" for="rf-title">Title <span class="req">*</span></label>
+            <input class="rpt-input" type="text" id="rf-title" maxlength="240" placeholder="Give the report a clear, descriptive title" />
           </div>
-          <div class="field full">
-            <label for="rf-desc">Description</label>
-            <textarea id="rf-desc"></textarea>
-          </div>
-          <div class="field">
-            <label for="rf-category">Category</label>
-            <select id="rf-category">
+
+          <div class="rpt-field">
+            <label class="rpt-label" for="rf-category">Category</label>
+            <select class="rpt-select" id="rf-category">
               <option value="Report">Report</option>
               <option value="Workshop Report">Workshop Report</option>
             </select>
           </div>
-          <div class="field">
-            <label for="rf-source">Source</label>
-            <input type="text" id="rf-source" />
+          <div class="rpt-field">
+            <label class="rpt-label" for="rf-source">Source</label>
+            <input class="rpt-input" type="text" id="rf-source" placeholder="Publishing body or author" />
+          </div>
+
+          <div class="rpt-field full">
+            <label class="rpt-label" for="rf-desc">Description</label>
+            <textarea class="rpt-textarea" id="rf-desc" placeholder="A short summary of what this report covers"></textarea>
+          </div>
+
+          <div class="rpt-field full">
+            <label class="rpt-label" for="rf-keywords">Keywords</label>
+            <input class="rpt-input" type="text" id="rf-keywords" placeholder="Comma separated, e.g. drought, livestock, Turkana" />
+          </div>
+
+          <div class="rpt-field full">
+            <label class="rpt-label" for="rf-link">External link (URL)</label>
+            <input class="rpt-input" type="url" id="rf-link" placeholder="https://..." />
+            <div class="rpt-hint">A report can have a link or a file - provide at least one.</div>
+          </div>
+
+          <div class="rpt-field full">
+            <div class="rpt-or">or attach a file</div>
+            <div id="rf-filearea">
+              <div class="rpt-drop" id="rf-drop" tabindex="0" role="button" aria-label="Add a file">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div class="rpt-drop-title"><b>Drag a file here</b> or click to browse</div>
+                <div class="rpt-drop-sub">PDF, Word, images and more</div>
+              </div>
+            </div>
+            <input class="rpt-file-input" type="file" id="rf-file" />
+          </div>
+
+          <div class="rpt-field full">
+            <label class="rpt-label">Visibility</label>
+            <div class="rpt-seg" id="rf-seg" role="group" aria-label="Visibility">
+              <button type="button" class="rpt-seg-btn" data-vis="Public" aria-pressed="false">
+                <span class="rpt-seg-t">Public</span><span class="rpt-seg-s">Shown on the website</span>
+              </button>
+              <button type="button" class="rpt-seg-btn on" data-vis="Private" aria-pressed="true">
+                <span class="rpt-seg-t">Private</span><span class="rpt-seg-s">Portal only</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="rpt-actions">
+          <button class="btn" type="submit" id="rf-submit">Upload report</button>
+          <button class="btn ghost" type="button" id="rf-cancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Member "Report a problem" -->
+<div class="modal-overlay" id="supportModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Report a problem</h3>
+      <button class="modal-close" id="supportModalClose" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert err" id="supportFormErr"></div>
+      <form id="supportForm">
+        <div class="form-grid">
+          <div class="field full">
+            <label for="sf-subject">Subject <span style="color:#CC0000">*</span></label>
+            <input type="text" id="sf-subject" maxlength="240" required />
           </div>
           <div class="field full">
-            <label for="rf-keywords">Key words</label>
-            <input type="text" id="rf-keywords" placeholder="Comma separated" />
-          </div>
-          <div class="field">
-            <label for="rf-link">External link</label>
-            <input type="url" id="rf-link" placeholder="https://…" />
-          </div>
-          <div class="field">
-            <label for="rf-file">Or upload a file</label>
-            <input type="file" id="rf-file" />
-            <div class="hint">Provide a link or a file (at least one).</div>
+            <label for="sf-message">Details <span style="color:#CC0000">*</span></label>
+            <textarea id="sf-message" required></textarea>
           </div>
           <div class="field full">
-            <label for="rf-visibility">Visibility</label>
-            <select id="rf-visibility">
-              <option value="Private">Private - only visible to you here in the portal</option>
-              <option value="Public">Public - also shown on the public website</option>
+            <label for="sf-priority">Priority</label>
+            <select id="sf-priority">
+              <option value="">Normal</option>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
             </select>
           </div>
         </div>
         <div class="form-actions">
-          <button class="btn" type="submit" id="rf-submit">Submit report</button>
-          <button class="btn ghost" type="button" id="rf-cancel">Cancel</button>
+          <button class="btn" type="submit" id="sf-submit">Submit report</button>
+          <button class="btn ghost" type="button" id="sf-cancel">Cancel</button>
         </div>
       </form>
     </div>
@@ -166,6 +375,7 @@
       t.classList.add('active');
       document.getElementById('panel-' + t.dataset.tab).classList.add('active');
       if (t.dataset.tab === 'reports' && !REPORTS.length) loadReports();
+      if (t.dataset.tab === 'support') loadSupport();
     });
   });
 
@@ -194,18 +404,30 @@
       dates = s.activation_start_date + (s.activation_end_date ? ' → ' + s.activation_end_date : '');
     }
     var editLabel = (s.status === 'Replied' || s.status === 'Not Approved') ? 'Update &amp; resubmit' : 'Edit';
-    var actions =
-      '<button class="btn sm ghost" data-open="' + AA.esc(s.name) + '">View</button>' +
-      '<button class="btn sm ghost" data-pdf="' + AA.esc(s.name) + '">Download PDF</button>';
+    var nm = AA.esc(s.name);
+
+    // Secondary actions live inside a single "More" dropdown menu.
+    var menuItems =
+      '<button type="button" class="sc-menu-item" role="menuitem" data-pdf="' + nm + '">Download PDF</button>';
     if (s.can_edit) {
-      actions +=
-        '<button class="btn sm ghost" data-edit="' + AA.esc(s.name) + '">' + editLabel + '</button>' +
-        '<button class="btn sm danger" data-withdraw="' + AA.esc(s.name) + '">Withdraw</button>';
+      menuItems +=
+        '<button type="button" class="sc-menu-item" role="menuitem" data-edit="' + nm + '">' + editLabel + '</button>' +
+        '<button type="button" class="sc-menu-item danger" role="menuitem" data-withdraw="' + nm + '">Withdraw</button>';
     } else if (s.can_update) {
-      actions += '<button class="btn sm" data-update="' + AA.esc(s.name) + '">Update</button>';
+      menuItems += '<button type="button" class="sc-menu-item" role="menuitem" data-update="' + nm + '">Update</button>';
     } else {
-      actions += '<span class="badge muted">Locked</span>';
+      menuItems += '<span class="sc-menu-note">This submission is locked.</span>';
     }
+
+    var actions =
+      '<button class="btn sm ghost" data-open="' + nm + '">View</button>' +
+      '<div class="sc-menu">' +
+        '<button type="button" class="btn sm ghost sc-menu-btn" aria-haspopup="true" aria-expanded="false" aria-label="More actions">' +
+          'More' +
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>' +
+        '</button>' +
+        '<div class="sc-menu-list" role="menu">' + menuItems + '</div>' +
+      '</div>';
     var note = '';
     if (s.status === 'Not Approved' && s.reason_for_rejection) {
       note = '<div class="sc-reason"><b>Reason:</b> ' + AA.esc(s.reason_for_rejection) + '</div>';
@@ -267,10 +489,67 @@
       body.querySelectorAll('[data-update]').forEach(function (b) {
         b.addEventListener('click', function () { updateApproved(b.dataset.update); });
       });
+      wireCardMenus(body);
     } catch (e) {
       body.innerHTML = '<div class="empty"><p>' + AA.esc(e.message) + '</p></div>';
     }
   }
+
+  // ---- submission card "More" dropdowns ----
+  function closeCardMenus(except) {
+    document.querySelectorAll('.sc-menu.open').forEach(function (m) {
+      if (m === except) return;
+      m.classList.remove('open');
+      var btn = m.querySelector('.sc-menu-btn');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function wireCardMenus(scope) {
+    scope.querySelectorAll('.sc-menu').forEach(function (menu) {
+      var btn = menu.querySelector('.sc-menu-btn');
+      if (!btn) return;
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var willOpen = !menu.classList.contains('open');
+        closeCardMenus();
+        if (willOpen) {
+          menu.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+          var first = menu.querySelector('.sc-menu-item');
+          if (first) first.focus();
+        }
+      });
+      btn.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown' && !menu.classList.contains('open')) {
+          e.preventDefault();
+          btn.click();
+        }
+      });
+      // Close after any action is chosen; let the action's own handler run first.
+      menu.querySelectorAll('.sc-menu-item').forEach(function (item) {
+        item.addEventListener('click', function () { closeCardMenus(); });
+      });
+      menu.addEventListener('keydown', function (e) {
+        var items = Array.prototype.slice.call(menu.querySelectorAll('.sc-menu-item'));
+        var idx = items.indexOf(document.activeElement);
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          (items[idx + 1] || items[0] || btn).focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          (items[idx - 1] || items[items.length - 1] || btn).focus();
+        } else if (e.key === 'Escape') {
+          closeCardMenus();
+          btn.focus();
+        }
+      });
+    });
+  }
+
+  // Outside click + Escape close every open card menu.
+  document.addEventListener('click', function () { closeCardMenus(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeCardMenus(); });
 
   async function updateApproved(name) {
     if (!confirm('Update this approved submission? It will be reopened for editing and re-reviewed.')) return;
@@ -392,11 +671,105 @@
   var reportModal = document.getElementById('reportModal');
   var reportForm = document.getElementById('reportForm');
   var reportFormErr = document.getElementById('reportFormErr');
+  // Holds the uploaded file_url + chosen visibility (driven by the dropzone + segmented toggle).
+  var rfState = { fileUrl: '', fileName: '', fileSize: 0, visibility: 'Private' };
+  var rfFileArea = document.getElementById('rf-filearea');
+  var rfFileInput = document.getElementById('rf-file');
+
+  // Human-readable byte size (e.g. "1.4 MB").
+  function fmtBytes(n) {
+    n = Number(n) || 0;
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1048576).toFixed(1) + ' MB';
+  }
+
+  var RF_DROP_HTML =
+    '<div class="rpt-drop" id="rf-drop" tabindex="0" role="button" aria-label="Add a file">' +
+      '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
+      '<div class="rpt-drop-title"><b>Drag a file here</b> or click to browse</div>' +
+      '<div class="rpt-drop-sub">PDF, Word, images and more</div>' +
+    '</div>';
+
+  function rfRenderEmpty() { rfFileArea.innerHTML = RF_DROP_HTML; rfWireDrop(); }
+  function rfRenderBusy() { rfFileArea.innerHTML = '<div class="rpt-file"><span class="rpt-busy"><span class="rpt-spin"></span>Uploading file...</span></div>'; }
+  function rfRenderChip(o) {
+    var size = o.size ? '<div class="rpt-file-size">' + fmtBytes(o.size) + '</div>' : '';
+    rfFileArea.innerHTML =
+      '<div class="rpt-file">' +
+        '<span class="rpt-file-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>' +
+        '<div class="rpt-file-meta"><div class="rpt-file-name">' + AA.esc(o.name) + '</div>' + size + '</div>' +
+        '<button type="button" class="rpt-file-x" id="rf-file-x">Remove</button>' +
+      '</div>';
+    var x = document.getElementById('rf-file-x');
+    if (x) x.addEventListener('click', function () {
+      rfState.fileUrl = ''; rfState.fileName = ''; rfState.fileSize = 0;
+      try { rfFileInput.value = ''; } catch (e) {}
+      rfRenderEmpty();
+    });
+  }
+
+  function rfWireDrop() {
+    var drop = document.getElementById('rf-drop');
+    if (!drop) return;
+    drop.addEventListener('click', function () { rfFileInput.click(); });
+    drop.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); rfFileInput.click(); } });
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); drop.classList.add('is-drag'); });
+    });
+    ['dragleave', 'dragend'].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); drop.classList.remove('is-drag'); });
+    });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault(); e.stopPropagation(); drop.classList.remove('is-drag');
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) rfHandleFile(f);
+    });
+  }
+
+  async function rfHandleFile(file) {
+    rfRenderBusy();
+    try {
+      var url = await AA.upload(file, false);
+      rfState.fileUrl = url || ''; rfState.fileName = file.name; rfState.fileSize = file.size;
+      if (rfState.fileUrl) rfRenderChip({ name: file.name, size: file.size });
+      else rfRenderEmpty();
+    } catch (e) { showReportErr(e.message); rfRenderEmpty(); }
+  }
+
+  rfFileInput.addEventListener('change', function () {
+    var f = rfFileInput.files && rfFileInput.files[0];
+    if (f) rfHandleFile(f);
+  });
+  rfWireDrop();
+
+  // Segmented Public / Private toggle.
+  var rfSeg = document.getElementById('rf-seg');
+  rfSeg.querySelectorAll('.rpt-seg-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      rfState.visibility = b.dataset.vis;
+      rfSeg.querySelectorAll('.rpt-seg-btn').forEach(function (x) {
+        var on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    });
+  });
+
+  function rfSetVisibility(vis) {
+    rfState.visibility = vis;
+    rfSeg.querySelectorAll('.rpt-seg-btn').forEach(function (x) {
+      var on = x.dataset.vis === vis; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
 
   function openReportModal() {
     reportForm.reset();
     reportFormErr.classList.remove('show');
     reportFormErr.textContent = '';
+    // Reset the dynamic bits (the native form reset does not touch these).
+    rfState.fileUrl = ''; rfState.fileName = ''; rfState.fileSize = 0;
+    try { rfFileInput.value = ''; } catch (e) {}
+    rfRenderEmpty();
+    rfSetVisibility('Private');  // members default to Private
     reportModal.classList.add('open');
   }
   function closeReportModal() { reportModal.classList.remove('open'); }
@@ -411,18 +784,14 @@
     reportFormErr.classList.remove('show');
     var title = (document.getElementById('rf-title').value || '').trim();
     var link = (document.getElementById('rf-link').value || '').trim();
-    var fileInput = document.getElementById('rf-file');
-    var file = fileInput.files && fileInput.files[0];
     if (!title) { showReportErr('Please enter a title.'); return; }
-    if (!link && !file) { showReportErr('Provide an external link or upload a file.'); return; }
+    if (!link && !rfState.fileUrl) { showReportErr('Provide an external link or upload a file.'); return; }
 
     var btn = document.getElementById('rf-submit');
     btn.disabled = true;
     var original = btn.textContent;
-    btn.innerHTML = '<span class="btn-spin"></span>Submitting…';
+    btn.innerHTML = '<span class="btn-spin"></span>Uploading…';
     try {
-      var attachment = '';
-      if (file) attachment = await AA.upload(file, false) || '';
       var payload = {
         title: title,
         description: (document.getElementById('rf-desc').value || '').trim(),
@@ -430,8 +799,8 @@
         source: (document.getElementById('rf-source').value || '').trim(),
         key_words: (document.getElementById('rf-keywords').value || '').trim(),
         link: link,
-        attachment: attachment,
-        visibility: document.getElementById('rf-visibility').value
+        attachment: rfState.fileUrl || '',
+        visibility: rfState.visibility
       };
       await AA.call('anticipatory_action.api.portal.submit_my_report', payload);
       closeReportModal();
@@ -579,6 +948,95 @@
     } catch (e) { AA.toast(e.message); }
   }
 
+  // ---- support: report a problem + track responses ----
+  var supportModal = document.getElementById('supportModal');
+  var supportForm = document.getElementById('supportForm');
+  var supportFormErr = document.getElementById('supportFormErr');
+
+  function supportStatusBadge(s) {
+    if (s === 'Resolved') return '<span class="badge approved">Resolved</span>';
+    if (s === 'Closed') return '<span class="badge muted">Closed</span>';
+    if (s === 'Open') return '<span class="badge new">Open</span>';
+    return '<span class="badge pending">New</span>';
+  }
+
+  function supportRow(r) {
+    var when = fmtDate(r.submitted_on || r.creation);
+    var type = '<span class="badge muted">' + AA.esc(r.request_type || 'Problem') + '</span>';
+    var pri = r.priority ? ' <span class="badge muted">' + AA.esc(r.priority) + '</span>' : '';
+    var response = r.response
+      ? '<div class="sc-reason" style="margin-top:10px"><b>Secretariat response:</b> ' + AA.esc(r.response) + '</div>'
+      : '';
+    return '<div class="sub-card">' +
+      '<div class="sc-top"><div>' +
+        '<div class="sc-org">' + AA.esc(r.subject || 'Untitled') + '</div>' +
+        '<div class="sc-ref">' + type + pri + (when ? ' &middot; ' + AA.esc(when) : '') + '</div>' +
+      '</div>' + supportStatusBadge(r.status) + '</div>' +
+      response +
+    '</div>';
+  }
+
+  async function loadSupport() {
+    var body = document.getElementById('support-body');
+    body.innerHTML = '<div class="loading">Loading your reports…</div>';
+    try {
+      var r = await AA.call('anticipatory_action.api.portal.list_my_support_requests');
+      var rows = (r && r.data) || [];
+      if (!rows.length) {
+        body.innerHTML = '<div class="empty"><p>You haven\'t reported any problems yet.</p>' +
+          '<p style="margin-top:14px"><button class="btn" type="button" id="support-first">Report a problem</button></p></div>';
+        var first = document.getElementById('support-first');
+        if (first) first.addEventListener('click', openSupportModal);
+        return;
+      }
+      body.innerHTML = '<div class="sub-grid">' + rows.map(supportRow).join('') + '</div>';
+    } catch (e) {
+      body.innerHTML = '<div class="empty"><p>' + AA.esc(e.message) + '</p></div>';
+    }
+  }
+
+  function openSupportModal() {
+    supportForm.reset();
+    supportFormErr.classList.remove('show');
+    supportFormErr.textContent = '';
+    supportModal.classList.add('open');
+  }
+  function closeSupportModal() { supportModal.classList.remove('open'); }
+
+  document.getElementById('reportProblemBtn').addEventListener('click', openSupportModal);
+  document.getElementById('supportModalClose').addEventListener('click', closeSupportModal);
+  document.getElementById('sf-cancel').addEventListener('click', closeSupportModal);
+  supportModal.addEventListener('click', function (e) { if (e.target === supportModal) closeSupportModal(); });
+
+  supportForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    supportFormErr.classList.remove('show');
+    var subject = (document.getElementById('sf-subject').value || '').trim();
+    var message = (document.getElementById('sf-message').value || '').trim();
+    var priority = document.getElementById('sf-priority').value;
+    if (!subject) { supportFormErr.textContent = 'Please enter a subject.'; supportFormErr.classList.add('show'); return; }
+    if (!message) { supportFormErr.textContent = 'Please describe the problem.'; supportFormErr.classList.add('show'); return; }
+
+    var btn = document.getElementById('sf-submit');
+    btn.disabled = true;
+    var original = btn.textContent;
+    btn.innerHTML = '<span class="btn-spin"></span>Submitting…';
+    try {
+      var payload = { subject: subject, message: message };
+      if (priority) payload.priority = priority;
+      await AA.call('anticipatory_action.api.portal.submit_support_request', payload);
+      closeSupportModal();
+      AA.toast('Problem reported. We will get back to you.', true);
+      loadSupport();
+    } catch (err) {
+      supportFormErr.textContent = err.message;
+      supportFormErr.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  });
+
   // ---- in-app notification popups (#9) ----
   function ensureNotifyStack() {
     var st = document.getElementById('aa-notify-stack');
@@ -621,6 +1079,40 @@
   loadNotifications();
 })();
 </script>
+
+<footer class="aa-footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-row">
+        <img src="/aadashboard.png" alt="NDOC" />
+        <div class="footer-brand-name">Kenya Anticipatory Action</div>
+      </div>
+      <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Operations Centre with the Kenya Red Cross Society.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Programme</h4>
+      <a href="/aa-about">About Us</a>
+      <a href="/aa-membership">Member Organisations</a>
+      <a href="/aa-activities">Activities</a>
+      <a href="/aa-faq">FAQ</a>
+    </div>
+    <div class="footer-col">
+      <h4>Knowledge</h4>
+      <a href="/aa-dashboard">Results Dashboard</a>
+      <a href="/aa-reports">Reports &amp; Documents</a>
+      <a href="/aa-impact">Programme Impact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a>
+      <a href="/aa-contact">Send a Message</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Kenya Anticipatory Action TWG &middot; National Disaster Operations Centre</span>
+    <span>Developed and maintained by <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross</a></span>
+  </div>
+</footer>
 
 </body>
 </html>

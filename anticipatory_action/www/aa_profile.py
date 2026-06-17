@@ -11,8 +11,9 @@ def get_context(context):
 		frappe.local.flags.redirect_location = "/anticipatory-login?redirect-to=/aa-profile"
 		raise frappe.Redirect
 
+	roles = set(frappe.get_roles())
 	context.full_name = get_fullname(frappe.session.user)
-	context.is_admin = bool(
-		{"Anticipatory Action Admin", "System Manager"} & set(frappe.get_roles())
-	)
+	context.is_admin = bool({"Anticipatory Action Admin", "System Manager"} & roles)
+	# Only true desk users (System Managers) see the raw Frappe desk link.
+	context.is_system_manager = "System Manager" in roles
 	context.csrf_token = frappe.sessions.get_csrf_token()

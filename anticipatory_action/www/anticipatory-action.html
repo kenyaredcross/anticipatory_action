@@ -352,7 +352,7 @@ select.aa-input {
 
 <!-- ── Header with logos ── -->
 <div class="aa-header">
-  <img src="/ndoc-aa.jpg" alt="NDOC" class="aa-logo" />
+  <img src="/aadashboard.png" alt="NDOC" class="aa-logo" />
   <div class="aa-header-center">
     <div class="aa-header-title">Anticipatory Action</div>
     <div class="aa-header-sub">Data Collection &amp; Monitoring Platform</div>
@@ -897,14 +897,32 @@ select.aa-input {
     document.getElementById('f-other-partners').style.display = ip && ip.value === 'Yes' ? '' : 'none';
   }
 
-  function showEditBanner() {
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function showEditBanner(d) {
+    d = d || {};
     if (document.getElementById('edit-banner')) return;
     var b = document.createElement('div');
     b.id = 'edit-banner';
     b.className = 'aa-intro';
     b.style.borderLeftColor = '#B58418';
-    b.innerHTML = '<strong>Editing submission ' + EDIT_NAME + '.</strong> Saving will return it to ' +
-      '<em>Pending review</em>. &nbsp;<a href="/aa-portal">&larr; Back to my dashboard</a>';
+    var ask = '';
+    // Make it crystal clear WHAT the reviewer asked for.
+    if (d.status === 'Replied' && d.info_request) {
+      ask = '<div style="margin-top:12px;padding:12px 16px;background:#FFF7E6;border:1px solid #F0D9A8;border-radius:8px;color:#7A5310;">' +
+        '<strong>The reviewer requested more information:</strong><br>' + escHtml(d.info_request) +
+        '<div style="margin-top:6px;font-size:13px;color:#9A7030;">Update the form to address this, then save to resubmit.</div></div>';
+    } else if (d.status === 'Not Approved' && d.reason_for_rejection) {
+      ask = '<div style="margin-top:12px;padding:12px 16px;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;color:#991B1B;">' +
+        '<strong>This submission was not approved:</strong><br>' + escHtml(d.reason_for_rejection) +
+        '<div style="margin-top:6px;font-size:13px;color:#B45252;">Revise it to address the reason, then save to resubmit.</div></div>';
+    }
+    b.innerHTML = '<strong>Editing submission ' + escHtml(EDIT_NAME) + '.</strong> Saving will return it to ' +
+      '<em>Pending review</em>. &nbsp;<a href="/aa-portal">&larr; Back to my dashboard</a>' + ask;
     form.parentNode.insertBefore(b, form);
   }
 
@@ -940,7 +958,7 @@ select.aa-input {
 
         EDIT_MODE = true;
         submitBtn.innerHTML = 'Save Changes <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
-        showEditBanner();
+        showEditBanner(d);
 
         if (!d.can_edit) {
           frappe.msgprint({ title: 'Locked', message: 'This submission has been finalised and can no longer be edited.', indicator: 'orange' });
