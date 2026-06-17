@@ -39,6 +39,7 @@
   "linked_request",
   "awaiting_account",
   "is_update",
+  "is_test",
   "amended_from"
  ],
  "fields": [
@@ -244,6 +245,14 @@
    "read_only": 1
   },
   {
+   "default": "0",
+   "description": "Submitted through the test / dissemination form. Never counts towards real metrics or the dashboard.",
+   "fieldname": "is_test",
+   "fieldtype": "Check",
+   "label": "Test submission",
+   "read_only": 1
+  },
+  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -324,5 +333,6 @@
    "title": "Update"
   }
  ],
- "title_field": "implementing_organization"
+ "title_field": "implementing_organization",
+ "track_changes": 1
 }

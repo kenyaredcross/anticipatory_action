@@ -14,15 +14,15 @@
 
 <header class="portal-bar">
   <a href="/aa-portal" class="pb-brand">
-    <img src="/NDOC.png" alt="NDOC" />
-    <div class="pb-name">Anticipatory Action<span>Member Portal</span></div>
+    <img src="/aadashboard.png" alt="NDOC" />
+    <div class="pb-name">Member Portal</div>
   </a>
   <nav class="pb-links" id="pbLinks">
     <a href="/aa-portal">Dashboard</a>
     <a href="/anticipatory-action">New Submission</a>
     {% if is_admin %}<a href="/aa-admin">Admin Console</a>{% endif %}
     <a href="/aa-profile" class="active">Profile</a>
-    <a href="/app" title="Open the Frappe desk">Desk ↗</a>
+    {% if is_system_manager %}<a href="/app" title="Open the Frappe desk">Desk ↗</a>{% endif %}
   </nav>
   <div class="pb-end">
     <span class="pb-user">{{ full_name }}</span>
@@ -130,6 +130,40 @@
   load();
 })();
 </script>
+
+<footer class="aa-footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-row">
+        <img src="/aadashboard.png" alt="NDOC" />
+        <div class="footer-brand-name">Kenya Anticipatory Action</div>
+      </div>
+      <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Operations Centre with the Kenya Red Cross Society.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Programme</h4>
+      <a href="/aa-about">About Us</a>
+      <a href="/aa-membership">Member Organisations</a>
+      <a href="/aa-activities">Activities</a>
+      <a href="/aa-faq">FAQ</a>
+    </div>
+    <div class="footer-col">
+      <h4>Knowledge</h4>
+      <a href="/aa-dashboard">Results Dashboard</a>
+      <a href="/aa-reports">Reports &amp; Documents</a>
+      <a href="/aa-impact">Programme Impact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a>
+      <a href="/aa-contact">Send a Message</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Kenya Anticipatory Action TWG &middot; National Disaster Operations Centre</span>
+    <span>Developed and maintained by <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross</a></span>
+  </div>
+</footer>
 
 </body>
 </html>

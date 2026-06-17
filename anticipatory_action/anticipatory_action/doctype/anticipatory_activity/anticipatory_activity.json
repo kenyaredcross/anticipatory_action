@@ -17,7 +17,9 @@
   "activity_reference",
   "milestone",
   "status",
+  "image",
   "details",
+  "narrative",
   "date"
  ],
  "fields": [
@@ -73,6 +75,7 @@
   },
   {
    "default": "Planned",
+   "description": "Set automatically from the dates; flips to Completed once the end date passes.",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -80,9 +83,20 @@
    "options": "Planned\nOngoing\nCompleted\nOn Hold\nCancelled"
   },
   {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  },
+  {
    "fieldname": "details",
    "fieldtype": "Small Text",
    "label": "Details"
+  },
+  {
+   "description": "A longer story or narrative about this activity, shown on the public Activities page.",
+   "fieldname": "narrative",
+   "fieldtype": "Text",
+   "label": "Story / narrative"
   },
   {
    "description": "Superseded by Start Date - kept for historical records.",

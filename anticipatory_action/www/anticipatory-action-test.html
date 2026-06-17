@@ -1,0 +1,1170 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Anticipatory Action - TEST Submit{% endblock %}
+
+{% block head_include %}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+{% endblock %}
+
+{% block style %}
+<style>
+:root {
+  --red:      #CC0000;
+  --red-dark: #990000;
+  --red-soft: #FEF2F2;
+  --charcoal: #1A1A1A;
+  --mid:      #6B7280;
+  --light:    #E5E7EB;
+  --bg:       #F9FAFB;
+  --white:    #FFFFFF;
+}
+
+/* -- Page shell -- */
+body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: var(--bg); }
+.web-form-container,
+.page-content > .container { max-width: 820px !important; padding: 0 16px 64px; }
+
+/* -- Hide Frappe chrome -- */
+header.navbar, .navbar-main, nav.navbar,
+footer, .web-footer, .footer { display: none !important; }
+.page-content { padding-top: 24px !important; }
+
+/* -- TEST banner (sticky amber/striped ribbon) -- */
+.aa-test-banner {
+  position: sticky; top: 0; z-index: 1100;
+  margin: 0 0 18px;
+  padding: 11px 18px;
+  color: #FFFFFF;
+  font-size: 14px; font-weight: 700; line-height: 1.45;
+  letter-spacing: 0.01em;
+  text-align: center;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  background-color: #B45309;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(0,0,0,0.16) 0,
+    rgba(0,0,0,0.16) 14px,
+    rgba(0,0,0,0) 14px,
+    rgba(0,0,0,0) 28px
+  );
+}
+.aa-test-banner strong { font-weight: 800; }
+.aa-test-banner-sub { display: block; font-weight: 500; font-size: 13px; margin-top: 2px; }
+
+/* -- Logos header -- */
+.aa-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 28px;
+  background: var(--white);
+  border-bottom: 3px solid var(--red);
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  margin-bottom: 0;
+}
+.aa-logo { height: 60px; width: auto; object-fit: contain; flex-shrink: 0; }
+.aa-header-center { text-align: left; flex: 1; min-width: 0; }
+.aa-header-title {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: 0.01em;
+  font-size: 22px; font-weight: 700; color: var(--charcoal); line-height: 1.2;
+}
+.aa-header-sub { font-size: 14px; color: var(--mid); margin-top: 3px; }
+.aa-test-pill {
+  display: inline-block; margin-left: 8px;
+  padding: 2px 9px; border-radius: 999px;
+  background: #B45309; color: #FFFFFF;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.06em; vertical-align: middle;
+}
+
+/* -- Intro box -- */
+.aa-intro {
+  background: var(--white);
+  border-left: 4px solid var(--red);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  font-size: 15px;
+  color: #374151;
+  line-height: 1.65;
+}
+.aa-intro a { color: var(--red); }
+
+/* -- Section cards -- */
+.aa-section {
+  background: var(--white);
+  border-radius: 10px;
+  border: 1.5px solid var(--light);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.aa-section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--light);
+  background: #FAFAFA;
+}
+.aa-section-num {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--red);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.aa-section-header h2 {
+  margin: 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: 0.02em;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+.aa-section-body { padding: 24px; }
+
+/* -- Field layout -- */
+.aa-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.aa-field { margin-bottom: 16px; }
+.aa-field:last-child { margin-bottom: 0; }
+.aa-field label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+.aa-field-hint { font-size: 13px; color: var(--mid); margin-bottom: 6px; line-height: 1.4; }
+.req { color: var(--red); }
+
+.aa-input {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1.5px solid var(--light);
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--charcoal);
+  background: var(--white);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+  min-height: 40px;
+  -webkit-appearance: none;
+}
+.aa-input:focus {
+  border-color: var(--red);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(204,0,0,0.08);
+}
+.aa-input.error { border-color: #EF4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.08); }
+.aa-textarea { resize: vertical; min-height: 88px; }
+select.aa-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 36px;
+  cursor: pointer;
+}
+.aa-field-error { display: none; font-size: 13px; color: #EF4444; margin-top: 4px; }
+.aa-check-wrap { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500 !important; }
+.aa-checkbox { width: 18px; height: 18px; accent-color: var(--red); flex-shrink: 0; cursor: pointer; }
+
+/* -- File upload control -- */
+.aa-file { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.aa-file input[type="file"] { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.aa-file-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 8px;
+  border: 1.5px solid var(--light); background: var(--white);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 600;
+  color: #374151; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.aa-file-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+.aa-file-btn svg { flex-shrink: 0; }
+.aa-file-name { font-size: 14px; color: var(--charcoal); word-break: break-all; }
+.aa-file-name.empty { color: var(--mid); }
+.aa-file-clear {
+  background: none; border: none; padding: 4px; border-radius: 6px;
+  color: #9CA3AF; cursor: pointer; display: inline-flex; align-items: center; transition: all 0.15s;
+}
+.aa-file-clear:hover { color: #DC2626; background: #FEE2E2; }
+.aa-file-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 12px; border-radius: 999px;
+  background: var(--red-soft); border: 1px solid #FECACA;
+  font-size: 13px; font-weight: 600; color: var(--red); text-decoration: none; max-width: 100%;
+}
+.aa-file-chip svg { flex-shrink: 0; }
+.aa-file-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
+.aa-file-chip:hover { background: #FEE2E2; }
+
+/* -- Child table -- */
+.details-list { margin-bottom: 16px; }
+.aa-empty-state {
+  text-align: center; padding: 40px 24px; color: var(--mid);
+  border: 1.5px dashed var(--light); border-radius: 8px; margin-bottom: 16px;
+}
+.aa-empty-state svg { display: block; margin: 0 auto 12px; color: #D1D5DB; }
+.aa-empty-state h4 { font-size: 16px; font-weight: 600; color: #4B5563; margin-bottom: 4px; }
+.aa-empty-state p  { font-size: 15px; }
+
+.detail-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--light);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background: var(--white);
+}
+.detail-card:hover { border-color: #9CA3AF; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.detail-card-main { flex: 1; min-width: 0; }
+.detail-card-location {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 15px; font-weight: 600; color: var(--charcoal); margin-bottom: 3px;
+}
+.detail-card-location svg { flex-shrink: 0; color: var(--mid); }
+.detail-card-sector { font-size: 13px; color: var(--mid); margin-bottom: 3px; }
+.detail-card-desc {
+  font-size: 13px; color: #374151; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 420px;
+}
+.detail-card-meta { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.dc-meta { display: flex; flex-direction: column; align-items: flex-end; }
+.dc-meta-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #9CA3AF; }
+.dc-meta-value { font-size: 14px; font-weight: 600; color: var(--charcoal); }
+.dc-status {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+}
+.dc-planned  { background: #FEF3C7; color: #92400E; }
+.dc-ongoing  { background: #DBEAFE; color: #1E40AF; }
+.dc-complete { background: #D1FAE5; color: #065F46; }
+.dc-delete {
+  background: none; border: none; padding: 6px; border-radius: 6px;
+  color: #9CA3AF; cursor: pointer; display: flex; align-items: center;
+  opacity: 0; transition: all 0.15s;
+}
+.detail-card:hover .dc-delete { opacity: 1; }
+.dc-delete:hover { color: #DC2626; background: #FEE2E2; }
+
+/* -- Buttons -- */
+.aa-btn-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px; border-radius: 8px;
+  border: 1.5px solid var(--light); background: var(--white);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 600;
+  color: #374151; cursor: pointer; transition: all 0.15s;
+}
+.aa-btn-outline:hover { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+
+.aa-submit-row { display: flex; justify-content: flex-end; padding-top: 8px; }
+.aa-btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 36px; border-radius: 10px;
+  background: var(--red); color: var(--white);
+  border: none; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(204,0,0,0.28);
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.aa-btn-primary:hover { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(204,0,0,0.35); }
+.aa-btn-primary:disabled { background: #9CA3AF; box-shadow: none; transform: none; cursor: not-allowed; }
+
+/* -- Success screen -- */
+.aa-success {
+  display: none;
+  text-align: center;
+  padding: 64px 32px;
+  background: var(--white);
+  border-radius: 12px;
+  border: 1.5px solid var(--light);
+}
+.aa-success-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: #FEF3C7; display: flex; align-items: center;
+  justify-content: center; margin: 0 auto 24px;
+}
+.aa-success h2 { font-size: 22px; font-weight: 700; color: var(--charcoal); margin-bottom: 10px; }
+.aa-success p  { font-size: 15px; color: var(--mid); max-width: 440px; margin: 0 auto 28px; }
+.aa-success .ref { font-size: 13px; color: var(--mid); }
+.aa-success .ref strong { color: var(--charcoal); }
+
+/* -- Modal -- */
+.aa-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0); z-index: 1000;
+  align-items: center; justify-content: center; padding: 20px;
+  transition: background 0.25s;
+}
+.aa-overlay.open { display: flex; background: rgba(0,0,0,0.45); }
+.aa-modal {
+  background: var(--white); border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+  max-width: 620px; width: 100%; max-height: 90vh;
+  display: flex; flex-direction: column;
+  transform: translateY(16px); opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.aa-overlay.open .aa-modal { transform: translateY(0); opacity: 1; }
+.aa-modal-head {
+  padding: 18px 24px; border-bottom: 1px solid #F3F4F6;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.aa-modal-head h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--charcoal); }
+.aa-modal-close {
+  background: none; border: none; font-size: 26px; line-height: 1;
+  color: var(--mid); cursor: pointer; padding: 0; width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; transition: all 0.15s;
+}
+.aa-modal-close:hover { background: #F3F4F6; color: var(--charcoal); }
+.aa-modal-body { padding: 0; overflow-y: auto; flex: 1; }
+.aa-modal-section { padding: 20px 24px; border-bottom: 1px solid #F9FAFB; }
+.aa-modal-section:last-child { border-bottom: none; }
+.aa-modal-section-title {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--red);
+  margin-bottom: 16px; padding-bottom: 8px;
+  border-bottom: 1.5px solid #FEE2E2;
+}
+.aa-modal-foot {
+  padding: 14px 24px; border-top: 1px solid #F3F4F6;
+  display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0;
+}
+.aa-btn-cancel {
+  padding: 10px 20px; border-radius: 8px; border: 1.5px solid var(--light);
+  background: var(--white); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 15px; font-weight: 600; color: #374151; cursor: pointer;
+}
+.aa-btn-cancel:hover { background: #F9FAFB; }
+.aa-btn-save {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border-radius: 8px; border: none;
+  background: var(--red); color: var(--white);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.aa-btn-save:hover { background: var(--red-dark); }
+.aa-col-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* -- Responsive -- */
+@media (max-width: 640px) {
+  .aa-grid-2, .aa-col-2 { grid-template-columns: 1fr; }
+  .aa-header { padding: 14px 16px; gap: 12px; }
+  .aa-logo { height: 44px; }
+  .aa-header-center { display: none; }
+  .aa-section-body { padding: 16px; }
+  .detail-card-meta { display: none; }
+  .aa-modal-section { padding: 16px; }
+  .aa-btn-primary { width: 100%; justify-content: center; }
+  .aa-submit-row { justify-content: stretch; }
+}
+</style>
+{% endblock %}
+
+{% block page_content %}
+
+<!-- -- Persistent TEST banner -- -->
+<div class="aa-test-banner">
+  <strong>TEST FORM - for dissemination &amp; training only.</strong>
+  <span class="aa-test-banner-sub">Submissions here are recorded as TEST data and do NOT count as real submissions.</span>
+</div>
+
+<!-- -- Header with logos -- -->
+<div class="aa-header">
+  <img src="/aadashboard.png" alt="NDOC" class="aa-logo" />
+  <div class="aa-header-center">
+    <div class="aa-header-title">Anticipatory Action <span class="aa-test-pill">TEST</span></div>
+    <div class="aa-header-sub">Training &amp; Dissemination Form</div>
+  </div>
+</div>
+
+<!-- -- Introduction -- -->
+<div class="aa-intro">
+  <p>This is a practice copy of the Anticipatory Action submission form for dissemination and training. Fill it in exactly as you would the real one - everything you enter here is stored as <strong>TEST data only</strong> and never appears in real metrics or the dashboard.</p>
+  <p style="margin-top:8px">Looking for the real form? Go to <a href="/anticipatory-action">the live submission form</a>.</p>
+</div>
+
+<!-- -- Form -- -->
+<form id="aa-form" novalidate>
+
+  <!-- Section 1: Organisation -->
+  <div class="aa-section">
+    <div class="aa-section-header">
+      <span class="aa-section-num">1</span>
+      <h2>Implementing Organization</h2>
+    </div>
+    <div class="aa-section-body">
+      <div class="aa-grid-2">
+        <div class="aa-field">
+          <label>Name of implementing entity or organization <span class="req">*</span></label>
+          <div class="aa-field-hint">Use full names, not abbreviations</div>
+          <input name="implementing_organization" class="aa-input" required />
+          <div class="aa-field-error">This field is required</div>
+        </div>
+        <div class="aa-field">
+          <label>Entity or organization type <span class="req">*</span></label>
+          <select name="entity_or_organization_type" class="aa-input" required data-meta="entity_or_organization_type">
+            <option value="">Loading...</option>
+          </select>
+          <div class="aa-field-error">This field is required</div>
+        </div>
+        <div class="aa-field" id="f-other-org" style="display:none">
+          <label>If other, please specify</label>
+          <input name="other_organization_entity" class="aa-input" />
+        </div>
+        <div class="aa-field">
+          <label>Funding source or organization <span class="req">*</span></label>
+          <input name="funding_source" class="aa-input" required />
+          <div class="aa-field-error">This field is required</div>
+        </div>
+        <div class="aa-field">
+          <label>Name of person reporting <span class="req">*</span></label>
+          <input name="reporting_person" class="aa-input" required value="{{ reporter_name or '' }}" />
+          <div class="aa-field-error">This field is required</div>
+        </div>
+        <div class="aa-field">
+          <label>Email address <span class="req">*</span></label>
+          <input type="email" name="reporter_email" class="aa-input" required value="{{ reporter_email or '' }}" />
+          <div class="aa-field-error">Please enter a valid email</div>
+        </div>
+        <div class="aa-field">
+          <label>Phone number</label>
+          <div class="aa-field-hint">Format: 254700000000</div>
+          <input type="tel" name="reporter_phone_number" class="aa-input" placeholder="254700000000" value="{{ reporter_phone or '' }}" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Hazard -->
+  <div class="aa-section">
+    <div class="aa-section-header">
+      <span class="aa-section-num">2</span>
+      <h2>Hazard &amp; Anticipatory Actions</h2>
+    </div>
+    <div class="aa-section-body">
+      <div class="aa-grid-2">
+        <div class="aa-field">
+          <label>Type of hazard being anticipated <span class="req">*</span></label>
+          <select name="anticipated_hazard" class="aa-input" required data-meta="anticipated_hazard">
+            <option value="">Loading...</option>
+          </select>
+          <div class="aa-field-error">This field is required</div>
+        </div>
+        <div class="aa-field" id="f-other-hazard" style="display:none">
+          <label>If other, please specify</label>
+          <input name="other_anticipated_hazards" class="aa-input" />
+        </div>
+        <div class="aa-field">
+          <label>Did you have other implementing partners?</label>
+          <select name="implementing_partners" class="aa-input" data-meta="implementing_partners">
+            <option value="">Loading...</option>
+          </select>
+        </div>
+        <div class="aa-field" id="f-other-partners" style="display:none">
+          <label>List other implementing partners</label>
+          <textarea name="other_implementing_partners" class="aa-input aa-textarea" rows="3"></textarea>
+        </div>
+        <div class="aa-field">
+          <label>Date of AA activation <span class="req">*</span></label>
+          <input type="date" name="activation_start_date" class="aa-input" required />
+          <div class="aa-field-error">This field is required</div>
+        </div>
+        <div class="aa-field">
+          <label>Proposed end date</label>
+          <input type="date" name="activation_end_date" class="aa-input" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Action Details (child table) -->
+  <div class="aa-section">
+    <div class="aa-section-header">
+      <span class="aa-section-num">3</span>
+      <h2>Anticipatory Action Details</h2>
+    </div>
+    <div class="aa-section-body">
+      <div id="details-empty" class="aa-empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="3"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        <h4>No entries yet</h4>
+        <p>Click the button below to add an intervention detail.</p>
+      </div>
+      <div id="details-list" class="details-list"></div>
+      <button type="button" id="add-detail-btn" class="aa-btn-outline">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Intervention Detail
+      </button>
+    </div>
+  </div>
+
+  <!-- Section 4: Additional Details -->
+  <div class="aa-section">
+    <div class="aa-section-header">
+      <span class="aa-section-num">4</span>
+      <h2>Additional Information</h2>
+    </div>
+    <div class="aa-section-body">
+      <div class="aa-field">
+        <label>What triggers and thresholds did you use?</label>
+        <textarea name="triggers_and_thresholds" class="aa-input aa-textarea" rows="3"></textarea>
+      </div>
+      <div class="aa-field">
+        <label>Key lessons learnt</label>
+        <div class="aa-field-hint">Main take-aways, insights, or good practices from implementation</div>
+        <textarea name="lessons_learnt" class="aa-input aa-textarea" rows="3"></textarea>
+      </div>
+      <div class="aa-field">
+        <label>Challenges faced</label>
+        <div class="aa-field-hint">Difficulties, barriers, or constraints encountered</div>
+        <textarea name="challenges" class="aa-input aa-textarea" rows="3"></textarea>
+      </div>
+      <div class="aa-field">
+        <label>Recommendations for future actions</label>
+        <div class="aa-field-hint">Suggest ways to improve anticipatory actions in the future</div>
+        <textarea name="recommendations" class="aa-input aa-textarea" rows="3"></textarea>
+      </div>
+      <div class="aa-field">
+        <label>Upload supporting materials (optional)</label>
+        <div class="aa-field-hint">PDF, image or document - optional</div>
+
+        <div class="aa-file">
+          <input type="file" id="aa-attachment" name="aa_attachment" />
+          <label for="aa-attachment" class="aa-file-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span id="aa-file-btn-label">Choose file</span>
+          </label>
+          <span id="aa-file-name" class="aa-file-name empty">No file chosen</span>
+          <button type="button" id="aa-file-clear" class="aa-file-clear" title="Remove selected file" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="aa-field" style="margin-top:8px">
+        <label class="aa-check-wrap">
+          <input type="checkbox" name="email_me_a_copy" class="aa-checkbox" value="1" />
+          Email me a copy of this submission
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="aa-submit-row">
+    <button type="submit" id="submit-btn" class="aa-btn-primary">
+      Submit Test Entry
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </button>
+  </div>
+</form>
+
+<!-- -- Form footer -- -->
+<div style="text-align:center;padding:24px 0 8px;font-size:13px;color:#9CA3AF;letter-spacing:0.02em;">
+  Made by <strong style="color:#6B7280">Kenya Red Cross Digital Transformation</strong>
+</div>
+
+<!-- -- Success state -- -->
+<div class="aa-success" id="aa-success">
+  <div class="aa-success-icon">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2.5">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+  <h2>Test submission received</h2>
+  <p>This was recorded as TEST data only - it does not appear in real metrics or the dashboard.</p>
+  <p class="ref">Reference: <strong id="success-ref"></strong></p>
+  <br/>
+  <a href="/anticipatory-action-test" class="aa-btn-outline" style="margin-top:8px;display:inline-flex">Submit another test &rarr;</a>
+</div>
+
+<!-- -- Detail modal -- -->
+<div class="aa-overlay" id="detail-overlay">
+  <div class="aa-modal" id="detail-modal">
+    <div class="aa-modal-head">
+      <h3 id="modal-title">Add Intervention Detail</h3>
+      <button type="button" class="aa-modal-close" id="modal-close">&times;</button>
+    </div>
+    <div class="aa-modal-body" id="modal-body">
+
+      <!-- Location section -->
+      <div class="aa-modal-section">
+        <div class="aa-modal-section-title">Location</div>
+        <div class="aa-field">
+          <label class="aa-check-wrap" style="margin-bottom:12px">
+            <input type="checkbox" id="m-subcounty-level" class="aa-checkbox" />
+            <span style="font-size:13px;font-weight:500;color:#374151">Reporting at sub-county level?</span>
+          </label>
+        </div>
+        <div class="aa-col-2">
+          <div class="aa-field">
+            <label>County <span class="req">*</span></label>
+            <select id="m-county" class="aa-input" data-meta="county">
+              <option value="">Loading...</option>
+            </select>
+            <div class="aa-field-error">County is required</div>
+          </div>
+          <div class="aa-field" id="m-subcounty-wrap" style="display:none">
+            <label>Sub-county</label>
+            <input id="m-subcounty" class="aa-input" placeholder="Enter sub-county" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sector section -->
+      <div class="aa-modal-section">
+        <div class="aa-modal-section-title">Sector &amp; Anticipatory Actions</div>
+        <div class="aa-field">
+          <label>AA Cluster / Sector <span class="req">*</span></label>
+          <select id="m-sector" class="aa-input" data-meta="sector">
+            <option value="">Loading...</option>
+          </select>
+          <div class="aa-field-error">Sector is required</div>
+        </div>
+        <div class="aa-col-2">
+          <div class="aa-field" id="m-livestock-wrap" style="display:none">
+            <label>Number of livestock targeted</label>
+            <input type="number" id="m-livestock" class="aa-input" min="0" />
+          </div>
+          <div class="aa-field" id="m-wildlife-wrap" style="display:none">
+            <label>Number of wildlife targeted</label>
+            <input type="number" id="m-wildlife" class="aa-input" min="0" />
+          </div>
+        </div>
+        <div class="aa-field">
+          <label>Amount allocated for this AA sector (KES) <span class="req">*</span></label>
+          <input type="number" id="m-amount" class="aa-input" min="0" step="any" />
+          <div class="aa-field-error">Amount is required</div>
+        </div>
+      </div>
+
+      <!-- Intervention section -->
+      <div class="aa-modal-section">
+        <div class="aa-modal-section-title">Intervention</div>
+        <div class="aa-field">
+          <label>Describe the anticipatory action intervention <span class="req">*</span></label>
+          <textarea id="m-intervention" class="aa-input aa-textarea" rows="3" placeholder="Describe the intervention within this sector"></textarea>
+          <div class="aa-field-error">Description is required</div>
+        </div>
+        <div class="aa-field">
+          <label>Status of early action</label>
+          <select id="m-status" class="aa-input" data-meta="status_of_the_early_action">
+            <option value="">Loading...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Targeting section -->
+      <div class="aa-modal-section">
+        <div class="aa-modal-section-title">Targeting</div>
+        <div class="aa-col-2">
+          <div class="aa-field">
+            <label>People to be reached / targeted <span class="req">*</span></label>
+            <input type="number" id="m-people" class="aa-input" min="0" />
+            <div class="aa-field-error">Required</div>
+          </div>
+          <div class="aa-field">
+            <label>Households (HHs) targeted</label>
+            <input type="number" id="m-hh" class="aa-input" min="0" />
+          </div>
+          <div class="aa-field">
+            <label>Males targeted</label>
+            <input type="number" id="m-males" class="aa-input" min="0" />
+          </div>
+          <div class="aa-field">
+            <label>Females targeted</label>
+            <input type="number" id="m-females" class="aa-input" min="0" />
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+    <div class="aa-modal-foot">
+      <button type="button" class="aa-btn-cancel" id="modal-cancel">Cancel</button>
+      <button type="button" class="aa-btn-save" id="modal-save">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Save Entry
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+(function () {
+  'use strict';
+
+  // -- State ------------------------------------------------------------------
+  const details = [];        // array of row objects
+  let editingIdx = null;     // null = new row, number = editing existing
+
+  // -- DOM refs ---------------------------------------------------------------
+  const form         = document.getElementById('aa-form');
+  const detailsList  = document.getElementById('details-list');
+  const detailsEmpty = document.getElementById('details-empty');
+  const addBtn       = document.getElementById('add-detail-btn');
+  const submitBtn    = document.getElementById('submit-btn');
+  const successBox   = document.getElementById('aa-success');
+  const successRef   = document.getElementById('success-ref');
+
+  const overlay      = document.getElementById('detail-overlay');
+  const modalTitle   = document.getElementById('modal-title');
+  const modalClose   = document.getElementById('modal-close');
+  const modalCancel  = document.getElementById('modal-cancel');
+  const modalSave    = document.getElementById('modal-save');
+
+  // attachment
+  const attachInput    = document.getElementById('aa-attachment');
+  const attachFileName = document.getElementById('aa-file-name');
+  const attachBtnLabel = document.getElementById('aa-file-btn-label');
+  const attachClear    = document.getElementById('aa-file-clear');
+
+  // Reflect the picked file's name beside the "Choose file" button; clear button removes it.
+  function refreshAttachmentName() {
+    var file = attachInput && attachInput.files && attachInput.files[0];
+    if (file) {
+      attachFileName.textContent = file.name;
+      attachFileName.classList.remove('empty');
+      if (attachBtnLabel) attachBtnLabel.textContent = 'Change file';
+      if (attachClear) attachClear.style.display = '';
+    } else {
+      attachFileName.textContent = 'No file chosen';
+      attachFileName.classList.add('empty');
+      if (attachBtnLabel) attachBtnLabel.textContent = 'Choose file';
+      if (attachClear) attachClear.style.display = 'none';
+    }
+  }
+  if (attachInput) attachInput.addEventListener('change', refreshAttachmentName);
+  if (attachClear) attachClear.addEventListener('click', function () {
+    if (attachInput) attachInput.value = '';
+    refreshAttachmentName();
+  });
+
+  // modal fields
+  const mSubcountyLevel = document.getElementById('m-subcounty-level');
+  const mSubcountyWrap  = document.getElementById('m-subcounty-wrap');
+  const mSubcounty      = document.getElementById('m-subcounty');
+  const mCounty         = document.getElementById('m-county');
+  const mSector         = document.getElementById('m-sector');
+  const mLivestockWrap  = document.getElementById('m-livestock-wrap');
+  const mWildlifeWrap   = document.getElementById('m-wildlife-wrap');
+  const mLivestock      = document.getElementById('m-livestock');
+  const mWildlife       = document.getElementById('m-wildlife');
+  const mAmount         = document.getElementById('m-amount');
+  const mIntervention   = document.getElementById('m-intervention');
+  const mStatus         = document.getElementById('m-status');
+  const mPeople         = document.getElementById('m-people');
+  const mHH             = document.getElementById('m-hh');
+  const mMales          = document.getElementById('m-males');
+  const mFemales        = document.getElementById('m-females');
+
+  // -- Load select options from doctype metadata -----------------------------
+  function populateSelect(el, options, placeholder) {
+    var current = el.value;
+    el.innerHTML = '<option value="">' + (placeholder || 'Select...') + '</option>';
+    options.forEach(function (opt) {
+      var o = document.createElement('option');
+      o.value = opt;
+      o.textContent = opt;
+      el.appendChild(o);
+    });
+    if (current) el.value = current;
+  }
+
+  frappe.ready(function () {
+    frappe.call({
+      method: 'anticipatory_action.api.anticipatory_action.get_form_meta',
+      callback: function (r) {
+        var meta = r.message;
+        if (!meta || !meta.success) return;
+
+        var placeholders = {
+          entity_or_organization_type: 'Select type...',
+          anticipated_hazard:          'Select hazard...',
+          implementing_partners:       'Select...',
+          county:                      'Select county...',
+          sector:                      'Select sector...',
+          status_of_the_early_action:  'Select status...',
+        };
+
+        document.querySelectorAll('[data-meta]').forEach(function (el) {
+          var key = el.getAttribute('data-meta');
+          var opts = meta[key];
+          if (!opts) return;
+          populateSelect(el, opts, placeholders[key]);
+        });
+      }
+    });
+  });
+
+  // -- Conditional visibility on main form -----------------------------------
+  document.querySelector('[name="entity_or_organization_type"]').addEventListener('change', function () {
+    document.getElementById('f-other-org').style.display = this.value === 'Other' ? '' : 'none';
+  });
+  document.querySelector('[name="anticipated_hazard"]').addEventListener('change', function () {
+    document.getElementById('f-other-hazard').style.display = this.value === 'Other' ? '' : 'none';
+  });
+  document.querySelector('[name="implementing_partners"]').addEventListener('change', function () {
+    document.getElementById('f-other-partners').style.display = this.value === 'Yes' ? '' : 'none';
+  });
+
+  // -- Modal conditional visibility ------------------------------------------
+  mSubcountyLevel.addEventListener('change', function () {
+    mSubcountyWrap.style.display = this.checked ? '' : 'none';
+  });
+  mSector.addEventListener('change', function () {
+    mLivestockWrap.style.display = this.value === 'Animal Resources - Livestock' ? '' : 'none';
+    mWildlifeWrap.style.display  = this.value === 'Animal Resources - Wildlife'  ? '' : 'none';
+  });
+
+  // -- Open modal -------------------------------------------------------------
+  function openModal(idx) {
+    editingIdx = idx;
+    const row = idx !== null ? details[idx] : {};
+
+    modalTitle.textContent = idx !== null
+      ? `Edit: ${row.county || 'Entry'}`
+      : 'Add Intervention Detail';
+
+    // Populate fields
+    mSubcountyLevel.checked   = !!row.subcounty_level;
+    mSubcountyWrap.style.display = row.subcounty_level ? '' : 'none';
+    mSubcounty.value          = row.subcounty || '';
+    mCounty.value             = row.county || '';
+    mSector.value             = row.sector || '';
+    mLivestockWrap.style.display = row.sector === 'Animal Resources - Livestock' ? '' : 'none';
+    mWildlifeWrap.style.display  = row.sector === 'Animal Resources - Wildlife'  ? '' : 'none';
+    mLivestock.value          = row.number_of_livestock_targeted || '';
+    mWildlife.value           = row.number_of_wildlife_targeted  || '';
+    mAmount.value             = row.amount_for_anticipatory_action_kes || '';
+    mIntervention.value       = row.describe_the_anticipatory_action_intervention || '';
+    mStatus.value             = row.status_of_the_early_action || 'Planned';
+    mPeople.value             = row.number_of_people_targeted  || '';
+    mHH.value                 = row.number_of_hh_targeted      || '';
+    mMales.value              = row.number_of_males_targeted   || '';
+    mFemales.value            = row.number_of_females_targeted || '';
+
+    // Clear errors
+    overlay.querySelectorAll('.aa-field-error').forEach(e => { e.style.display = 'none'; });
+    overlay.querySelectorAll('.aa-input').forEach(i => i.classList.remove('error'));
+
+    overlay.classList.add('open');
+    setTimeout(() => mCounty.focus(), 100);
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    editingIdx = null;
+  }
+
+  addBtn.addEventListener('click', () => openModal(null));
+  modalClose.addEventListener('click', closeModal);
+  modalCancel.addEventListener('click', closeModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+  // -- Save modal row ---------------------------------------------------------
+  modalSave.addEventListener('click', function () {
+    let valid = true;
+
+    function require(el, errorEl) {
+      if (!el.value.trim()) {
+        el.classList.add('error');
+        errorEl.style.display = 'block';
+        valid = false;
+      } else {
+        el.classList.remove('error');
+        errorEl.style.display = 'none';
+      }
+    }
+
+    require(mCounty,       mCounty.nextElementSibling);
+    require(mSector,       mSector.nextElementSibling);
+    require(mAmount,       mAmount.nextElementSibling);
+    require(mIntervention, mIntervention.nextElementSibling);
+    require(mPeople,       mPeople.nextElementSibling);
+
+    if (!valid) return;
+
+    const row = {
+      subcounty_level:                          mSubcountyLevel.checked ? 1 : 0,
+      county:                                   mCounty.value,
+      subcounty:                                mSubcounty.value,
+      sector:                                   mSector.value,
+      number_of_livestock_targeted:             mLivestock.value ? parseInt(mLivestock.value) : null,
+      number_of_wildlife_targeted:              mWildlife.value  ? parseInt(mWildlife.value)  : null,
+      amount_for_anticipatory_action_kes:       parseFloat(mAmount.value) || 0,
+      describe_the_anticipatory_action_intervention: mIntervention.value,
+      status_of_the_early_action:               mStatus.value,
+      number_of_people_targeted:                parseInt(mPeople.value)  || 0,
+      number_of_hh_targeted:                    mHH.value    ? parseInt(mHH.value)    : null,
+      number_of_males_targeted:                 mMales.value ? parseInt(mMales.value) : null,
+      number_of_females_targeted:               mFemales.value || '',
+    };
+
+    if (editingIdx !== null) {
+      details[editingIdx] = row;
+    } else {
+      details.push(row);
+    }
+
+    renderDetails();
+    closeModal();
+  });
+
+  // -- Render detail cards ----------------------------------------------------
+  function renderDetails() {
+    detailsEmpty.style.display = details.length ? 'none' : '';
+    detailsList.innerHTML = '';
+
+    details.forEach((row, idx) => {
+      const statusClass = row.status_of_the_early_action === 'Complete' ? 'dc-complete'
+        : row.status_of_the_early_action === 'Ongoing' ? 'dc-ongoing' : 'dc-planned';
+
+      const fmtKES = v => v ? 'KES ' + Number(v).toLocaleString('en-KE') : '';
+      const fmtN   = v => v ? Number(v).toLocaleString('en-KE') : null;
+      const subcounty = row.subcounty ? ` · ${row.subcounty}` : '';
+      const desc = (row.describe_the_anticipatory_action_intervention || '');
+      const truncDesc = desc.length > 80 ? desc.slice(0, 80) + '…' : desc;
+
+      const card = document.createElement('div');
+      card.className = 'detail-card';
+      card.innerHTML = `
+        <div class="detail-card-main">
+          <div class="detail-card-location">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            <strong>${row.county}</strong>${subcounty}
+          </div>
+          <div class="detail-card-sector">${row.sector}</div>
+          ${truncDesc ? `<div class="detail-card-desc">${truncDesc}</div>` : ''}
+        </div>
+        <div class="detail-card-meta">
+          ${fmtKES(row.amount_for_anticipatory_action_kes) ? `
+            <div class="dc-meta">
+              <span class="dc-meta-label">Budget</span>
+              <span class="dc-meta-value">${fmtKES(row.amount_for_anticipatory_action_kes)}</span>
+            </div>` : ''}
+          ${fmtN(row.number_of_people_targeted) ? `
+            <div class="dc-meta">
+              <span class="dc-meta-label">People</span>
+              <span class="dc-meta-value">${fmtN(row.number_of_people_targeted)}</span>
+            </div>` : ''}
+          <span class="dc-status ${statusClass}">${row.status_of_the_early_action || 'Planned'}</span>
+          <button type="button" class="dc-delete" data-idx="${idx}" title="Remove">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+          </button>
+        </div>
+      `;
+
+      // Click card body to edit
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('.dc-delete')) return;
+        openModal(idx);
+      });
+
+      // Delete button
+      card.querySelector('.dc-delete').addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (confirm('Remove this entry?')) {
+          details.splice(idx, 1);
+          renderDetails();
+        }
+      });
+
+      detailsList.appendChild(card);
+    });
+  }
+
+  // -- Validation -------------------------------------------------------------
+  function validateForm() {
+    let valid = true;
+    form.querySelectorAll('[required]').forEach(function (el) {
+      const err = el.nextElementSibling;
+      if (!el.value.trim()) {
+        el.classList.add('error');
+        if (err && err.classList.contains('aa-field-error')) err.style.display = 'block';
+        if (valid) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          valid = false;
+        }
+      } else {
+        el.classList.remove('error');
+        if (err && err.classList.contains('aa-field-error')) err.style.display = 'none';
+      }
+    });
+    return valid;
+  }
+
+  // -- Build the submission data object (parent fields + details array) -------
+  function buildDataObj() {
+    const fd = new FormData(form);
+    const data = {};
+    for (const [k, v] of fd.entries()) {
+      if (k === 'aa_attachment') continue;        // file handled separately
+      if (k === 'email_me_a_copy') { data[k] = 1; continue; }
+      data[k] = v;
+    }
+    if (!data.email_me_a_copy) data.email_me_a_copy = 0;
+    data.anticipatory_action_details = details;
+    return data;
+  }
+
+  // -- Upload the selected file (if any) and return its file_url --------------
+  // Resolves to the uploaded URL or ''.
+  function uploadAttachment() {
+    const file = attachInput && attachInput.files && attachInput.files[0];
+    if (!file) return Promise.resolve('');
+
+    const upFd = new FormData();
+    upFd.append('file', file);
+    upFd.append('is_private', 0);
+    upFd.append('folder', 'Home/Attachments');
+
+    const headers = {};
+    if (window.frappe && frappe.csrf_token) headers['X-Frappe-CSRF-Token'] = frappe.csrf_token;
+
+    return fetch('/api/method/upload_file', {
+      method: 'POST',
+      headers: headers,
+      body: upFd
+    }).then(function (resp) {
+      return resp.json();
+    }).then(function (json) {
+      const url = json && json.message && json.message.file_url;
+      if (!url) throw new Error('upload failed');
+      return url;
+    });
+  }
+
+  function setSubmittingState() {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        style="animation:spin 0.8s linear infinite">
+        <path d="M21 12a9 9 0 11-6.219-8.56"/>
+      </svg>
+      Submitting...`;
+  }
+
+  function resetSubmitButton(label) {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = label + ' <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+  }
+
+  function showSuccess(refName) {
+    form.reset();
+    details.length = 0;
+    renderDetails();
+    if (attachInput) attachInput.value = '';
+    refreshAttachmentName();
+
+    form.style.display = 'none';
+    successBox.style.display = 'block';
+    if (refName) successRef.textContent = refName;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Replace this history entry so the back button skips the filled form
+    history.replaceState(null, '', window.location.href);
+  }
+
+  // -- Form submission --------------------------------------------------------
+  // The test form has no account step and no edit mode: it validates the
+  // fields and always posts to the dedicated TEST endpoint, for anyone.
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setSubmittingState();
+
+    uploadAttachment().then(function (fileUrl) {
+      const data = buildDataObj();
+      if (fileUrl) data.supporting_materials = fileUrl;
+
+      frappe.call({
+        method: 'anticipatory_action.api.anticipatory_action.submit_test_application',
+        headers: { 'X-Frappe-CSRF-Token': (window.frappe && frappe.csrf_token) || 'Guest' },
+        args: { data: JSON.stringify(data) },
+        callback: function (r) {
+          const res = r.message;
+          if (res && res.success) {
+            showSuccess(res.name);
+          } else {
+            resetSubmitButton('Submit Test Entry');
+            frappe.msgprint({
+              title: 'Test Submission Failed',
+              message: (res && res.error) || 'An unexpected error occurred. Please try again.',
+              indicator: 'red'
+            });
+          }
+        },
+        error: function () {
+          resetSubmitButton('Submit Test Entry');
+          frappe.msgprint({ title: 'Error', message: 'Could not connect to the server. Please check your connection and try again.', indicator: 'red' });
+        }
+      });
+    }).catch(function () {
+      resetSubmitButton('Submit Test Entry');
+      frappe.msgprint({ title: 'Upload failed', message: 'Your supporting file could not be uploaded. Please try a different file or remove it.', indicator: 'red' });
+    });
+  });
+
+  // -- Reset on bfcache restore (back button) --------------------------------
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) {
+      form.reset();
+      details.length = 0;
+      renderDetails();
+      form.style.display = '';
+      successBox.style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  });
+
+  // -- Auto-open date pickers on click ---------------------------------------
+  document.querySelectorAll('input[type="date"]').forEach(function (el) {
+    el.addEventListener('click', function () { this.showPicker && this.showPicker(); });
+  });
+
+  // -- Spin animation ---------------------------------------------------------
+  const style = document.createElement('style');
+  style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+  document.head.appendChild(style);
+
+})();
+</script>
+{% endblock %}

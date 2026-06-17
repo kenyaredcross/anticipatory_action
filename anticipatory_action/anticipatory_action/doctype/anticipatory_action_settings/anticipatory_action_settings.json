@@ -1,0 +1,56 @@
+{
+ "actions": [],
+ "creation": "2026-06-17 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "testing_enabled",
+  "testing_note"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "description": "When on, the public Test / Dissemination form at /anticipatory-action-test is live and a Testing Environment button + Test Data widget appear in the admin console. Test submissions never count towards real metrics or the dashboard.",
+   "fieldname": "testing_enabled",
+   "fieldtype": "Check",
+   "label": "Testing / dissemination mode enabled"
+  },
+  {
+   "depends_on": "eval:doc.testing_enabled",
+   "fieldname": "testing_note",
+   "fieldtype": "Small Text",
+   "label": "Note shown on the test form"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-17 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Anticipatory Action",
+ "name": "Anticipatory Action Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Anticipatory Action Admin",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

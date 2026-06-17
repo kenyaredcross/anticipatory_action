@@ -29,7 +29,7 @@ def build_submission_pdf(doc):
 def _logo_data_uri():
 	"""Embed the NDOC logo inline so wkhtmltopdf never has to fetch it."""
 	try:
-		path = os.path.join(frappe.get_app_path("anticipatory_action"), "www", "NDOC.png")
+		path = os.path.join(frappe.get_app_path("anticipatory_action"), "www", "aadashboard.png")
 		with open(path, "rb") as f:
 			return "data:image/png;base64," + base64.b64encode(f.read()).decode()
 	except Exception:

@@ -28,15 +28,15 @@ def get_summary():
 			COUNT(DISTINCT NULLIF(d.county, ''))                  AS counties
 		FROM `tabAnticipatory Action Details` d
 		JOIN `tabAnticipatory Action` p ON d.parent = p.name
-		WHERE p.status = 'Approved'
+		WHERE p.status = 'Approved' AND (p.is_test = 0 OR p.is_test IS NULL)
 		""",
 		as_dict=True,
 	)
 	t = totals[0] if totals else {}
 
-	# Held guest-checkout submissions (awaiting account approval) are not yet part
-	# of the register, so they are excluded from the headline counts.
-	_live = {"awaiting_account": ["!=", 1]}
+	# Held guest-checkout submissions (awaiting account approval) and test/
+	# dissemination submissions are not part of the real register.
+	_live = {"awaiting_account": ["!=", 1], "is_test": ["!=", 1]}
 	data = {
 		"is_admin": is_admin,
 		"activations_total": frappe.db.count("Anticipatory Action", _live),
@@ -72,7 +72,7 @@ def _hazard_breakdown():
 			COALESCE(SUM(d.number_of_people_targeted), 0)             AS people
 		FROM `tabAnticipatory Action` p
 		LEFT JOIN `tabAnticipatory Action Details` d ON d.parent = p.name
-		WHERE p.status = 'Approved'
+		WHERE p.status = 'Approved' AND (p.is_test = 0 OR p.is_test IS NULL)
 		GROUP BY hazard
 		ORDER BY activations DESC, people DESC
 		""",
@@ -111,7 +111,7 @@ def get_situation():
 			COUNT(DISTINCT p.name)                                     AS activations
 		FROM `tabAnticipatory Action Details` d
 		JOIN `tabAnticipatory Action` p ON d.parent = p.name
-		WHERE p.status = 'Approved' AND IFNULL(d.county, '') != ''
+		WHERE p.status = 'Approved' AND (p.is_test = 0 OR p.is_test IS NULL) AND IFNULL(d.county, '') != ''
 		GROUP BY d.county, hazard, ea_status
 		ORDER BY d.county
 		""",
@@ -173,10 +173,17 @@ def get_situation():
 
 
 @frappe.whitelist()
-def get_activations(status=None, hazard=None, county=None):
-	"""Activation register with per-record people + funds aggregates."""
+def get_activations(status=None, hazard=None, county=None, test_only=0):
+	"""Activation register with per-record people + funds aggregates.
+
+	Real activations exclude test/dissemination submissions; pass test_only=1 to
+	get ONLY the test data (for the admin Test Data widget)."""
 	# Never surface submissions still held against a pending sign-up request.
 	conditions = ["(p.awaiting_account = 0 OR p.awaiting_account IS NULL)"]
+	if str(test_only) in ("1", "true", "True"):
+		conditions.append("p.is_test = 1")
+	else:
+		conditions.append("(p.is_test = 0 OR p.is_test IS NULL)")
 	values = {}
 	if status:
 		conditions.append("p.status = %(status)s")
