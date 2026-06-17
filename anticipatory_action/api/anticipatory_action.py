@@ -26,6 +26,7 @@ def submit_anticipatory_action(data):
 			"lessons_learnt": d.get("lessons_learnt"),
 			"challenges": d.get("challenges"),
 			"recommendations": d.get("recommendations"),
+			"supporting_materials": d.get("supporting_materials"),
 			"email_me_a_copy": d.get("email_me_a_copy", 0),
 			"anticipatory_action_details": [
 				{
@@ -95,6 +96,9 @@ def get_anticipatory_action_data(limit=100):
 
 		anticipatory_actions = frappe.db.get_all(
 			"Anticipatory Action",
+			# Power BI / dashboard feed: only approved (and therefore submitted)
+			# activations count towards the published metrics.
+			filters={"status": "Approved", "docstatus": 1},
 			fields=[
 				"name",
 				"implementing_organization", "entity_or_organization_type",
@@ -126,6 +130,51 @@ def get_anticipatory_action_data(limit=100):
 	except Exception as e:
 		frappe.log_error(frappe.get_traceback(), "get_anticipatory_action_data")
 		return {"success": False, "error": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_public_metrics():
+	"""Public, org-wide headline numbers for the encourage-submissions page.
+
+	Approved activations only: total approved submissions, funds committed (KES),
+	people targeted, counties reached and a per-hazard breakdown. Nothing here is
+	row-level sensitive, so it is safe for anonymous visitors."""
+	totals = frappe.db.sql(
+		"""
+		SELECT
+			COALESCE(SUM(d.number_of_people_targeted), 0)         AS people,
+			COALESCE(SUM(d.number_of_hh_targeted), 0)             AS households,
+			COALESCE(SUM(d.amount_for_anticipatory_action_kes),0) AS funds,
+			COUNT(DISTINCT NULLIF(d.county, ''))                  AS counties
+		FROM `tabAnticipatory Action Details` d
+		JOIN `tabAnticipatory Action` p ON d.parent = p.name
+		WHERE p.status = 'Approved'
+		""",
+		as_dict=True,
+	)
+	t = totals[0] if totals else {}
+
+	hazards = frappe.db.sql(
+		"""
+		SELECT COALESCE(NULLIF(p.anticipated_hazard,''),'Unspecified') AS hazard,
+			   COUNT(DISTINCT p.name) AS activations
+		FROM `tabAnticipatory Action` p
+		WHERE p.status = 'Approved'
+		GROUP BY hazard
+		ORDER BY activations DESC
+		""",
+		as_dict=True,
+	)
+
+	return {
+		"success": True,
+		"approved_submissions": frappe.db.count("Anticipatory Action", {"status": "Approved"}),
+		"funds_committed_kes": float(t.get("funds") or 0),
+		"people_targeted": int(t.get("people") or 0),
+		"counties_reached": int(t.get("counties") or 0),
+		"organizations": frappe.db.count("Anticipatory Action Organization"),
+		"hazards": [{"hazard": h.hazard, "activations": int(h.activations or 0)} for h in hazards],
+	}
 
 
 def _sanitize(data):

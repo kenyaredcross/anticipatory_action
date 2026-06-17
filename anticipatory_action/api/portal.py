@@ -62,9 +62,11 @@ def _constrain_role(role):
 
 
 def _can_set_role():
-	"""Only System Managers may decide a member's role; AA Admins cannot pick or
-	escalate it (everyone they create / approve becomes a plain member)."""
-	return "System Manager" in frappe.get_roles()
+	"""Who may decide a member's role. System Managers and AA Admins both can.
+	The value is always passed through ``_constrain_role`` so it can never be set
+	to anything outside the three AA roles (so never System Manager) — an AA Admin
+	can move someone between User / Approver / Admin but never escalate beyond AA."""
+	return bool({"System Manager", "Anticipatory Action Admin"} & set(frappe.get_roles()))
 
 
 def _foreign_roles(user):
@@ -136,7 +138,7 @@ _PARENT_FIELDS = (
 	"anticipated_hazard", "other_anticipated_hazards", "implementing_partners",
 	"other_implementing_partners", "activation_start_date", "activation_end_date",
 	"triggers_and_thresholds", "lessons_learnt", "challenges", "recommendations",
-	"email_me_a_copy",
+	"supporting_materials", "email_me_a_copy",
 )
 
 _DETAIL_FIELDS = (
@@ -166,9 +168,13 @@ def _detail_row(row):
 	}
 
 
+_EDITABLE_STATUSES = ("Pending", "Not Approved", "Replied")
+
+
 def _editable(doc):
-	"""A submission can still be changed while it is a Draft and not yet approved."""
-	return doc.docstatus == 0 and (doc.status or "Pending") in ("Pending", "Not Approved")
+	"""A submission can still be changed while it is a Draft and not yet approved.
+	'Replied' (the reviewer asked for more information) is editable too."""
+	return doc.docstatus == 0 and (doc.status or "Pending") in _EDITABLE_STATUSES
 
 
 @frappe.whitelist()
@@ -177,17 +183,21 @@ def get_my_submissions():
 	_require_login()
 	rows = frappe.get_all(
 		"Anticipatory Action",
-		filters={"owner": frappe.session.user},
+		# docstatus < 2 hides cancelled, superseded versions left behind by an
+		# update/amend — the live amendment (a fresh Draft) is what shows instead.
+		filters={"owner": frappe.session.user, "docstatus": ["<", 2]},
 		fields=[
 			"name", "implementing_organization", "anticipated_hazard",
 			"activation_start_date", "activation_end_date", "status",
-			"reason_for_rejection", "docstatus", "modified", "creation",
+			"reason_for_rejection", "info_request", "docstatus", "modified", "creation",
+			"amended_from", "is_update",
 		],
 		order_by="modified desc",
 		limit=200,
 	)
 	for r in rows:
-		r["can_edit"] = int(r.get("docstatus") == 0 and (r.get("status") or "Pending") in ("Pending", "Not Approved"))
+		r["can_edit"] = int(r.get("docstatus") == 0 and (r.get("status") or "Pending") in _EDITABLE_STATUSES)
+		r["can_update"] = int(r.get("docstatus") == 1 and (r.get("status") or "") == "Approved")
 		r["details"] = frappe.get_all(
 			"Anticipatory Action Details",
 			filters={"parent": r["name"]},
@@ -207,12 +217,90 @@ def get_my_submission(name):
 	data = {f: doc.get(f) for f in _PARENT_FIELDS}
 	data["name"] = doc.name
 	data["status"] = doc.status
+	data["info_request"] = doc.get("info_request")
+	data["reason_for_rejection"] = doc.get("reason_for_rejection")
+	data["amended_from"] = doc.get("amended_from")
+	data["is_update"] = int(doc.get("is_update") or 0)
 	data["can_edit"] = int(_editable(doc))
 	data["anticipatory_action_details"] = [
 		{f: row.get(f) for f in _DETAIL_FIELDS if f != "name"}
 		for row in doc.get("anticipatory_action_details", [])
 	]
 	return {"success": True, "data": _sanitize(data)}
+
+
+def _version_chain(name):
+	"""Walk the ``amended_from`` links back to the original submission and return
+	the whole history (oldest first) so a reporter can see every version they
+	filed when an approved submission was updated."""
+	chain = []
+	seen = set()
+	cur = name
+	while cur and cur not in seen:
+		seen.add(cur)
+		row = frappe.db.get_value(
+			"Anticipatory Action", cur,
+			["name", "status", "docstatus", "creation", "modified", "amended_from"],
+			as_dict=True,
+		)
+		if not row:
+			break
+		chain.append(row)
+		cur = row.get("amended_from")
+	chain.reverse()
+	for i, row in enumerate(chain, start=1):
+		row["version"] = i
+	return chain
+
+
+@frappe.whitelist()
+def get_my_submission_versions(name):
+	"""Version history (amendment chain) for one owned submission."""
+	_require_login()
+	doc = frappe.get_doc("Anticipatory Action", name)
+	if doc.owner != frappe.session.user and not _can_review():
+		frappe.throw("You can only view your own submissions.", frappe.PermissionError)
+	return {"success": True, "data": _version_chain(name)}
+
+
+@frappe.whitelist()
+def update_my_submission_start(name):
+	"""Begin an update of an APPROVED (submitted) submission.
+
+	Behind the scenes this cancels the locked, approved document and opens a fresh
+	editable Draft amendment that back-links to it via ``amended_from`` — so the
+	reporter keeps every previous version, and reviewers can see at a glance that
+	the new Draft is an update to a submission they had already approved. The
+	amendment re-enters the queue as Pending when the reporter saves it.
+	"""
+	_require_login()
+	doc = frappe.get_doc("Anticipatory Action", name)
+	if doc.owner != frappe.session.user:
+		frappe.throw("You can only update your own submissions.", frappe.PermissionError)
+	if doc.docstatus != 1 or (doc.status or "") != "Approved":
+		frappe.throw("Only an approved submission can be updated.")
+
+	# If an open amendment already exists, reuse it rather than cancelling twice.
+	existing = frappe.db.get_value(
+		"Anticipatory Action", {"amended_from": name, "docstatus": 0}, "name"
+	)
+	if existing:
+		return {"success": True, "name": existing}
+
+	doc.flags.ignore_permissions = True
+	doc.cancel()
+
+	amended = frappe.copy_doc(doc)
+	amended.amended_from = doc.name
+	amended.is_update = 1
+	amended.status = "Pending"
+	amended.reason_for_rejection = None
+	amended.info_request = None
+	amended.docstatus = 0
+	amended.flags.ignore_permissions = True
+	amended.insert()
+	frappe.db.commit()
+	return {"success": True, "name": amended.name}
 
 
 @frappe.whitelist()
@@ -234,8 +322,11 @@ def update_my_submission(name, data):
 	for row in (d.get("anticipatory_action_details") or []):
 		doc.append("anticipatory_action_details", _detail_row(row))
 
+	# Editing for any reason (revision after rejection, or answering a reviewer's
+	# request for more info) returns the submission to the review queue as Pending.
 	doc.status = "Pending"
 	doc.reason_for_rejection = None
+	doc.info_request = None
 	doc.flags.ignore_permissions = True
 	doc.save()
 	frappe.db.commit()
@@ -326,6 +417,34 @@ def update_my_profile(first_name=None, last_name=None, phone=None):
 		roster.flags.ignore_permissions = True
 		roster.save()
 
+	frappe.db.commit()
+	return {"success": True}
+
+
+@frappe.whitelist()
+def get_my_notifications():
+	"""Unread in-app alerts for the signed-in member (e.g. a role change). The
+	portal shows these as a popup, then calls mark_my_notifications_read."""
+	_require_login()
+	rows = frappe.get_all(
+		"Notification Log",
+		filters={"for_user": frappe.session.user, "read": 0, "type": "Alert"},
+		fields=["name", "subject", "email_content", "creation"],
+		order_by="creation desc",
+		limit=10,
+	)
+	return {"success": True, "data": rows}
+
+
+@frappe.whitelist()
+def mark_my_notifications_read(names=None):
+	"""Mark the member's alerts read once the portal has shown them."""
+	_require_login()
+	filters = {"for_user": frappe.session.user, "read": 0, "type": "Alert"}
+	targets = frappe.parse_json(names) if names else None
+	for n in (targets or frappe.get_all("Notification Log", filters=filters, pluck="name")):
+		with contextlib.suppress(Exception):
+			frappe.db.set_value("Notification Log", n, "read", 1, update_modified=False)
 	frappe.db.commit()
 	return {"success": True}
 
@@ -526,6 +645,22 @@ def set_aa_user_active(name, enabled):
 	return {"success": True, "enabled": enabled}
 
 
+@frappe.whitelist()
+def send_password_reset(name):
+	"""Admin-triggered password reset: email the member a fresh set-password link.
+	Works whether or not the roster has been linked to its User yet."""
+	_require_admin()
+	roster = _assert_is_aa_user(name)
+	target = roster.user or (roster.email if frappe.db.exists("User", roster.email) else None)
+	if not target:
+		frappe.throw("This member does not have a login account yet.")
+	with _elevated():
+		user = frappe.get_doc("User", target)
+		user.reset_password(send_email=True)
+	frappe.db.commit()
+	return {"success": True, "email": target}
+
+
 # ===========================================================================
 # ADMIN — SUBMISSIONS (approve / reject)
 # ===========================================================================
@@ -549,12 +684,16 @@ def get_submission(name):
 		"name": doc.name,
 		"status": doc.status,
 		"reason_for_rejection": doc.reason_for_rejection,
+		"info_request": doc.get("info_request"),
 		"docstatus": doc.docstatus,
 		"supporting_materials": doc.get("supporting_materials"),
+		"amended_from": doc.get("amended_from"),
+		"is_update": int(doc.get("is_update") or 0),
 		"owner": doc.owner,
 		"creation": str(doc.creation),
 		"modified": str(doc.modified),
 	})
+	data["versions"] = _version_chain(doc.name)
 	data["anticipatory_action_details"] = [
 		{f: row.get(f) for f in _DETAIL_FIELDS} for row in doc.get("anticipatory_action_details", [])
 	]
@@ -563,28 +702,42 @@ def get_submission(name):
 
 @frappe.whitelist()
 def set_submission_status(name, status, reason=None):
-	"""Approve (submit + lock), reject (keep editable for revision), or reset."""
+	"""Reviewer decision on a submission:
+
+	* Approved      -> submit + lock the document.
+	* Not Approved  -> keep editable; a rejection reason is required.
+	* Replied       -> ask the reporter for more information; keep editable. The
+	                   message is required and shown to the reporter, who answers
+	                   by editing and saving, which flips it back to Pending.
+	* Pending       -> reset to the queue.
+	"""
 	_require_approver()
-	if status not in ("Pending", "Approved", "Not Approved"):
+	if status not in ("Pending", "Approved", "Not Approved", "Replied"):
 		frappe.throw("Invalid status.")
 	if status == "Not Approved" and not (reason or "").strip():
 		frappe.throw("Please provide a reason for rejection.")
+	if status == "Replied" and not (reason or "").strip():
+		frappe.throw("Please describe the information you need from the reporter.")
 
 	doc = frappe.get_doc("Anticipatory Action", name)
 	doc.flags.ignore_permissions = True
 	reason_val = reason if status == "Not Approved" else None
+	info_val = reason if status == "Replied" else None
 
 	if doc.docstatus == 1:
-		# Legacy already-submitted docs: status / reason are the only mutable bits.
+		# Already-submitted docs: status / reason are the only mutable bits.
 		doc.db_set("status", status)
 		doc.db_set("reason_for_rejection", reason_val)
+		doc.db_set("info_request", info_val)
 	elif status == "Approved":
 		doc.status = "Approved"
 		doc.reason_for_rejection = None
+		doc.info_request = None
 		doc.submit()
 	else:
 		doc.status = status
 		doc.reason_for_rejection = reason_val
+		doc.info_request = info_val
 		doc.save()
 
 	frappe.db.commit()
@@ -610,7 +763,8 @@ def list_reports():
 	rows = frappe.get_all(
 		"Anticipatory Report",
 		fields=["name", "year", "month", "title", "description", "category", "source",
-				"key_words", "link", "attachment", "published"],
+				"key_words", "link", "attachment", "published", "visibility",
+				"uploaded_by", "removed", "removal_reason", "owner"],
 		order_by="year desc, modified desc",
 		limit=1000,
 	)
@@ -623,19 +777,29 @@ def get_report(name):
 	return {"success": True, "data": frappe.get_doc("Anticipatory Report", name).as_dict()}
 
 
+def _norm_visibility(v):
+	v = (v or "Public").strip().title()
+	return v if v in ("Public", "Private") else "Public"
+
+
 @frappe.whitelist()
 def add_report(title, year=None, month=None, description=None, category=None,
-			   source=None, key_words=None, link=None, attachment=None, published=1):
+			   source=None, key_words=None, link=None, attachment=None, published=1,
+			   visibility=None):
 	_require_approver()
 	if not (title or "").strip():
 		frappe.throw("Report title is required.")
 	if category and category not in ("Report", "Workshop Report"):
 		frappe.throw("Invalid category.")
+	visibility = _norm_visibility(visibility)
 	doc = frappe.get_doc({
 		"doctype": "Anticipatory Report",
 		"title": title, "year": year or None, "month": month, "description": description,
 		"category": category or "Report", "source": source, "key_words": key_words,
-		"link": link, "attachment": attachment, "published": _as_bool(published),
+		"link": link, "attachment": attachment, "visibility": visibility,
+		# 'Published' means "visible on the public website" — Private reports are
+		# portal-only, so they are never published to the website.
+		"published": _as_bool(published) if visibility == "Public" else 0,
 	})
 	doc.flags.ignore_permissions = True
 	doc.insert()
@@ -645,7 +809,8 @@ def add_report(title, year=None, month=None, description=None, category=None,
 
 @frappe.whitelist()
 def update_report(name, title=None, year=None, month=None, description=None, category=None,
-				  source=None, key_words=None, link=None, attachment=None, published=None):
+				  source=None, key_words=None, link=None, attachment=None, published=None,
+				  visibility=None):
 	_require_approver()
 	if category and category not in ("Report", "Workshop Report"):
 		frappe.throw("Invalid category.")
@@ -655,8 +820,34 @@ def update_report(name, title=None, year=None, month=None, description=None, cat
 						 ("link", link), ("attachment", attachment)):
 		if value is not None:
 			doc.set(field, value)
+	if visibility is not None:
+		doc.visibility = _norm_visibility(visibility)
 	if published is not None:
 		doc.published = _as_bool(published)
+	# A Private report is never on the public website.
+	if doc.visibility == "Private":
+		doc.published = 0
+	doc.flags.ignore_permissions = True
+	doc.save()
+	frappe.db.commit()
+	return {"success": True}
+
+
+@frappe.whitelist()
+def remove_report(name, reason=None):
+	"""Reviewer takes a report down. A reason is required (reviewers review and
+	remove member content, they do not silently edit it). The record is kept,
+	marked removed, and hidden everywhere."""
+	_require_approver()
+	reason = (reason or "").strip()
+	if not reason:
+		frappe.throw("Please provide a reason for removing this report.")
+	if not frappe.db.exists("Anticipatory Report", name):
+		frappe.throw("Unknown report.")
+	doc = frappe.get_doc("Anticipatory Report", name)
+	doc.removed = 1
+	doc.removal_reason = reason
+	doc.published = 0
 	doc.flags.ignore_permissions = True
 	doc.save()
 	frappe.db.commit()
@@ -668,6 +859,63 @@ def delete_report(name):
 	_require_approver()
 	if not frappe.db.exists("Anticipatory Report", name):
 		frappe.throw("Unknown report.")
+	frappe.delete_doc("Anticipatory Report", name, ignore_permissions=True)
+	frappe.db.commit()
+	return {"success": True}
+
+
+# ---- member-uploaded reports (portal self-service) ----
+
+@frappe.whitelist()
+def list_my_reports():
+	"""Reports the signed-in member uploaded themselves."""
+	_require_login()
+	rows = frappe.get_all(
+		"Anticipatory Report",
+		filters={"uploaded_by": frappe.session.user},
+		fields=["name", "title", "description", "category", "source", "key_words",
+				"link", "attachment", "visibility", "published", "removed",
+				"removal_reason", "year", "month", "creation"],
+		order_by="creation desc",
+		limit=500,
+	)
+	return {"success": True, "data": rows}
+
+
+@frappe.whitelist()
+def submit_my_report(title, description=None, category=None, source=None,
+					 key_words=None, link=None, attachment=None, visibility="Private"):
+	"""A member uploads a report. They choose Public (also shown on the public
+	website) or Private (only visible inside the portal)."""
+	_require_login()
+	if not (title or "").strip():
+		frappe.throw("Report title is required.")
+	if not (link or attachment):
+		frappe.throw("Please provide a link or upload a file.")
+	if category and category not in ("Report", "Workshop Report"):
+		frappe.throw("Invalid category.")
+	visibility = _norm_visibility(visibility)
+	doc = frappe.get_doc({
+		"doctype": "Anticipatory Report",
+		"title": title, "description": description, "category": category or "Report",
+		"source": source, "key_words": key_words, "link": link, "attachment": attachment,
+		"visibility": visibility,
+		"published": 1 if visibility == "Public" else 0,
+		"uploaded_by": frappe.session.user,
+	})
+	doc.flags.ignore_permissions = True
+	doc.insert()
+	frappe.db.commit()
+	return {"success": True, "name": doc.name}
+
+
+@frappe.whitelist()
+def delete_my_report(name):
+	"""A member removes their own uploaded report (only if a reviewer hasn't)."""
+	_require_login()
+	row = frappe.db.get_value("Anticipatory Report", name, ["uploaded_by", "removed"], as_dict=True)
+	if not row or row.uploaded_by != frappe.session.user:
+		frappe.throw("You can only remove your own reports.", frappe.PermissionError)
 	frappe.delete_doc("Anticipatory Report", name, ignore_permissions=True)
 	frappe.db.commit()
 	return {"success": True}
@@ -1018,6 +1266,86 @@ def submit_membership_request(first_name, last_name=None, email=None, phone=None
 		return {"success": False, "error": "Could not submit your request. Please try again."}
 
 
+@frappe.whitelist(allow_guest=True)
+def submit_contact(full_name=None, email=None, organization=None, phone=None, subject=None, message=None):
+	"""Public 'Contact us' form. Lives here (an importable module) rather than the
+	hyphenated www controller, whose dotted path cannot be imported by /api/method."""
+	from frappe.utils import validate_email_address
+
+	full_name = (full_name or "").strip()
+	email = (email or "").strip()
+	subject = (subject or "").strip()
+	message = (message or "").strip()
+	if not full_name or not email or not subject or not message:
+		return {"success": False, "error": "Please fill in your name, email, subject and message."}
+	if not validate_email_address(email):
+		return {"success": False, "error": "Please enter a valid email address."}
+	try:
+		doc = frappe.get_doc({
+			"doctype": "AA Contact Message",
+			"full_name": full_name, "email": email, "organization": organization,
+			"phone": phone, "subject": subject, "message": message, "status": "New",
+		})
+		doc.flags.ignore_permissions = True
+		doc.insert(ignore_permissions=True)
+		frappe.db.commit()
+		return {"success": True}
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "submit_contact")
+		return {"success": False, "error": "Could not send your message. Please try again."}
+
+
+@frappe.whitelist(allow_guest=True)
+def submit_guest_application(submission, account):
+	"""Guest checkout: a visitor fills the whole submission form, then provides
+	account details at the end. We create BOTH a Pending sign-up request and the
+	submission, link them, and hold the submission (``awaiting_account``) out of
+	the review queue until an admin approves the account — at which point
+	``approve_request`` releases it and re-assigns ownership to the new member."""
+	from frappe.utils import validate_email_address
+
+	from anticipatory_action.api.anticipatory_action import submit_anticipatory_action
+
+	acc = frappe.parse_json(account) if isinstance(account, str) else (account or {})
+	first_name = (acc.get("first_name") or "").strip()
+	email = (acc.get("email") or "").strip().lower()
+	if not first_name or not email:
+		return {"success": False, "error": "Your name and email are required to submit."}
+	if not validate_email_address(email):
+		return {"success": False, "error": "Please enter a valid email address."}
+	if frappe.db.exists("Anticipatory Action User", {"email": email}):
+		return {"success": False, "error": "An account already exists for this email — please sign in and submit from your portal."}
+
+	# 1) sign-up request (reuse the existing guarded path; tolerate duplicates).
+	req_result = submit_membership_request(
+		first_name=first_name, last_name=acc.get("last_name"), email=email,
+		phone=acc.get("phone"), organization=acc.get("organization"),
+		position=acc.get("position"), message=acc.get("message"),
+	)
+	req_name = req_result.get("name")
+	if not req_name and not req_result.get("duplicate"):
+		return req_result  # surfaced error
+	if not req_name:
+		req_name = frappe.db.get_value(
+			"AA Membership Request", {"email": email, "status": "Pending"}, "name"
+		)
+
+	# 2) the submission itself, stamped with the reporter's email and held.
+	sub = frappe.parse_json(submission) if isinstance(submission, str) else submission
+	if isinstance(sub, dict):
+		sub.setdefault("reporter_email", email)
+	sub_result = submit_anticipatory_action(frappe.as_json(sub))
+	if not sub_result.get("success"):
+		return sub_result
+	frappe.db.set_value("Anticipatory Action", sub_result["name"], {
+		"linked_request": req_name,
+		"awaiting_account": 1,
+		"reporter_email": email,
+	}, update_modified=False)
+	frappe.db.commit()
+	return {"success": True, "name": sub_result["name"], "request": req_name}
+
+
 @frappe.whitelist()
 def list_requests(status=None):
 	_require_admin()
@@ -1078,6 +1406,21 @@ def approve_request(name, organization, role=None, notes=None):
 	req.user = roster.user or email
 	req.flags.ignore_permissions = True
 	req.save()
+
+	# Release any submission held against this sign-up (guest-checkout flow):
+	# hand it to the new member and let it into the review queue.
+	new_owner = roster.user or email
+	for held in frappe.get_all(
+		"Anticipatory Action",
+		filters={"linked_request": req.name, "awaiting_account": 1},
+		pluck="name",
+	):
+		frappe.db.set_value("Anticipatory Action", held, {
+			"awaiting_account": 0,
+			"owner": new_owner,
+			"status": "Pending",
+		}, update_modified=False)
+
 	frappe.db.commit()
 	return {"success": True, "user": roster.user}
 
@@ -1124,7 +1467,7 @@ def _email_request_rejected(req, reason):
 		      <strong>Reason:</strong> {frappe.utils.escape_html(reason)}
 		    </div>
 		    <p style="margin:0;">If you believe this was in error or can provide more information,
-		    please reply to this email or contact <a href="mailto:info@ndoc.go.ke" style="color:#CC0000;">info@ndoc.go.ke</a>.</p>
+		    please reply to this email or contact <a href="mailto:aadashboard@ndoc.go.ke" style="color:#CC0000;">aadashboard@ndoc.go.ke</a>.</p>
 		  </div>
 		  <div style="border-top:1px solid #E5E7EB;padding:14px 32px;text-align:center;font-size:11px;color:#9CA3AF;">
 		    National Disaster Operations Centre &middot; Anticipatory Action Platform

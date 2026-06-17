@@ -34,10 +34,13 @@ def get_summary():
 	)
 	t = totals[0] if totals else {}
 
+	# Held guest-checkout submissions (awaiting account approval) are not yet part
+	# of the register, so they are excluded from the headline counts.
+	_live = {"awaiting_account": ["!=", 1]}
 	data = {
 		"is_admin": is_admin,
-		"activations_total": frappe.db.count("Anticipatory Action"),
-		"activations_pending": frappe.db.count("Anticipatory Action", {"status": "Pending"}),
+		"activations_total": frappe.db.count("Anticipatory Action", _live),
+		"activations_pending": frappe.db.count("Anticipatory Action", {"status": "Pending", **_live}),
 		"activations_approved": frappe.db.count("Anticipatory Action", {"status": "Approved"}),
 		"people_reached": int(t.get("people") or 0),
 		"households": int(t.get("households") or 0),
@@ -172,7 +175,8 @@ def get_situation():
 @frappe.whitelist()
 def get_activations(status=None, hazard=None, county=None):
 	"""Activation register with per-record people + funds aggregates."""
-	conditions = []
+	# Never surface submissions still held against a pending sign-up request.
+	conditions = ["(p.awaiting_account = 0 OR p.awaiting_account IS NULL)"]
 	values = {}
 	if status:
 		conditions.append("p.status = %(status)s")
@@ -199,6 +203,10 @@ def get_activations(status=None, hazard=None, county=None):
 			p.activation_start_date                       AS start_date,
 			p.activation_end_date                         AS end_date,
 			p.funding_source                              AS funding_source,
+			p.creation                                    AS submitted_on,
+			p.modified                                    AS modified,
+			p.is_update                                   AS is_update,
+			p.amended_from                                AS amended_from,
 			COALESCE(SUM(d.number_of_people_targeted), 0) AS people,
 			COALESCE(SUM(d.amount_for_anticipatory_action_kes), 0) AS funds,
 			GROUP_CONCAT(DISTINCT NULLIF(d.county, '')
@@ -252,10 +260,12 @@ def get_reports():
 	"""
 	library = []
 
+	# The portal is members-only, so it shows both Public and Private reports;
+	# only reviewer-removed ones are hidden.
 	for r in frappe.get_all(
 		"Anticipatory Report",
-		filters={"published": 1},
-		fields=["name", "title", "description", "category", "source", "key_words", "link", "attachment", "year", "month"],
+		filters={"removed": ["!=", 1]},
+		fields=["name", "title", "description", "category", "source", "key_words", "link", "attachment", "year", "month", "visibility"],
 		limit=500,
 	):
 		library.append(
@@ -270,6 +280,7 @@ def get_reports():
 				"url": r.link or r.attachment,
 				"year": r.year,
 				"month": r.month,
+				"visibility": r.visibility or "Public",
 				"sort": r.year or 0,
 			}
 		)

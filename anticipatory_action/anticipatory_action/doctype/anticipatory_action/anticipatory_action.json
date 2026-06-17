@@ -35,6 +35,10 @@
   "email_me_a_copy",
   "status",
   "reason_for_rejection",
+  "info_request",
+  "linked_request",
+  "awaiting_account",
+  "is_update",
   "amended_from"
  ],
  "fields": [
@@ -197,7 +201,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Pending\nApproved\nNot Approved"
+   "options": "Pending\nApproved\nNot Approved\nReplied"
   },
   {
    "allow_on_submit": 1,
@@ -206,6 +210,38 @@
    "fieldtype": "Small Text",
    "label": "Reason for rejection",
    "mandatory_depends_on": "eval:doc.status == \"Not Approved\""
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.status == \"Replied\"",
+   "description": "What the reviewer needs the reporter to clarify or update.",
+   "fieldname": "info_request",
+   "fieldtype": "Small Text",
+   "label": "Information requested"
+  },
+  {
+   "fieldname": "linked_request",
+   "fieldtype": "Link",
+   "label": "Linked sign-up request",
+   "no_copy": 1,
+   "options": "AA Membership Request",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "Held while the reporter's account request is pending approval.",
+   "fieldname": "awaiting_account",
+   "fieldtype": "Check",
+   "label": "Awaiting account approval",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_update",
+   "fieldtype": "Check",
+   "label": "Update to a previous submission",
+   "read_only": 1
   },
   {
    "fieldname": "amended_from",
