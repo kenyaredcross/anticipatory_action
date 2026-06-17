@@ -9,12 +9,36 @@
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
   <link rel="stylesheet" href="/aa-portal-ui.css" />
+  <style>
+    /* File / link affordances (Reports, Publications). No raw URLs as text. */
+    .file-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .file-chip {
+      display: inline-flex; align-items: center; gap: 6px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-weight: 600; font-size: 12px; color: var(--red); text-decoration: none;
+      border: 1px solid var(--line); background: var(--paper); padding: 5px 10px; white-space: nowrap;
+    }
+    .file-chip:hover { border-color: var(--red); background: var(--red-tint); }
+    .file-chip svg { color: var(--muted); flex-shrink: 0; }
+    .file-chip:hover svg { color: var(--red); }
+    /* Test / dissemination mode switch (amber accent). */
+    .test-switch {
+      position: relative; width: 42px; height: 22px; border-radius: 22px; border: none; cursor: pointer;
+      background: #C9C6BC; padding: 0; flex-shrink: 0; transition: background 0.18s ease;
+    }
+    .test-switch.on { background: #B45309; }
+    .test-knob {
+      position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.25); transition: left 0.18s ease;
+    }
+    .test-switch.on .test-knob { left: 23px; }
+    .test-switch:focus-visible { outline: 2px solid #B45309; outline-offset: 2px; }
+  </style>
 </head>
 <body class="portal">
 
 <header class="portal-bar">
   <a href="/aa-portal" class="pb-brand">
-    <img src="/NDOC.png" alt="NDOC" />
+    <img src="/ndoc-aa.jpg" alt="NDOC" />
     <div class="pb-name">Anticipatory Action<span>Admin Console</span></div>
   </a>
   <nav class="pb-links" id="pbLinks">
@@ -131,7 +155,7 @@
   <div class="review-foot" id="review-foot"></div>
 </div>
 
-<script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }}; window.AA_IS_ADMIN = {{ 1 if is_admin else 0 }}; window.AA_CAN_SET_ROLE = {{ 1 if can_set_role else 0 }};</script>
+<script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }}; window.AA_IS_ADMIN = {{ 1 if is_admin else 0 }}; window.AA_IS_APPROVER = {{ 1 if is_approver else 0 }}; window.AA_CAN_MANAGE = {{ 1 if can_manage_users else 0 }}; window.AA_CAN_SET_ROLE = {{ 1 if can_set_role else 0 }};</script>
 <script src="/aa-portal-ui.js"></script>
 <script>
 (function () {
@@ -139,7 +163,10 @@
   var P = 'anticipatory_action.api.portal.';
   var IS_SM = !!window.AA_IS_SM;  // System Manager
   var IS_ADMIN = !!window.AA_IS_ADMIN;  // full admin (users/orgs/sign-ups); approvers are false
+  var IS_APPROVER = !!window.AA_IS_APPROVER;  // approver (review only); admins are not flagged here
+  var CAN_MANAGE = !!window.AA_CAN_MANAGE;  // admins manage users/orgs/requests (editable widgets); approvers get read-only
   var CAN_SET_ROLE = !!window.AA_CAN_SET_ROLE;  // AA Admins and System Managers may set/change roles
+  var TESTING = { enabled: false, count: 0, can_toggle: false };
   var loaded = {};
   // Select options are loaded live from the server (get_admin_meta) so they
   // never drift from the doctype schema. These are just fallbacks.
@@ -261,6 +288,42 @@
   function tableHead(cols) { return '<div class="table-wrap"><table class="data"><thead><tr>' + cols.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>'; }
   function toolbar(html) { return '<div class="toolbar">' + html + '</div>'; }
 
+  // Reusable search box (matches the .search CSS). `id` is the input id.
+  function searchBox(id, placeholder, value) {
+    return '<div class="search">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+        '<input type="search" id="' + id + '" placeholder="' + AA.esc(placeholder || 'Search…') + '" value="' + AA.esc(value || '') + '" autocomplete="off" />' +
+      '</div>';
+  }
+
+  // Render a file/link affordance for reports & publications (icon + "Open file" / "Link"),
+  // never the raw URL as text. Returns '' when there is nothing to show.
+  function fileAffordance(attachmentUrl, linkUrl) {
+    var out = [];
+    if (attachmentUrl) {
+      out.push('<a class="file-chip" href="' + AA.esc(attachmentUrl) + '" target="_blank" rel="noopener" title="Open the attached file">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+        '<span>Open file</span></a>');
+    }
+    if (linkUrl) {
+      out.push('<a class="file-chip" href="' + AA.esc(linkUrl) + '" target="_blank" rel="noopener" title="Open the external link">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+        '<span>Link</span></a>');
+    }
+    return out.length ? '<div class="file-chips">' + out.join('') + '</div>' : '-';
+  }
+
+  // Wire a debounced input listener (used for the user search box).
+  function onDebounced(el, fn, ms) {
+    if (!el) return;
+    var t;
+    el.addEventListener('input', function () {
+      clearTimeout(t);
+      var self = this;
+      t = setTimeout(function () { fn(self.value); }, ms || 250);
+    });
+  }
+
   async function ensureOrgs() {
     if (orgCache.length) return orgCache;
     var r = await AA.call(P + 'list_organizations');
@@ -294,7 +357,9 @@
       attn.push(attnCard('messages', msgs, msgs === 1 ? 'Unread message' : 'Unread messages', 'Open inbox', msgs > 0));
 
       var needs = pend + reqs + msgs;
+      var showStrip = TESTING.can_toggle || TESTING.enabled;
       var html =
+        (showStrip ? testStripHTML() : '') +
         '<div class="ov-head"><h2 class="ov-hi">' + (needs > 0 ? 'A few things need your attention' : 'You’re all caught up') + '</h2>' +
           '<p class="ov-hs">' + (needs > 0 ? 'Jump straight to whatever needs a decision.' : 'Nothing is waiting in the queues right now.') + '</p></div>' +
         '<div class="ov-attn">' + attn.join('') + '</div>' +
@@ -321,28 +386,46 @@
           d.hazards.map(function (h) { return '<tr><td class="strong">' + AA.esc(h.hazard) + '</td><td>' + h.activations + '</td><td>' + AA.fmtNum(h.people) + '</td></tr>'; }).join('') +
           '</tbody></table></div></div>';
       }
+
+      // Test Data section - only when test mode is on. Clear amber TEST treatment.
+      if (TESTING.enabled) {
+        html += '<div id="test-data" style="margin-top:34px;border:1px solid ' + TEST_AMBER_LINE + ';background:' + TEST_AMBER_BG + ';padding:4px 18px 18px">' +
+          '<div class="ov-sec" style="display:flex;align-items:center;gap:10px;color:' + TEST_AMBER + ';border-color:' + TEST_AMBER_LINE + '">' +
+            '<span style="display:inline-block;font-family:Helvetica,Arial,sans-serif;font-weight:700;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#fff;background:' + TEST_AMBER + ';padding:3px 9px;border-radius:2px">Test</span>' +
+            '<span>Test Data &middot; dissemination submissions</span></div>' +
+          '<p style="font-size:13px;color:var(--muted);margin:0 0 14px">These are TEST submissions only. They are kept separate from live data.</p>' +
+          '<div id="test-data-body"><div class="loading">Loading test submissions…</div></div>' +
+        '</div>';
+      }
+
       panelHTML('overview', html);
       document.querySelectorAll('#panel-overview [data-go]').forEach(function (c) {
         c.addEventListener('click', function () { goTab(c.dataset.go); });
       });
+      wireTestStrip();
+      if (TESTING.enabled) loadTestData();
     } catch (e) { errPanel('overview', e.message); }
   }
 
   // ===================== USERS =====================
-  async function loadUsers() {
+  var usersSearch = '';
+  async function loadUsers(search) {
+    if (search !== undefined) usersSearch = search;
     panelHTML('users', '<div class="loading">Loading users…</div>');
     try {
-      var r = await AA.call(P + 'list_aa_users');
+      var r = await AA.call(P + 'list_aa_users', usersSearch ? { search: usersSearch } : {});
       var rows = (r && r.data) || [];
-      var html = toolbar('<button class="btn" id="add-user"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add User</button>');
+      var html = toolbar(
+        searchBox('user-search', 'Search by name, email or organization…', usersSearch) +
+        '<button class="btn" id="add-user"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add User</button>');
       if (!rows.length) {
-        html += '<div class="empty"><p>No Anticipatory Action users yet.</p></div>';
+        html += '<div class="empty"><p>' + (usersSearch ? 'No users match "' + AA.esc(usersSearch) + '".' : 'No Anticipatory Action users yet.') + '</p></div>';
       } else {
         html += tableHead(['Name', 'Email', 'Phone', 'Organization', 'Role', 'Status', '']);
         html += rows.map(function (u) {
           var role = (u.role || '').replace('Anticipatory Action ', 'AA ');
           var status = u.enabled ? '<span class="badge approved">Active</span>' : '<span class="badge off">Disabled</span>';
-          return '<tr>' +
+          return '<tr class="clickable-row" data-row-user="' + AA.esc(u.name) + '" title="Click to edit this user">' +
             '<td class="strong">' + AA.esc(u.full_name || '-') + '</td>' +
             '<td>' + AA.esc(u.email) + '</td>' +
             '<td>' + AA.esc(u.phone || '-') + '</td>' +
@@ -358,12 +441,23 @@
         html += '</tbody></table></div>';
       }
       panelHTML('users', html);
+      var searchEl = document.getElementById('user-search');
+      onDebounced(searchEl, function (val) { loadUsers(val); }, 250);
+      // keep focus + caret after the debounced reload re-renders the toolbar
+      if (searchEl && usersSearch) { searchEl.focus(); var L = searchEl.value.length; try { searchEl.setSelectionRange(L, L); } catch (e) {} }
       document.getElementById('add-user').addEventListener('click', function () { userModal(null); });
+      document.querySelectorAll('#panel-users tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function (e) {
+          if (e.target.closest('button')) return;
+          userModal(rows.find(function (x) { return x.name === tr.dataset.rowUser; }));
+        });
+      });
       document.querySelectorAll('[data-edit-user]').forEach(function (b) {
-        b.addEventListener('click', function () { userModal(rows.find(function (x) { return x.name === b.dataset.editUser; })); });
+        b.addEventListener('click', function (e) { e.stopPropagation(); userModal(rows.find(function (x) { return x.name === b.dataset.editUser; })); });
       });
       document.querySelectorAll('[data-toggle-user]').forEach(function (b) {
-        b.addEventListener('click', async function () {
+        b.addEventListener('click', async function (e) {
+          e.stopPropagation();
           var on = b.dataset.enabled === '1';
           if (on && !confirm('Disable this user? They will be unable to sign in.')) return;
           try {
@@ -374,7 +468,8 @@
         });
       });
       document.querySelectorAll('[data-reset-user]').forEach(function (b) {
-        b.addEventListener('click', async function () {
+        b.addEventListener('click', async function (e) {
+          e.stopPropagation();
           if (!confirm('Email this member a password-reset link?')) return;
           var done = busy(b, 'Sending…');
           try {
@@ -636,7 +731,6 @@
       else {
         html += tableHead(['Title', 'Category', 'Date', 'Source', 'Visibility', 'Document', 'Status', '']);
         html += rows.map(function (x) {
-          var url = x.link || x.attachment;
           var removed = x.removed === 1;
           var member = !!x.uploaded_by;  // member-uploaded reports are moderated, not edited
           var vis = (x.visibility === 'Private' || (x.visibility === undefined && !x.published))
@@ -662,7 +756,7 @@
             '<td>' + AA.esc([x.month, x.year].filter(Boolean).join(' ') || '-') + '</td>' +
             '<td>' + AA.esc(x.source || '-') + '</td>' +
             '<td>' + vis + '</td>' +
-            '<td>' + (url ? '<a class="btn sm ghost" href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open</a>' : '-') + (x.attachment ? ' <span class="badge muted">file</span>' : '') + '</td>' +
+            '<td>' + fileAffordance(x.attachment, x.link) + '</td>' +
             '<td>' + pub + '</td>' +
             '<td class="row-actions">' + (actions || '-') + '</td></tr>';
         }).join('');
@@ -798,12 +892,12 @@
       var r = await AA.call(P + 'list_organizations');
       orgCache = (r && r.data) || [];
       var rows = orgCache;
-      var html = toolbar('<button class="btn" id="add-org">+ Add Organization</button>');
+      var html = CAN_MANAGE ? toolbar('<div class="grow"></div><button class="btn" id="add-org">+ Add Organization</button>') : '';
       if (!rows.length) { html += '<div class="empty"><p>No organizations yet.</p></div>'; }
       else {
         html += tableHead(['Name', 'Type', 'Contact', 'Email', 'Phone']);
         html += rows.map(function (o) {
-          return '<tr>' +
+          return '<tr class="clickable-row" data-row-org="' + AA.esc(o.name) + '" title="Click to ' + (CAN_MANAGE ? 'edit' : 'view') + ' this organization">' +
             '<td class="strong">' + AA.esc(o.name_of_organization) + '</td>' +
             '<td>' + AA.esc(o.type_of_organization || '-') + '</td>' +
             '<td>' + AA.esc(o.primary_contact_person_name || '-') + '</td>' +
@@ -813,8 +907,58 @@
         html += '</tbody></table></div>';
       }
       panelHTML('orgs', html);
-      document.getElementById('add-org').addEventListener('click', orgModal);
+      if (CAN_MANAGE) { var addBtn = document.getElementById('add-org'); if (addBtn) addBtn.addEventListener('click', orgModal); }
+      document.querySelectorAll('#panel-orgs tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function (e) { if (e.target.closest('button')) return; orgWidget(tr.dataset.rowOrg); });
+      });
     } catch (e) { errPanel('orgs', e.message); }
+  }
+
+  // Organisation widget. Admins (CAN_MANAGE) get an editable form with a Save button
+  // calling update_organization; approvers get the same fields read-only.
+  async function orgWidget(name) {
+    try {
+      var r = await AA.call(P + 'get_organization', { name: name });
+      var d = (r && r.data) || {};
+      var ro = !CAN_MANAGE;
+      var typeField = ro
+        ? field({ label: 'Type', id: 'o_type', value: d.type_of_organization, readonly: true })
+        : field({ label: 'Type', id: 'o_type', type: 'select', options: META.organization_types, value: d.type_of_organization, required: true });
+      var f =
+        field({ label: 'Organization Name', id: 'o_name', required: !ro, readonly: ro, full: true, value: d.name_of_organization }) +
+        typeField +
+        field({ label: 'Contact Person', id: 'o_contact', readonly: ro, value: d.primary_contact_person_name }) +
+        field({ label: 'Contact Email', id: 'o_email', type: 'email', readonly: ro, value: d.primary_email_contact }) +
+        field({ label: 'Contact Phone', id: 'o_phone', readonly: ro, value: d.primary_phone_contact }) +
+        field({ label: 'Organization Email', id: 'o_oemail', type: 'email', readonly: ro, value: d.organization_email }) +
+        field({ label: 'Organization Phone', id: 'o_ophone', readonly: ro, value: d.organization_phone }) +
+        field({ label: 'Website', id: 'o_web', type: 'url', readonly: ro, full: true, value: d.organization_website }) +
+        field({ label: 'Address', id: 'o_address', type: 'textarea', readonly: ro, full: true, value: d.address });
+      if (ro) {
+        // Read-only widget for approvers: no form, no Save.
+        document.getElementById('modal-title').textContent = d.name_of_organization || 'Organization';
+        document.getElementById('modal-body').innerHTML =
+          '<div class="alert show info" style="margin-bottom:14px">Read-only. Only an administrator can edit organisation details.</div>' +
+          '<div class="form-grid">' + f + '</div>' +
+          '<div class="form-actions"><button type="button" class="btn ghost" id="org-close">Close</button></div>';
+        document.getElementById('modal').classList.add('open');
+        // disable every input so the read-only state is obvious even where readonly does not apply (textarea/select)
+        document.querySelectorAll('#modal-body input, #modal-body select, #modal-body textarea').forEach(function (el) { el.disabled = true; });
+        document.getElementById('org-close').addEventListener('click', closeModal);
+        return;
+      }
+      openModal('Edit Organization', f, async function () {
+        if (!v('o_name') || !v('o_type')) { modalErr('Name and type are required.'); return; }
+        await AA.call(P + 'update_organization', {
+          name: name,
+          name_of_organization: v('o_name'), type_of_organization: v('o_type'),
+          primary_contact_person_name: v('o_contact'), primary_email_contact: v('o_email'),
+          primary_phone_contact: v('o_phone'), organization_email: v('o_oemail'),
+          organization_phone: v('o_ophone'), organization_website: v('o_web'), address: v('o_address')
+        });
+        closeModal(); AA.toast('Organization updated.', true); orgCache = []; loadOrgs();
+      }, 'Save Changes');
+    } catch (e) { AA.toast(e.message); }
   }
 
   function orgModal() {
@@ -936,7 +1080,7 @@
         html += tableHead(['From', 'Subject', 'Received', 'Status', '']);
         html += rows.map(function (m) {
           var sb = m.status === 'New' ? 'new' : (m.status === 'Closed' ? 'off' : 'muted');
-          return '<tr>' +
+          return '<tr class="clickable-row" data-row-msg="' + AA.esc(m.name) + '" title="Click to open this message">' +
             '<td class="strong">' + AA.esc(m.full_name) + '<div style="font-weight:400;color:var(--muted);font-size:12px">' + AA.esc(m.email) + '</div></td>' +
             '<td>' + AA.esc(m.subject || '-') + '</td>' +
             '<td>' + AA.esc((m.submitted_on || m.creation || '').slice(0, 16).replace('T', ' ')) + '</td>' +
@@ -947,8 +1091,11 @@
       }
       panelHTML('messages', html);
       document.getElementById('msg-filter').addEventListener('change', function () { loadMessages(this.value); });
+      document.querySelectorAll('#panel-messages tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function (e) { if (e.target.closest('button')) return; msgModal(rows.find(function (x) { return x.name === tr.dataset.rowMsg; })); });
+      });
       document.querySelectorAll('[data-view-msg]').forEach(function (b) {
-        b.addEventListener('click', function () { msgModal(rows.find(function (x) { return x.name === b.dataset.viewMsg; })); });
+        b.addEventListener('click', function (e) { e.stopPropagation(); msgModal(rows.find(function (x) { return x.name === b.dataset.viewMsg; })); });
       });
     } catch (e) { errPanel('messages', e.message); }
   }
@@ -994,7 +1141,7 @@
             acts += '<button class="btn sm ok" data-approve-req="' + AA.esc(q.name) + '">Approve</button>' +
                     '<button class="btn sm danger" data-reject-req="' + AA.esc(q.name) + '">Reject</button>';
           }
-          return '<tr>' +
+          return '<tr class="clickable-row" data-row-req="' + AA.esc(q.name) + '" title="Click to review this request">' +
             '<td class="strong">' + AA.esc(q.full_name || '-') + '</td>' +
             '<td>' + AA.esc(q.email) + '</td>' +
             '<td>' + AA.esc(q.organization || '-') + '</td>' +
@@ -1006,14 +1153,17 @@
       }
       panelHTML('requests', html);
       document.getElementById('req-filter').addEventListener('change', function () { loadRequests(this.value); });
+      document.querySelectorAll('#panel-requests tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function (e) { if (e.target.closest('button')) return; requestDetail(tr.dataset.rowReq); });
+      });
       document.querySelectorAll('[data-view-req]').forEach(function (b) {
-        b.addEventListener('click', function () { requestDetail(b.dataset.viewReq); });
+        b.addEventListener('click', function (e) { e.stopPropagation(); requestDetail(b.dataset.viewReq); });
       });
       document.querySelectorAll('[data-approve-req]').forEach(function (b) {
-        b.addEventListener('click', function () { approveRequestModal(b.dataset.approveReq); });
+        b.addEventListener('click', function (e) { e.stopPropagation(); approveRequestModal(b.dataset.approveReq); });
       });
       document.querySelectorAll('[data-reject-req]').forEach(function (b) {
-        b.addEventListener('click', function () { rejectRequestModal(b.dataset.rejectReq); });
+        b.addEventListener('click', function (e) { e.stopPropagation(); rejectRequestModal(b.dataset.rejectReq); });
       });
     } catch (e) { errPanel('requests', e.message); }
   }
@@ -1173,9 +1323,88 @@
     } catch (e) { errPanel('formbuilder', e.message); }
   }
 
+  // ===================== TEST / DISSEMINATION CONSOLE =====================
+  // A small strip in the overview lets admins toggle test/dissemination mode and,
+  // when on, jump to the testing environment and review TEST submissions. Approvers
+  // see the state as read-only text. The whole area carries an amber TEST treatment
+  // so it is never confused with live data.
+  var TEST_AMBER = '#B45309', TEST_AMBER_BG = 'rgba(251,191,36,0.12)', TEST_AMBER_LINE = 'rgba(180,83,9,0.45)';
+
+  function testStripHTML() {
+    var on = !!TESTING.enabled;
+    var badge = '<span style="display:inline-block;font-family:Helvetica,Arial,sans-serif;font-weight:700;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#fff;background:' + TEST_AMBER + ';padding:3px 9px;border-radius:2px">Test</span>';
+    var stateTxt = on ? 'On' : 'Off';
+    var ctrl;
+    if (TESTING.can_toggle) {
+      ctrl = '<button type="button" id="test-toggle" class="test-switch' + (on ? ' on' : '') + '" role="switch" aria-checked="' + (on ? 'true' : 'false') + '" title="Toggle test / dissemination mode">' +
+          '<span class="test-knob"></span></button>' +
+        '<span style="font-weight:600;font-size:13px;color:' + TEST_AMBER + '">' + stateTxt + '</span>';
+    } else {
+      ctrl = '<span style="font-weight:700;font-size:13px;color:' + TEST_AMBER + '">' + stateTxt + '</span>' +
+        '<span style="font-size:12px;color:var(--muted)">(read-only)</span>';
+    }
+    var launch = on
+      ? '<a href="/anticipatory-action-test" target="_blank" rel="noopener" class="btn sm" style="background:' + TEST_AMBER + ';border-color:' + TEST_AMBER + ';margin-left:auto">Testing Environment &#8599;</a>'
+      : '';
+    return '<div id="test-strip" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid ' + TEST_AMBER_LINE + ';background:' + TEST_AMBER_BG + ';padding:12px 16px;margin-bottom:24px">' +
+        badge +
+        '<div style="font-weight:600;font-size:13.5px;color:var(--text)">Test / dissemination mode</div>' +
+        ctrl + launch +
+      '</div>';
+  }
+
+  function wireTestStrip() {
+    var btn = document.getElementById('test-toggle');
+    if (btn) {
+      btn.addEventListener('click', async function () {
+        var done = busy(btn, '');
+        try {
+          var res = await AA.call(P + 'set_testing_enabled', { enabled: TESTING.enabled ? 0 : 1 });
+          TESTING.enabled = !!(res && res.enabled);
+          AA.toast('Test mode ' + (TESTING.enabled ? 'enabled.' : 'disabled.'), true);
+          loaded.overview = false; loadOverview();
+        } catch (e) { AA.toast(e.message); done(); }
+      });
+    }
+  }
+
+  // TEST submissions list - rendered like the real submissions list, with a clear amber accent.
+  async function loadTestData() {
+    var host = document.getElementById('test-data-body');
+    if (!host) return;
+    host.innerHTML = '<div class="loading">Loading test submissions…</div>';
+    try {
+      var r = await AA.call(P + 'list_test_submissions', {});
+      var rows = (r && r.data) || [];
+      if (!rows.length) { host.innerHTML = '<div class="empty"><p>No test submissions yet.</p></div>'; return; }
+      var html = tableHead(['Reference', 'Organization', 'Hazard', 'Counties', 'People', 'Funds (KES)', 'Date', 'Status']);
+      html += rows.map(function (s) {
+        var badge = s.status === 'Approved' ? '<span class="badge approved">Approved</span>'
+          : s.status === 'Not Approved' ? '<span class="badge rejected">Not Approved</span>'
+          : s.status === 'Replied' ? '<span class="badge new">Info Requested</span>'
+          : '<span class="badge pending">Pending</span>';
+        return '<tr class="clickable-row" data-row-test="' + AA.esc(s.name) + '" title="Click to review this test submission">' +
+          '<td class="strong">' + AA.esc(s.name) + '</td>' +
+          '<td>' + AA.esc(s.organization || '-') + '</td>' +
+          '<td>' + AA.esc(s.hazard || '-') + '</td>' +
+          '<td>' + AA.esc(s.counties || '-') + '</td>' +
+          '<td>' + AA.fmtNum(s.people) + '</td>' +
+          '<td>' + AA.fmtNum(s.funds) + '</td>' +
+          '<td>' + AA.esc(fmtDate(s.submitted_on)) + '</td>' +
+          '<td>' + badge + '</td></tr>';
+      }).join('');
+      html += '</tbody></table></div>';
+      host.innerHTML = html;
+      host.querySelectorAll('tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function () { submissionDetail(tr.dataset.rowTest); });
+      });
+    } catch (e) { host.innerHTML = '<div class="empty"><p>' + AA.esc(e.message) + '</p></div>'; }
+  }
+
   // ---------- boot ----------
   (async function boot() {
     try { var m = await AA.call(P + 'get_admin_meta'); if (m) META = Object.assign(META, m); } catch (e) {}
+    try { var t = await AA.call(P + 'get_testing_status'); if (t) TESTING = Object.assign(TESTING, t); } catch (e) {}
     loadOverview();
   })();
 })();
