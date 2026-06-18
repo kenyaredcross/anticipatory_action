@@ -801,12 +801,14 @@ select.aa-input {
     if (current) el.value = current;
   }
 
-  frappe.ready(function () {
-    frappe.call({
-      method: 'anticipatory_action.api.anticipatory_action.get_form_meta',
-      callback: function (r) {
-        var meta = r.message;
-        if (!meta || !meta.success) return;
+  function loadFormMeta() {
+    // Plain GET (an allow_guest read needs no CSRF) so the dropdowns never depend
+    // on frappe being fully booted on this public page.
+    fetch('/api/method/anticipatory_action.api.anticipatory_action.get_form_meta', { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        var meta = (res && res.message) || res;   // tolerate wrapped or unwrapped
+        if (!meta || !meta.success) throw new Error('meta unavailable');
 
         var placeholders = {
           entity_or_organization_type: 'Select type...',
@@ -823,9 +825,16 @@ select.aa-input {
           if (!opts) return;
           populateSelect(el, opts, placeholders[key]);
         });
-      }
-    });
-  });
+      })
+      .catch(function (e) {
+        document.querySelectorAll('[data-meta]').forEach(function (el) {
+          el.innerHTML = '<option value="">Couldn\'t load - please refresh</option>';
+        });
+        console.error('get_form_meta failed:', e);
+      });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadFormMeta);
+  else loadFormMeta();
 
   // -- Conditional visibility on main form -----------------------------------
   document.querySelector('[name="entity_or_organization_type"]').addEventListener('change', function () {
@@ -1120,7 +1129,7 @@ select.aa-input {
         headers: { 'X-Frappe-CSRF-Token': (window.frappe && frappe.csrf_token) || 'Guest' },
         args: { data: JSON.stringify(data) },
         callback: function (r) {
-          const res = r.message;
+          const res = (r && r.message) || r;
           if (res && res.success) {
             showSuccess(res.name);
           } else {
