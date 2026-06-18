@@ -58,6 +58,10 @@ def get_summary():
 		data["messages_new"] = frappe.db.count("AA Contact Message", {"status": "New"})
 		data["users"] = frappe.db.count("Anticipatory Action User")
 		data["requests_new"] = frappe.db.count("AA Membership Request", {"status": "Pending"})
+		# Open support tickets (New + Open) and total pending sign-up requests, for
+		# the overview attention cards.
+		data["support_new"] = frappe.db.count("AA Support Request", {"status": ["in", ["New", "Open"]]})
+		data["requests_total"] = data["requests_new"]
 
 	return data
 
@@ -214,6 +218,7 @@ def get_activations(status=None, hazard=None, county=None, test_only=0):
 			p.modified                                    AS modified,
 			p.is_update                                   AS is_update,
 			p.amended_from                                AS amended_from,
+			p.test_batch                                  AS test_batch,
 			COALESCE(SUM(d.number_of_people_targeted), 0) AS people,
 			COALESCE(SUM(d.amount_for_anticipatory_action_kes), 0) AS funds,
 			GROUP_CONCAT(DISTINCT NULLIF(d.county, '')

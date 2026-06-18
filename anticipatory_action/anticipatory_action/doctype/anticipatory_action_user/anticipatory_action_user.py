@@ -77,12 +77,15 @@ class AnticipatoryActionUser(Document):
 		Role membership is reconciled so a role switch (User <-> Admin) doesn't
 		leave the old role behind, while any non-AA roles are left untouched.
 		"""
+		is_new = create and not frappe.db.exists("User", self.email)
 		if frappe.db.exists("User", self.email):
 			user = frappe.get_doc("User", self.email)
 		elif create:
 			user = frappe.new_doc("User")
 			user.email = self.email
-			user.send_welcome_email = 1
+			# Suppress Frappe's stock welcome email — it links to the desk. We send a
+			# branded AA welcome that points to the portal instead (after save).
+			user.send_welcome_email = 0
 		else:
 			return
 
@@ -106,6 +109,34 @@ class AnticipatoryActionUser(Document):
 
 		if not self.user:
 			self.db_set("user", user.name)
+
+		if is_new:
+			self._send_branded_welcome(user)
+
+	def _send_branded_welcome(self, user):
+		"""Branded welcome with a set-password link. After setting a password the
+		member is signed in; the AA /app guard then lands them on the portal — so
+		the whole flow points at the portal, never the desk."""
+		try:
+			from anticipatory_action.api.aa_email import aa_email_html, aa_sendmail, portal_url
+			link = user.reset_password(send_email=False)
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "aa welcome email")
+			return
+		body = (
+			"<p>Hi " + frappe.utils.escape_html(self.first_name or "there") + ",</p>"
+			"<p>Your Anticipatory Action account has been approved. Set a password to activate it, "
+			"then sign in to the member portal to record and track anticipatory action across Kenya.</p>"
+		)
+		html = aa_email_html(
+			"Your account is ready",
+			body,
+			cta_label="Set your password",
+			cta_url=link,
+			sign_off='You can always sign in at <a href="' + portal_url("/anticipatory-login")
+				+ '">the Anticipatory Action portal</a>.',
+		)
+		aa_sendmail([user.name], "Welcome to Anticipatory Action — set your password", html)
 
 
 # The module these accounts are allowed to see on the desk; everything else is

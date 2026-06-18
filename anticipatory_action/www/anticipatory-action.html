@@ -35,7 +35,7 @@ footer, .web-footer, .footer { display: none !important; }
 .aa-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 20px;
   padding: 20px 28px;
   background: var(--white);
@@ -45,7 +45,7 @@ footer, .web-footer, .footer { display: none !important; }
   margin-bottom: 0;
 }
 .aa-logo { height: 60px; width: auto; object-fit: contain; flex-shrink: 0; }
-.aa-header-center { text-align: left; flex: 1; min-width: 0; }
+.aa-header-center { text-align: center; flex: 0 1 auto; min-width: 0; }
 .aa-header-title {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: 0.01em;
   font-size: 22px; font-weight: 700; color: var(--charcoal); line-height: 1.2;
@@ -352,7 +352,7 @@ select.aa-input {
 
 <!-- ── Header with logos ── -->
 <div class="aa-header">
-  <img src="/aadashboard.png" alt="NDOC" class="aa-logo" />
+  <img src="/aadashboard.png" alt="NDRMA" class="aa-logo" />
   <div class="aa-header-center">
     <div class="aa-header-title">Anticipatory Action</div>
     <div class="aa-header-sub">Data Collection &amp; Monitoring Platform</div>
@@ -362,7 +362,7 @@ select.aa-input {
 <!-- ── Introduction ── -->
 <div class="aa-intro">
   <p>This tool tracks and monitors implementation of Anticipatory Action across Kenya. Partners and government agencies are encouraged to share intervention data to consolidate information, enhance coordination and avoid duplication.</p>
-  <p style="margin-top:8px">For questions: <a href="mailto:datateam@redcross.or.ke">Datateam@icha.net</a> &nbsp;&middot;&nbsp; <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a></p>
+  <p style="margin-top:8px">For questions: <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a></p>
 </div>
 
 <!-- ── Form ── -->
@@ -513,7 +513,7 @@ select.aa-input {
       </div>
       <div class="aa-field">
         <label>Upload supporting materials (optional)</label>
-        <div class="aa-field-hint">PDF, image or document - optional</div>
+        <div class="aa-field-hint">PDF or document - optional</div>
 
         <!-- Existing file shown in edit mode; choosing a new file replaces it -->
         <div id="aa-attachment-current" style="display:none;margin-bottom:10px">
@@ -562,7 +562,7 @@ select.aa-input {
 
 <!-- ── Form footer ── -->
 <div style="text-align:center;padding:24px 0 8px;font-size:13px;color:#9CA3AF;letter-spacing:0.02em;">
-  Made by <strong style="color:#6B7280">Kenya Red Cross Digital Transformation</strong>
+  Developed and maintained by <strong style="color:#6B7280">Kenya Red Cross</strong>
 </div>
 
 <!-- ── Success state ── -->
@@ -858,12 +858,14 @@ select.aa-input {
     if (current) el.value = current; 
   }
 
-  frappe.ready(function () {
-    frappe.call({
-      method: 'anticipatory_action.api.anticipatory_action.get_form_meta',
-      callback: function (r) {
-        var meta = r.message;
-        if (!meta || !meta.success) return;
+  function loadFormMeta() {
+    // Plain GET (an allow_guest read needs no CSRF) so the dropdowns never depend
+    // on frappe being fully booted on this public page.
+    fetch('/api/method/anticipatory_action.api.anticipatory_action.get_form_meta', { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        var meta = (res && res.message) || res;   // tolerate wrapped or unwrapped
+        if (!meta || !meta.success) throw new Error('meta unavailable');
 
         var placeholders = {
           entity_or_organization_type: 'Select type…',
@@ -883,9 +885,17 @@ select.aa-input {
 
         // Once the select options exist we can safely prefill an edited draft.
         if (EDIT_NAME) loadForEdit();
-      }
-    });
-  });
+      })
+      .catch(function (e) {
+        // Never leave the dropdowns stuck on "Loading…": show a retriable state.
+        document.querySelectorAll('[data-meta]').forEach(function (el) {
+          el.innerHTML = '<option value="">Couldn’t load — please refresh</option>';
+        });
+        console.error('get_form_meta failed:', e);
+      });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadFormMeta);
+  else loadFormMeta();
 
   // ── Edit mode: load one of the member's own drafts ────────────────────────
   function syncConditionalFields() {
@@ -931,7 +941,7 @@ select.aa-input {
       method: 'anticipatory_action.api.portal.get_my_submission',
       args: { name: EDIT_NAME },
       callback: function (r) {
-        var res = r.message;
+        var res = (r && r.message) || r;
         if (!res || !res.success) return;
         var d = res.data || {};
 
@@ -1275,7 +1285,7 @@ select.aa-input {
           method: 'anticipatory_action.api.portal.update_my_submission',
           args: { name: EDIT_NAME, data: JSON.stringify(data) },
           callback: function (r) {
-            var res = r.message;
+            var res = (r && r.message) || r;
             if (res && res.success) {
               window.location.href = PORTAL_HOME;
             } else {
@@ -1299,7 +1309,7 @@ select.aa-input {
         headers: { 'X-Frappe-CSRF-Token': frappe.csrf_token || 'Guest' },
         args: { data: JSON.stringify(data) },
         callback: function (r) {
-          const res = r.message;
+          const res = (r && r.message) || r;
           if (res && res.success) {
             showSuccess(res.name);
 
@@ -1417,7 +1427,7 @@ select.aa-input {
           account: JSON.stringify(account)
         },
         callback: function (r) {
-          var res = r.message;
+          var res = (r && r.message) || r;
           if (res && res.success) {
             closeAccountModal();
             showSuccess(res.name, 'Thank you. Your submission and access request have been received. An administrator will review your account and you will get an email to set your password once approved.');

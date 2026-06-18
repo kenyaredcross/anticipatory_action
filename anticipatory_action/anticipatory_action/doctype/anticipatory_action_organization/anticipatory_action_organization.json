@@ -42,7 +42,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Type of Organization",
-   "options": "\nFood Security & Livelihoods (FSL)\nWater, Sanitation & Hygiene (WASH)\nHealth and nutrition\nProtection (including Child Protection & GBV)\nShelter & Non-Food Items (NFI)\nCoordination & Information Management\nAgricuture and livestock\nHousing and infrastructure\nEducation\nSocial Protection",
+   "options": "\nNational government\nCounty government\nNGOs\nCivil Societies (CSOs)\nCBOs\nHumanitarian Agency\nDevelopment Partners\nFBOs\nPrivate Sector\nUN agencies\nAcademic Institutions\nOther",
    "reqd": 1,
    "sort_options": 1
   },

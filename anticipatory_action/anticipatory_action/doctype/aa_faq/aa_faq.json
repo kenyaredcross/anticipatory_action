@@ -49,8 +49,9 @@
    "fieldtype": "Section Break"
   },
   {
+   "description": "Rich text. Use the toolbar to add links, bold and lists.",
    "fieldname": "answer",
-   "fieldtype": "Text",
+   "fieldtype": "Text Editor",
    "label": "Answer",
    "reqd": 1
   }

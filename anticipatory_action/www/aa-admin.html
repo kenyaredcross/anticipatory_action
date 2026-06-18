@@ -145,7 +145,7 @@
 
 <header class="portal-bar">
   <a href="/aa-portal" class="pb-brand">
-    <img src="/aadashboard.png" alt="NDOC" />
+    <img src="/aadashboard.png" alt="NDRMA" />
     <div class="pb-name">Admin Console</div>
   </a>
   <nav class="pb-links" id="pbLinks">
@@ -193,10 +193,14 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span>Users</span><span class="count" id="cnt-users" style="display:none"></span>
         </button>
+        {% endif %}
+        {% if can_manage_users or can_approve_accounts %}
         <button class="tab" data-tab="requests">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="11" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
           <span>Requests</span><span class="count" id="cnt-reqs" style="display:none"></span>
         </button>
+        {% endif %}
+        {% if can_manage_users %}
         <button class="tab" data-tab="support">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6h-5a3 3 0 0 0-3 3v9"/><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M3 21h18"/></svg>
           <span>Support</span><span class="count" id="cnt-support" style="display:none"></span>
@@ -204,6 +208,10 @@
         <button class="tab" data-tab="pillars">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
           <span>Pillar Leads</span>
+        </button>
+        <button class="tab" data-tab="policy">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Policy &amp; Terms</span>
         </button>
         {% endif %}
         <button class="tab" data-tab="submissions">
@@ -228,13 +236,20 @@
           <span>Organizations</span>
         </button>
         {% endif %}
+        {# Publications hidden — documents now live under Reports (Resource Library). #}
+        {% if false %}
         <button class="tab" data-tab="pubs">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           <span>Publications</span>
         </button>
+        {% endif %}
         <button class="tab" data-tab="messages">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
           <span>Messages</span><span class="count" id="cnt-msgs" style="display:none"></span>
+        </button>
+        <button class="tab" data-tab="faq">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>FAQ</span>
         </button>
         {% if can_manage_users %}
         <button class="tab" data-tab="formbuilder">
@@ -258,6 +273,8 @@
       <section class="tab-panel" id="panel-orgs"></section>
       <section class="tab-panel" id="panel-pubs"></section>
       <section class="tab-panel" id="panel-messages"></section>
+      <section class="tab-panel" id="panel-faq"></section>
+      <section class="tab-panel" id="panel-policy"></section>
       <section class="tab-panel" id="panel-formbuilder"></section>
     </div>
   </div>
@@ -283,6 +300,16 @@
   <div class="review-foot" id="review-foot"></div>
 </div>
 
+<style>
+  .rte { border: 1px solid var(--line); background: #fff; border-radius: 4px; }
+  .rte-toolbar { display: flex; gap: 2px; flex-wrap: wrap; padding: 6px; border-bottom: 1px solid var(--line); background: var(--paper, #f7f7f7); }
+  .rte-btn { font: inherit; font-size: 12.5px; line-height: 1; padding: 5px 9px; border: 1px solid transparent; background: transparent; cursor: pointer; border-radius: 3px; color: var(--text, #222); }
+  .rte-btn:hover { background: rgba(0,0,0,0.07); }
+  .rte-area { min-height: 150px; max-height: 360px; overflow: auto; padding: 10px 12px; font-size: 14px; line-height: 1.65; outline: none; }
+  .rte-area:focus { box-shadow: inset 0 0 0 2px rgba(204,0,0,0.15); }
+  .rte-area a { color: #CC0000; text-decoration: underline; }
+  .rte-area p { margin: 0 0 8px; } .rte-area ul, .rte-area ol { margin: 0 0 8px; padding-left: 20px; }
+</style>
 <script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }}; window.AA_IS_ADMIN = {{ 1 if is_admin else 0 }}; window.AA_IS_APPROVER = {{ 1 if is_approver else 0 }}; window.AA_CAN_MANAGE = {{ 1 if can_manage_users else 0 }}; window.AA_CAN_SET_ROLE = {{ 1 if can_set_role else 0 }};</script>
 <script src="/aa-portal-ui.js"></script>
 <script>
@@ -325,7 +352,7 @@
     ({ overview: loadOverview, users: loadUsers, requests: loadRequests, support: loadSupport,
        pillars: loadPillars, submissions: loadSubmissions,
        reports: loadReports, activities: loadActivities, events: loadEvents, orgs: loadOrgs,
-       pubs: loadPubs, messages: loadMessages, formbuilder: loadFormBuilder }[tab] || function () {})();
+       pubs: loadPubs, messages: loadMessages, faq: loadFaqs, policy: loadPolicies, formbuilder: loadFormBuilder }[tab] || function () {})();
   }
 
   // ---------- modal helpers ----------
@@ -479,13 +506,15 @@
       setCount('cnt-users', d.users);
       setCount('cnt-reqs', d.requests_new);
       setCount('cnt-msgs', d.messages_new);
+      setCount('cnt-support', d.support_new);
 
-      var pend = d.activations_pending || 0, reqs = d.requests_new || 0, msgs = d.messages_new || 0;
+      var pend = d.activations_pending || 0, reqs = d.requests_new || 0, msgs = d.messages_new || 0, supp = d.support_new || 0;
       var attn = [attnCard('submissions', pend, pend === 1 ? 'Submission awaiting review' : 'Submissions awaiting review', 'Open review queue', pend > 0)];
       if (IS_ADMIN) attn.push(attnCard('requests', reqs, reqs === 1 ? 'New sign-up request' : 'New sign-up requests', 'Review applicants', reqs > 0));
+      if (IS_ADMIN) attn.push(attnCard('support', supp, supp === 1 ? 'Open support request' : 'Open support requests', 'Open support', supp > 0));
       attn.push(attnCard('messages', msgs, msgs === 1 ? 'Unread message' : 'Unread messages', 'Open inbox', msgs > 0));
 
-      var needs = pend + reqs + msgs;
+      var needs = pend + reqs + msgs + supp;
       var showStrip = TESTING.can_toggle || TESTING.enabled;
       var html =
         (showStrip ? testStripHTML() : '') +
@@ -504,7 +533,6 @@
         '<div class="stat-grid">' +
           stat(d.reports || 0, 'Reports') +
           stat(d.activities || 0, 'TWG Activities') +
-          stat(d.documents || 0, 'Publications') +
           (IS_ADMIN ? stat(d.organizations || 0, 'Organizations') : '') +
           (IS_ADMIN ? stat(d.users || 0, 'AA Members') : '') +
         '</div>';
@@ -550,7 +578,7 @@
       if (!rows.length) {
         html += '<div class="empty"><p>' + (usersSearch ? 'No users match "' + AA.esc(usersSearch) + '".' : 'No Anticipatory Action users yet.') + '</p></div>';
       } else {
-        html += tableHead(['Name', 'Email', 'Phone', 'Organization', 'Role', 'Status', '']);
+        html += tableHead(['Name', 'Email', 'Phone', 'Organization', 'Role', 'Status']);
         html += rows.map(function (u) {
           var role = (u.role || '').replace('Anticipatory Action ', 'AA ');
           var status = u.enabled ? '<span class="badge approved">Active</span>' : '<span class="badge off">Disabled</span>';
@@ -560,12 +588,7 @@
             '<td>' + AA.esc(u.phone || '-') + '</td>' +
             '<td>' + AA.esc(u.organization || '-') + '</td>' +
             '<td>' + AA.esc(role) + '</td>' +
-            '<td>' + status + '</td>' +
-            '<td class="row-actions">' +
-              '<button class="btn sm ghost" data-edit-user="' + AA.esc(u.name) + '">Edit</button>' +
-              '<button class="btn sm ghost" data-reset-user="' + AA.esc(u.name) + '">Reset password</button>' +
-              '<button class="btn sm ' + (u.enabled ? 'danger' : 'ok') + '" data-toggle-user="' + AA.esc(u.name) + '" data-enabled="' + (u.enabled ? 1 : 0) + '">' + (u.enabled ? 'Disable' : 'Enable') + '</button>' +
-            '</td></tr>';
+            '<td>' + status + '</td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
@@ -576,36 +599,8 @@
       if (searchEl && usersSearch) { searchEl.focus(); var L = searchEl.value.length; try { searchEl.setSelectionRange(L, L); } catch (e) {} }
       document.getElementById('add-user').addEventListener('click', function () { userModal(null); });
       document.querySelectorAll('#panel-users tr.clickable-row').forEach(function (tr) {
-        tr.addEventListener('click', function (e) {
-          if (e.target.closest('button')) return;
+        tr.addEventListener('click', function () {
           userModal(rows.find(function (x) { return x.name === tr.dataset.rowUser; }));
-        });
-      });
-      document.querySelectorAll('[data-edit-user]').forEach(function (b) {
-        b.addEventListener('click', function (e) { e.stopPropagation(); userModal(rows.find(function (x) { return x.name === b.dataset.editUser; })); });
-      });
-      document.querySelectorAll('[data-toggle-user]').forEach(function (b) {
-        b.addEventListener('click', async function (e) {
-          e.stopPropagation();
-          var on = b.dataset.enabled === '1';
-          if (on && !confirm('Disable this user? They will be unable to sign in.')) return;
-          try {
-            await AA.call(P + 'set_aa_user_active', { name: b.dataset.toggleUser, enabled: on ? 0 : 1 });
-            AA.toast('User ' + (on ? 'disabled' : 'enabled') + '.', true);
-            loadUsers();
-          } catch (e) { AA.toast(e.message); }
-        });
-      });
-      document.querySelectorAll('[data-reset-user]').forEach(function (b) {
-        b.addEventListener('click', async function (e) {
-          e.stopPropagation();
-          if (!confirm('Email this member a password-reset link?')) return;
-          var done = busy(b, 'Sending…');
-          try {
-            var res = await AA.call(P + 'send_password_reset', { name: b.dataset.resetUser });
-            AA.toast('Password reset email sent to ' + ((res && res.email) || 'the member') + '.', true);
-            done();
-          } catch (e) { AA.toast(e.message); done(); }
         });
       });
     } catch (e) { errPanel('users', e.message); }
@@ -626,7 +621,29 @@
       field({ label: 'Phone', id: 'u_phone', value: u && u.phone }) +
       field({ label: 'Organization', id: 'u_org', type: 'select', options: orgs, value: u && u.organization, required: true, full: true }) +
       roleField;
-    openModal(editing ? 'Edit User' : 'Add User', f, async function () {
+    // On an existing user, the per-account actions (reset password, enable/
+    // disable) and the change history live INSIDE this detail view rather than
+    // on the list row.
+    var extras = '';
+    if (editing) {
+      // Admins can grant the account-approval capability — but only to an Approver.
+      var acctRow = (IS_ADMIN && u.role === 'Anticipatory Action Approver')
+        ? '<div class="field full" style="margin-top:6px;padding-top:12px;border-top:1px solid var(--line)">' +
+            '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;font-size:13.5px">' +
+              '<input type="checkbox" id="u_acct_approver"' + (u.can_approve_accounts ? ' checked' : '') + ' style="width:17px;height:17px;cursor:pointer" /> Account approver' +
+            '</label>' +
+            '<div class="hint">Lets this approver review and approve new sign-up / account requests. Saves immediately.</div>' +
+          '</div>'
+        : '';
+      extras =
+        acctRow +
+        '<div class="field full" style="border-top:1px solid var(--line);margin-top:6px;padding-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+          '<button type="button" class="btn sm ghost" id="u_reset">Reset password</button>' +
+          '<button type="button" class="btn sm ' + (u.enabled ? 'danger' : 'ok') + '" id="u_toggle">' + (u.enabled ? 'Disable account' : 'Enable account') + '</button>' +
+        '</div>' +
+        '<div class="field full">' + changeHistoryHTML() + '</div>';
+    }
+    openModal(editing ? 'Edit User' : 'Add User', f + extras, async function () {
       var payload = { first_name: v('u_first'), last_name: v('u_last'), phone: v('u_phone'), organization: v('u_org') };
       if (CAN_SET_ROLE) payload.role = v('u_role');
       if (!payload.first_name || !payload.organization) { modalErr('First name and organization are required.'); return; }
@@ -639,6 +656,37 @@
       }
       closeModal(); AA.toast(editing ? 'User updated.' : 'User created - welcome email sent.', true); loadUsers();
     }, editing ? 'Save Changes' : 'Create User');
+    if (editing) {
+      var resetBtn = document.getElementById('u_reset');
+      resetBtn.addEventListener('click', async function () {
+        if (!confirm('Email this member a password-reset link?')) return;
+        var done = busy(resetBtn, 'Sending…');
+        try {
+          var res = await AA.call(P + 'send_password_reset', { name: u.name });
+          AA.toast('Password reset email sent to ' + ((res && res.email) || 'the member') + '.', true);
+          done();
+        } catch (e) { AA.toast(e.message); done(); }
+      });
+      var togBtn = document.getElementById('u_toggle');
+      togBtn.addEventListener('click', async function () {
+        var on = !!u.enabled;
+        if (on && !confirm('Disable this user? They will be unable to sign in.')) return;
+        var done = busy(togBtn, 'Working…');
+        try {
+          await AA.call(P + 'set_aa_user_active', { name: u.name, enabled: on ? 0 : 1 });
+          closeModal(); AA.toast('User ' + (on ? 'disabled' : 'enabled') + '.', true); loadUsers();
+        } catch (e) { AA.toast(e.message); done(); }
+      });
+      var acctChk = document.getElementById('u_acct_approver');
+      if (acctChk) acctChk.addEventListener('change', async function () {
+        try {
+          await AA.call(P + 'set_account_approver', { name: u.name, enabled: acctChk.checked ? 1 : 0 });
+          u.can_approve_accounts = acctChk.checked ? 1 : 0;
+          AA.toast(acctChk.checked ? 'Account-approver capability granted.' : 'Account-approver capability revoked.', true);
+        } catch (e) { acctChk.checked = !acctChk.checked; AA.toast(e.message); }
+      });
+      wireChangeHistory(document.getElementById('modal-body'), 'Anticipatory Action User', u.name);
+    }
   }
 
   // ===================== SUBMISSIONS =====================
@@ -1206,7 +1254,7 @@
       var html = toolbar('<button class="btn" id="add-act">+ Add Activity</button>');
       if (!rows.length) { html += '<div class="empty"><p>No activities yet.</p></div>'; }
       else {
-        html += tableHead(['', 'Dates', 'Pillar', 'Activity', 'Milestone', 'Status', 'Visibility', '']);
+        html += tableHead(['', 'Dates', 'Pillar', 'Activity', 'Milestone', 'Status', 'Visibility']);
         html += rows.map(function (x) {
           var dates = x.start_date ? (AA.esc(x.start_date) + (x.end_date ? ' → ' + AA.esc(x.end_date) : '')) : '-';
           var st = (x.status || 'Planned');
@@ -1215,29 +1263,21 @@
           var thumb = x.image
             ? '<img src="' + AA.esc(x.image) + '" alt="" style="width:42px;height:42px;object-fit:cover;border:1px solid var(--line);display:block" />'
             : '<span style="color:var(--muted)">-</span>';
-          return '<tr>' +
+          return '<tr class="clickable-row" data-row-act="' + AA.esc(x.name) + '" title="Click to open this activity">' +
             '<td>' + thumb + '</td>' +
             '<td>' + dates + '</td>' +
             '<td>' + AA.esc(x.pillar || '-') + '</td>' +
             '<td class="strong">' + AA.esc(x.activity || '-') + (x.activity_reference ? '<div style="font-weight:400;color:var(--muted);font-size:12px;margin-top:3px">Ref: ' + AA.esc(x.activity_reference) + '</div>' : '') + '</td>' +
             '<td>' + AA.esc(x.milestone || '-') + '</td>' +
             '<td><span class="status-badge ' + stCls + '">' + AA.esc(st) + '</span></td>' +
-            '<td>' + vis + '</td>' +
-            '<td class="row-actions"><button class="btn sm ghost" data-open-act="' + AA.esc(x.name) + '">Edit</button><button class="btn sm danger" data-del-act="' + AA.esc(x.name) + '">Remove</button></td></tr>';
+            '<td>' + vis + '</td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
       panelHTML('activities', html);
       document.getElementById('add-act').addEventListener('click', function () { activityModal(); });
-      document.querySelectorAll('[data-open-act]').forEach(function (b) {
-        b.addEventListener('click', function () { activityModal(rows.find(function (x) { return x.name === b.dataset.openAct; })); });
-      });
-      document.querySelectorAll('[data-del-act]').forEach(function (b) {
-        b.addEventListener('click', async function () {
-          if (!confirm('Remove this activity?')) return;
-          try { await AA.call(P + 'delete_activity', { name: b.dataset.delAct }); AA.toast('Activity removed.', true); loadActivities(); }
-          catch (e) { AA.toast(e.message); }
-        });
+      document.querySelectorAll('#panel-activities tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function () { activityModal(rows.find(function (x) { return x.name === tr.dataset.rowAct; })); });
       });
     } catch (e) { errPanel('activities', e.message); }
   }
@@ -1263,7 +1303,12 @@
       field({ label: (existingImg ? 'Replace Image' : 'Image'), id: 'a_image', type: 'file', accept: 'image/*', full: true, hint: existingImg ? 'An image is set - uploading replaces it.' : 'Optional. Shown alongside the activity.' }) +
       field({ label: 'Details', id: 'a_details', type: 'textarea', full: true, value: activity && activity.details }) +
       field({ label: 'Story / narrative', id: 'a_narrative', type: 'textarea', full: true, value: activity && activity.narrative, hint: 'A longer story shown on the public Activities page.' });
-    openModal(editing ? 'Edit Activity' : 'Add Activity', f, async function () {
+    var extras = editing
+      ? '<div class="field full" style="border-top:1px solid var(--line);margin-top:6px;padding-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+          '<button type="button" class="btn sm danger" id="a_remove">Remove activity</button></div>' +
+        '<div class="field full">' + changeHistoryHTML() + '</div>'
+      : '';
+    openModal(editing ? 'Edit Activity' : 'Add Activity', f + extras, async function () {
       if (!v('a_activity')) { modalErr('Activity is required.'); return; }
       var imgEl = document.getElementById('a_image');
       var image = existingImg;
@@ -1277,6 +1322,15 @@
       else { await AA.call(P + 'add_activity', payload); }
       closeModal(); AA.toast(editing ? 'Activity updated.' : 'Activity added.', true); loadActivities();
     }, editing ? 'Save Changes' : 'Add Activity');
+    if (editing) {
+      document.getElementById('a_remove').addEventListener('click', async function () {
+        if (!confirm('Remove this activity?')) return;
+        var done = busy(document.getElementById('a_remove'), 'Removing…');
+        try { await AA.call(P + 'delete_activity', { name: activity.name }); closeModal(); AA.toast('Activity removed.', true); loadActivities(); }
+        catch (e) { AA.toast(e.message); done(); }
+      });
+      wireChangeHistory(document.getElementById('modal-body'), 'Anticipatory Activity', activity.name);
+    }
   }
 
   // ===================== EVENTS =====================
@@ -1298,7 +1352,7 @@
       var html = toolbar('<button class="btn" id="add-event">+ Add event</button>');
       if (!rows.length) { html += '<div class="empty"><p>No events yet.</p></div>'; }
       else {
-        html += tableHead(['', 'Title', 'Dates', 'Location', 'Pillar', 'Status', 'Visibility', '']);
+        html += tableHead(['', 'Title', 'Dates', 'Location', 'Pillar', 'Status', 'Visibility']);
         html += rows.map(function (x) {
           var dates = x.start_date ? (AA.esc(x.start_date) + (x.end_date ? ' → ' + AA.esc(x.end_date) : '')) : '-';
           var vis = x.published ? '<span class="badge approved">Public</span>' : '<span class="badge off">Private</span>';
@@ -1307,29 +1361,21 @@
             : '<span style="color:var(--muted)">-</span>';
           var title = '<span class="strong">' + AA.esc(x.title || '-') + '</span>' +
             (x.description ? '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(x.description) + '</div>' : '');
-          return '<tr>' +
+          return '<tr class="clickable-row" data-row-event="' + AA.esc(x.name) + '" title="Click to open this event">' +
             '<td>' + thumb + '</td>' +
             '<td>' + title + '</td>' +
             '<td>' + dates + '</td>' +
             '<td>' + AA.esc(x.location || '-') + '</td>' +
             '<td>' + AA.esc(x.pillar || '-') + '</td>' +
             '<td>' + eventStatusBadge(x.status) + '</td>' +
-            '<td>' + vis + '</td>' +
-            '<td class="row-actions"><button class="btn sm ghost" data-open-event="' + AA.esc(x.name) + '">Edit</button><button class="btn sm danger" data-del-event="' + AA.esc(x.name) + '">Remove</button></td></tr>';
+            '<td>' + vis + '</td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
       panelHTML('events', html);
       document.getElementById('add-event').addEventListener('click', function () { eventModal(); });
-      document.querySelectorAll('[data-open-event]').forEach(function (b) {
-        b.addEventListener('click', function () { eventModal(rows.find(function (x) { return x.name === b.dataset.openEvent; })); });
-      });
-      document.querySelectorAll('[data-del-event]').forEach(function (b) {
-        b.addEventListener('click', async function () {
-          if (!confirm('Remove this event?')) return;
-          try { await AA.call(P + 'delete_event', { name: b.dataset.delEvent }); AA.toast('Event removed.', true); loadEvents(); }
-          catch (e) { AA.toast(e.message); }
-        });
+      document.querySelectorAll('#panel-events tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function () { eventModal(rows.find(function (x) { return x.name === tr.dataset.rowEvent; })); });
       });
     } catch (e) { errPanel('events', e.message); }
   }
@@ -1352,7 +1398,12 @@
       imgPreview +
       field({ label: (existingImg ? 'Replace Image' : 'Image'), id: 'e_image', type: 'file', accept: 'image/*', full: true, hint: existingImg ? 'An image is set - uploading replaces it.' : 'Optional. Shown alongside the event.' }) +
       field({ label: 'Description', id: 'e_desc', type: 'textarea', full: true, value: event && event.description });
-    openModal(editing ? 'Edit event' : 'Add event', f, async function () {
+    var extras = editing
+      ? '<div class="field full" style="border-top:1px solid var(--line);margin-top:6px;padding-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+          '<button type="button" class="btn sm danger" id="e_remove">Remove event</button></div>' +
+        '<div class="field full">' + changeHistoryHTML() + '</div>'
+      : '';
+    openModal(editing ? 'Edit event' : 'Add event', f + extras, async function () {
       if (!v('e_title')) { modalErr('Title is required.'); return; }
       if (!v('e_start')) { modalErr('A date is required.'); return; }
       var imgEl = document.getElementById('e_image');
@@ -1366,6 +1417,193 @@
       else { await AA.call(P + 'add_event', payload); }
       closeModal(); AA.toast(editing ? 'Event updated.' : 'Event added.', true); loadEvents();
     }, editing ? 'Save Changes' : 'Add event');
+    if (editing) {
+      document.getElementById('e_remove').addEventListener('click', async function () {
+        if (!confirm('Remove this event?')) return;
+        var done = busy(document.getElementById('e_remove'), 'Removing…');
+        try { await AA.call(P + 'delete_event', { name: event.name }); closeModal(); AA.toast('Event removed.', true); loadEvents(); }
+        catch (e) { AA.toast(e.message); done(); }
+      });
+      wireChangeHistory(document.getElementById('modal-body'), 'AA Event', event.name);
+    }
+  }
+
+  // ===================== FAQ =====================
+  // A tiny rich-text field (contenteditable + toolbar) so FAQ answers can carry
+  // links, bold/italic and lists. Value is the element's innerHTML (HTML).
+  function richField(o) {
+    return '<div class="field full">' +
+      '<label>' + AA.esc(o.label) + (o.required ? ' *' : '') + '</label>' +
+      '<div class="rte">' +
+        '<div class="rte-toolbar">' +
+          '<button type="button" class="rte-btn" data-cmd="bold" title="Bold"><b>B</b></button>' +
+          '<button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i>I</i></button>' +
+          '<button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet list">&bull; List</button>' +
+          '<button type="button" class="rte-btn" data-cmd="createLink" title="Add link">Link</button>' +
+          '<button type="button" class="rte-btn" data-cmd="unlink" title="Remove link">Unlink</button>' +
+        '</div>' +
+        '<div class="rte-area" id="' + o.id + '" contenteditable="true">' + (o.value || '') + '</div>' +
+      '</div>' +
+      (o.hint ? '<div class="hint">' + AA.esc(o.hint) + '</div>' : '') +
+    '</div>';
+  }
+  function richVal(id) { var e = document.getElementById(id); return e ? e.innerHTML.trim() : ''; }
+  function wireRich(id) {
+    var area = document.getElementById(id);
+    if (!area) return;
+    var wrap = area.closest('.rte');
+    wrap.querySelectorAll('.rte-btn').forEach(function (b) {
+      b.addEventListener('mousedown', function (e) { e.preventDefault(); });  // keep the text selection
+      b.addEventListener('click', function () {
+        area.focus();
+        if (b.dataset.cmd === 'createLink') {
+          var url = prompt('Link URL (include https://)');
+          if (url) document.execCommand('createLink', false, url);
+        } else {
+          document.execCommand(b.dataset.cmd, false, null);
+        }
+      });
+    });
+  }
+
+  async function loadFaqs() {
+    panelHTML('faq', '<div class="loading">Loading FAQs…</div>');
+    try {
+      var r = await AA.call(P + 'list_faqs');
+      var rows = (r && r.data) || [];
+      var html = toolbar('<div class="grow"></div><button class="btn" id="add-faq">+ Add FAQ</button>');
+      if (!rows.length) { html += '<div class="empty"><p>No FAQs yet. Add one to populate the public FAQ page.</p></div>'; }
+      else {
+        html += tableHead(['Order', 'Question', 'Category', 'Visibility']);
+        html += rows.map(function (x) {
+          var vis = x.published ? '<span class="badge approved">Public</span>' : '<span class="badge off">Hidden</span>';
+          return '<tr class="clickable-row" data-row-faq="' + AA.esc(x.name) + '" title="Click to edit this FAQ">' +
+            '<td>' + AA.esc(x.display_order != null ? x.display_order : '-') + '</td>' +
+            '<td class="strong">' + AA.esc(x.question) + '</td>' +
+            '<td>' + AA.esc(x.category || '-') + '</td>' +
+            '<td>' + vis + '</td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('faq', html);
+      document.getElementById('add-faq').addEventListener('click', function () { faqModal(); });
+      document.querySelectorAll('#panel-faq tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function () { faqModal(rows.find(function (x) { return x.name === tr.dataset.rowFaq; })); });
+      });
+    } catch (e) { errPanel('faq', e.message); }
+  }
+
+  function faqModal(faq) {
+    var editing = faq && faq.name;
+    var cats = (META.faq_categories && META.faq_categories.length ? META.faq_categories
+      : ['General', 'Getting access', 'Reporting an action', 'Reviewing & approval', 'Reports & documents', 'Pillars & getting involved', 'Other'])
+      .map(function (c) { return { value: c, label: c }; });
+    var f =
+      field({ label: 'Question', id: 'q_question', required: true, full: true, value: faq && faq.question }) +
+      field({ label: 'Category', id: 'q_category', type: 'select', options: cats, value: (faq && faq.category) || 'General', placeholder: false }) +
+      field({ label: 'Display order', id: 'q_order', type: 'number', value: (faq && faq.display_order) || 0, hint: 'Lower numbers appear first.' }) +
+      field({ label: 'Visibility', id: 'q_pub', type: 'select', options: VISIBILITY, value: editing ? (faq.published ? '1' : '0') : '1', placeholder: false, full: true }) +
+      richField({ label: 'Answer', id: 'q_answer', required: true, value: (faq && faq.answer) || '', hint: 'Use the toolbar to add links, bold, italics and lists.' });
+    var extras = editing
+      ? '<div class="field full" style="border-top:1px solid var(--line);margin-top:6px;padding-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" class="btn sm danger" id="q_remove">Remove FAQ</button></div>' +
+        '<div class="field full">' + changeHistoryHTML() + '</div>'
+      : '';
+    openModal(editing ? 'Edit FAQ' : 'Add FAQ', f + extras, async function () {
+      var answer = richVal('q_answer');
+      if (!v('q_question') || !answer.replace(/<[^>]*>/g, '').trim()) { modalErr('A question and an answer are required.'); return; }
+      var payload = { question: v('q_question'), answer: answer, category: v('q_category'), display_order: v('q_order') || 0, published: v('q_pub') };
+      if (editing) { await AA.call(P + 'update_faq', Object.assign({ name: faq.name }, payload)); }
+      else { await AA.call(P + 'add_faq', payload); }
+      closeModal(); AA.toast(editing ? 'FAQ updated.' : 'FAQ added.', true); loadFaqs();
+    }, editing ? 'Save Changes' : 'Add FAQ');
+    wireRich('q_answer');
+    if (editing) {
+      document.getElementById('q_remove').addEventListener('click', async function () {
+        if (!confirm('Remove this FAQ from the public page?')) return;
+        var done = busy(document.getElementById('q_remove'), 'Removing…');
+        try { await AA.call(P + 'delete_faq', { name: faq.name }); closeModal(); AA.toast('FAQ removed.', true); loadFaqs(); }
+        catch (e) { AA.toast(e.message); done(); }
+      });
+      wireChangeHistory(document.getElementById('modal-body'), 'AA FAQ', faq.name);
+    }
+  }
+
+  // ===================== POLICY / TERMS =====================
+  var POLICY_TYPES = ['Terms & Conditions', 'Privacy Policy', 'Code of Conduct', 'Data Sharing Agreement', 'Guideline', 'Other'];
+
+  async function loadPolicies() {
+    panelHTML('policy', '<div class="loading">Loading policy documents…</div>');
+    try {
+      var r = await AA.call(P + 'list_policies');
+      var rows = (r && r.data) || [];
+      var html = toolbar('<div class="grow"></div><button class="btn" id="add-policy">+ Add document</button>');
+      if (!rows.length) { html += '<div class="empty"><p>No policy documents yet. Add your Terms &amp; Conditions so they appear on the sign-up page.</p></div>'; }
+      else {
+        html += tableHead(['Order', 'Title', 'Type', 'Document', 'Visibility']);
+        html += rows.map(function (x) {
+          var vis = x.published ? '<span class="badge approved">Public</span>' : '<span class="badge off">Hidden</span>';
+          var doc = x.attachment ? '<a href="' + AA.esc(x.attachment) + '" target="_blank" rel="noopener">File</a>'
+            : x.link ? '<a href="' + AA.esc(x.link) + '" target="_blank" rel="noopener">Link</a>' : '-';
+          return '<tr class="clickable-row" data-row-policy="' + AA.esc(x.name) + '" title="Click to edit this document">' +
+            '<td>' + AA.esc(x.display_order != null ? x.display_order : '-') + '</td>' +
+            '<td class="strong">' + AA.esc(x.title) + '</td>' +
+            '<td>' + AA.esc(x.policy_type || '-') + '</td>' +
+            '<td>' + doc + '</td>' +
+            '<td>' + vis + '</td></tr>';
+        }).join('');
+        html += '</tbody></table></div>';
+      }
+      panelHTML('policy', html);
+      document.getElementById('add-policy').addEventListener('click', function () { policyModal(); });
+      document.querySelectorAll('#panel-policy tr.clickable-row').forEach(function (tr) {
+        tr.addEventListener('click', function (e) {
+          if (e.target.closest('a')) return;
+          policyModal(rows.find(function (x) { return x.name === tr.dataset.rowPolicy; }));
+        });
+      });
+    } catch (e) { errPanel('policy', e.message); }
+  }
+
+  function policyModal(pol) {
+    var editing = pol && pol.name;
+    var types = POLICY_TYPES.map(function (t) { return { value: t, label: t }; });
+    var existingFile = (pol && pol.attachment) || '';
+    var fileNote = existingFile
+      ? '<div class="field full"><label>Current file</label><div class="hint"><a href="' + AA.esc(existingFile) + '" target="_blank" rel="noopener">' + AA.esc(existingFile.split('/').pop()) + '</a></div></div>'
+      : '';
+    var f =
+      field({ label: 'Title', id: 'p_title', required: true, full: true, value: pol && pol.title }) +
+      field({ label: 'Type', id: 'p_type', type: 'select', options: types, value: (pol && pol.policy_type) || 'Terms & Conditions', placeholder: false }) +
+      field({ label: 'Display order', id: 'p_order', type: 'number', value: (pol && pol.display_order) || 0, hint: 'Lower numbers appear first.' }) +
+      field({ label: 'Visibility', id: 'p_pub', type: 'select', options: VISIBILITY, value: editing ? (pol.published ? '1' : '0') : '1', placeholder: false, full: true }) +
+      field({ label: 'Description', id: 'p_desc', type: 'textarea', full: true, value: pol && pol.description }) +
+      fileNote +
+      field({ label: (existingFile ? 'Replace file' : 'Document file'), id: 'p_file', type: 'file', full: true, hint: 'Upload a PDF / document, or use the link field below.' }) +
+      field({ label: 'External link (URL)', id: 'p_link', full: true, value: pol && pol.link, hint: 'Optional — use instead of an uploaded file.' });
+    var extras = editing
+      ? '<div class="field full" style="border-top:1px solid var(--line);margin-top:6px;padding-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" class="btn sm danger" id="p_remove">Remove document</button></div>' +
+        '<div class="field full">' + changeHistoryHTML() + '</div>'
+      : '';
+    openModal(editing ? 'Edit document' : 'Add document', f + extras, async function () {
+      if (!v('p_title')) { modalErr('A title is required.'); return; }
+      var fileEl = document.getElementById('p_file');
+      var attachment = existingFile;
+      if (fileEl && fileEl.files && fileEl.files[0]) { attachment = await AA.upload(fileEl.files[0], false); }
+      var payload = { title: v('p_title'), policy_type: v('p_type'), display_order: v('p_order') || 0,
+        published: v('p_pub'), description: v('p_desc'), attachment: attachment, link: v('p_link') };
+      if (editing) { await AA.call(P + 'update_policy', Object.assign({ name: pol.name }, payload)); }
+      else { await AA.call(P + 'add_policy', payload); }
+      closeModal(); AA.toast(editing ? 'Document updated.' : 'Document added.', true); loadPolicies();
+    }, editing ? 'Save Changes' : 'Add document');
+    if (editing) {
+      document.getElementById('p_remove').addEventListener('click', async function () {
+        if (!confirm('Remove this document?')) return;
+        var done = busy(document.getElementById('p_remove'), 'Removing…');
+        try { await AA.call(P + 'delete_policy', { name: pol.name }); closeModal(); AA.toast('Document removed.', true); loadPolicies(); }
+        catch (e) { AA.toast(e.message); done(); }
+      });
+      wireChangeHistory(document.getElementById('modal-body'), 'AA Policy Document', pol.name);
+    }
   }
 
   // ===================== ORGANIZATIONS =====================
@@ -1640,6 +1878,8 @@
         ['Read', 'Replied', 'Closed'].map(function (s) { return '<button class="btn ' + (s === 'Closed' ? 'ghost' : '') + '" data-msg-status="' + s + '">Mark ' + s + '</button>'; }).join('') +
       '</div>';
     document.getElementById('modal').classList.add('open');
+    document.getElementById('modal-body').insertAdjacentHTML('beforeend', changeHistoryHTML());
+    wireChangeHistory(document.getElementById('modal-body'), 'AA Contact Message', m.name);
     document.querySelectorAll('[data-msg-status]').forEach(function (b) {
       b.addEventListener('click', async function () {
         try { await AA.call(P + 'set_message_status', { name: m.name, status: b.dataset.msgStatus }); closeModal(); AA.toast('Marked ' + b.dataset.msgStatus + '.', true); loadMessages(document.getElementById('msg-filter') ? document.getElementById('msg-filter').value : ''); loaded.overview = false; }
@@ -1767,6 +2007,8 @@
         body += '<div class="form-actions"><button class="btn ghost" id="q-close">Close</button></div>';
       }
       detailModal('Sign-up Request · ' + name, body);
+      document.getElementById('modal-body').insertAdjacentHTML('beforeend', changeHistoryHTML());
+      wireChangeHistory(document.getElementById('modal-body'), 'AA Membership Request', name);
       document.getElementById('q-close').addEventListener('click', closeModal);
       if (pending) {
         document.getElementById('q-approve').addEventListener('click', async function () {
@@ -1871,6 +2113,8 @@
       '<div class="form-actions"><button type="submit" class="btn" id="modal-submit">Save</button>' +
       '<button type="button" class="btn ghost" id="modal-cancel">Cancel</button></div></form>';
     document.getElementById('modal').classList.add('open');
+    document.getElementById('modal-body').insertAdjacentHTML('beforeend', changeHistoryHTML());
+    wireChangeHistory(document.getElementById('modal-body'), 'AA Support Request', q.name);
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
     document.getElementById('modal-form').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -2020,26 +2264,74 @@
     var launch = on
       ? '<a href="/anticipatory-action-test" target="_blank" rel="noopener" class="btn sm" style="background:' + TEST_AMBER + ';border-color:' + TEST_AMBER + ';margin-left:auto">Testing Environment &#8599;</a>'
       : '';
+    // When on, show the named batch and who started the run (item 2 & 3) so a
+    // second admin sees they would be interrupting someone else's testing.
+    var meta = '';
+    if (on) {
+      var bits = [];
+      if (TESTING.batch_name) bits.push('Batch <strong>' + AA.esc(TESTING.batch_name) + '</strong>');
+      if (TESTING.enabled_by) bits.push('on by ' + AA.esc(TESTING.enabled_by) + (TESTING.enabled_on ? ' &middot; ' + AA.esc(fmtDateTime(TESTING.enabled_on)) : ''));
+      if (bits.length) meta = '<div style="flex-basis:100%;font-size:12px;color:' + TEST_AMBER + '">' + bits.join(' &nbsp;&middot;&nbsp; ') + '</div>';
+    }
     return '<div id="test-strip" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid ' + TEST_AMBER_LINE + ';background:' + TEST_AMBER_BG + ';padding:12px 16px;margin-bottom:24px">' +
         badge +
         '<div style="font-weight:600;font-size:13.5px;color:var(--text)">Test / dissemination mode</div>' +
-        ctrl + launch +
+        ctrl + launch + meta +
       '</div>';
   }
 
   function wireTestStrip() {
     var btn = document.getElementById('test-toggle');
-    if (btn) {
-      btn.addEventListener('click', async function () {
-        var done = busy(btn, '');
-        try {
-          var res = await AA.call(P + 'set_testing_enabled', { enabled: TESTING.enabled ? 0 : 1 });
-          TESTING.enabled = !!(res && res.enabled);
-          AA.toast('Test mode ' + (TESTING.enabled ? 'enabled.' : 'disabled.'), true);
-          loaded.overview = false; loadOverview();
-        } catch (e) { AA.toast(e.message); done(); }
-      });
-    }
+    if (!btn) return;
+    // Enabling asks for a batch name; disabling always confirms first (and warns
+    // if another admin owns the active run).
+    btn.addEventListener('click', function () {
+      if (TESTING.enabled) confirmDisableTest(false);
+      else promptEnableTest();
+    });
+  }
+
+  function promptEnableTest() {
+    openModal('Turn on test / dissemination mode',
+      field({ id: 'test-batch-name', label: 'Name this test', required: true, full: true,
+              value: TESTING.batch_name || '', placeholder: 'e.g. Garissa testing 2026',
+              hint: 'Every entry submitted through the test form while testing is on is tagged with this batch.' }),
+      async function () {
+        var bn = v('test-batch-name');
+        if (!bn) { modalErr('Please enter a name for this test.'); return; }
+        var res = await AA.call(P + 'set_testing_enabled', { enabled: 1, batch_name: bn });
+        Object.assign(TESTING, { enabled: !!(res && res.enabled), batch_name: (res && res.batch_name) || bn });
+        closeModal();
+        AA.toast('Test mode enabled — batch "' + AA.esc(TESTING.batch_name) + '".', true);
+        loaded.overview = false; loadOverview();
+      },
+      'Turn on testing');
+  }
+
+  function confirmDisableTest(forced) {
+    var mine = TESTING.is_mine !== false;
+    var who = TESTING.enabled_by
+      ? 'Turned on by <strong>' + AA.esc(TESTING.enabled_by) + '</strong>' + (TESTING.enabled_on ? ' on ' + AA.esc(fmtDateTime(TESTING.enabled_on)) : '') + '.'
+      : '';
+    var warn = (!mine && who) ? '<p style="color:' + TEST_AMBER + ';font-weight:600;margin:0 0 10px">' + who + ' Turning it off now will end their test run.</p>' : (who ? '<p class="muted" style="margin:0 0 10px">' + who + '</p>' : '');
+    var body = '<div class="full">' + warn +
+      '<p style="margin:0">Turn off test / dissemination mode? The public test form will stop accepting entries' +
+      (TESTING.batch_name ? ' for batch <strong>' + AA.esc(TESTING.batch_name) + '</strong>' : '') + '.</p></div>';
+    openModal('Turn off testing', body, async function () {
+      var res = await AA.call(P + 'set_testing_enabled', { enabled: 0, force: (forced || !mine) ? 1 : 0 });
+      if (res && res.needs_confirm) {
+        // A different admin owns the run — re-confirm with their details, forced.
+        Object.assign(TESTING, { enabled_by: res.enabled_by, enabled_on: res.enabled_on, batch_name: res.batch_name, is_mine: false });
+        closeModal();
+        confirmDisableTest(true);
+        return;
+      }
+      Object.assign(TESTING, { enabled: !!(res && res.enabled), enabled_by: null, enabled_on: null });
+      closeModal();
+      AA.toast('Test mode disabled.', true);
+      loaded.overview = false; loadOverview();
+    },
+    'Turn off testing');
   }
 
   // TEST submissions list - rendered like the real submissions list, with a clear amber accent.
@@ -2051,7 +2343,7 @@
       var r = await AA.call(P + 'list_test_submissions', {});
       var rows = (r && r.data) || [];
       if (!rows.length) { host.innerHTML = '<div class="empty"><p>No test submissions yet.</p></div>'; return; }
-      var html = tableHead(['Reference', 'Organization', 'Hazard', 'Counties', 'People', 'Funds (KES)', 'Date', 'Status']);
+      var html = tableHead(['Reference', 'Batch', 'Organization', 'Hazard', 'Counties', 'People', 'Funds (KES)', 'Date', 'Status']);
       html += rows.map(function (s) {
         var badge = s.status === 'Approved' ? '<span class="badge approved">Approved</span>'
           : s.status === 'Not Approved' ? '<span class="badge rejected">Not Approved</span>'
@@ -2059,6 +2351,7 @@
           : '<span class="badge pending">Pending</span>';
         return '<tr class="clickable-row" data-row-test="' + AA.esc(s.name) + '" title="Click to review this test submission">' +
           '<td class="strong">' + AA.esc(s.name) + '</td>' +
+          '<td>' + AA.esc(s.test_batch || '-') + '</td>' +
           '<td>' + AA.esc(s.organization || '-') + '</td>' +
           '<td>' + AA.esc(s.hazard || '-') + '</td>' +
           '<td>' + AA.esc(s.counties || '-') + '</td>' +
@@ -2088,10 +2381,10 @@
   <div class="footer-top">
     <div>
       <div class="footer-brand-row">
-        <img src="/aadashboard.png" alt="NDOC" />
+        <img src="/aadashboard.png" alt="NDRMA" />
         <div class="footer-brand-name">Kenya Anticipatory Action</div>
       </div>
-      <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Operations Centre with the Kenya Red Cross Society.</p>
+      <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Risk Management Authority with the Kenya Red Cross Society.</p>
     </div>
     <div class="footer-col">
       <h4>Programme</h4>
@@ -2113,7 +2406,7 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <span>&copy; 2026 Kenya Anticipatory Action TWG &middot; National Disaster Operations Centre</span>
+    <span>&copy; 2026 Kenya Anticipatory Action TWG &middot; National Disaster Risk Management Authority</span>
     <span>Developed and maintained by <a href="https://www.redcross.or.ke" target="_blank">Kenya Red Cross</a></span>
   </div>
 </footer>

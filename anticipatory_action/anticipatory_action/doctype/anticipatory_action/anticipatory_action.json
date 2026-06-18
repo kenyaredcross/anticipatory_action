@@ -40,6 +40,7 @@
   "awaiting_account",
   "is_update",
   "is_test",
+  "test_batch",
   "amended_from"
  ],
  "fields": [
@@ -250,6 +251,14 @@
    "fieldname": "is_test",
    "fieldtype": "Check",
    "label": "Test submission",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.is_test",
+   "description": "The named test / dissemination batch this entry was submitted under.",
+   "fieldname": "test_batch",
+   "fieldtype": "Data",
+   "label": "Test batch",
    "read_only": 1
   },
   {
