@@ -533,7 +533,7 @@ def _ensure_roster_for_aa_users():
 		try:
 			doc = frappe.get_doc({"doctype": "Anticipatory Action User",
 				"first_name": ud.get("first_name") or email.split("@")[0],
-				"last_name": ud.get("last_name") or "", "email": email,
+				"last_name": ud.get("last_name") or "-", "email": email,
 				"phone": ud.get("phone") or "0000000000", "organization": org,
 				"role": role, "enabled": 1})
 			doc.flags.ignore_permissions = True

@@ -173,6 +173,15 @@ on_session_creation = [
 	# }
 # }
 
+# On approval (submit with status Approved) email the reporter a branded
+# confirmation with the form-style PDF. Replaces the AA Submission Approved
+# Notification (kept disabled) so the emailed PDF matches the web form.
+doc_events = {
+	"Anticipatory Action": {
+		"on_submit": "anticipatory_action.api.aa_email.send_submission_approved",
+	},
+}
+
 # Scheduled Tasks
 # ---------------
 

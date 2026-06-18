@@ -758,6 +758,27 @@ select.aa-input {
 (function () {
   'use strict';
 
+  // ── frappe.call shim ─────────────────────────────────────────────────────────
+  // frappe.call is unreliable on this site (the page often loads with frappe only
+  // half-booted), so route every call through a plain fetch — the same request that
+  // works from the console. Keeps the {method, args, headers, callback, error}
+  // shape used below; the callback still receives {message: ...}.
+  if (!window.frappe) window.frappe = {};
+  frappe.call = function (opts) {
+    var headers = { 'Content-Type': 'application/json' };
+    headers['X-Frappe-CSRF-Token'] =
+      (opts.headers && opts.headers['X-Frappe-CSRF-Token']) ||
+      (window.frappe && frappe.csrf_token) || 'Guest';
+    return fetch('/api/method/' + opts.method, {
+      method: 'POST', headers: headers, body: JSON.stringify(opts.args || {})
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, d: d }; });
+    }).then(function (x) {
+      if (!x.ok) { if (opts.error) opts.error(x.d); return; }
+      if (opts.callback) opts.callback(x.d);
+    }).catch(function (e) { if (opts.error) opts.error(e); });
+  };
+
   // ── State ──────────────────────────────────────────────────────────────────
   const details = [];        // array of row objects
   let editingIdx = null;     // null = new row, number = editing existing
