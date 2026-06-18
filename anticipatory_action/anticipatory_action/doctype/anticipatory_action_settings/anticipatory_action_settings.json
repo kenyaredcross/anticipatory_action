@@ -52,7 +52,7 @@
    "label": "Email"
   },
   {
-   "description": "Branded AA emails (welcome, sign-up, pillar enquiries) are sent THROUGH this Email Account; the From reads \"Anticipatory Action <that account's address>\". Pick any outgoing account on the site - e.g. the redcross / Office 365 one for best delivery to Outlook/Gmail. Leave blank to use the site's default outgoing account.",
+   "description": "Leave BLANK (recommended) to send AA emails through the site's default outgoing Email Account - the AA branding is in the email body, not a separate From address. Optionally pick a specific outgoing account here to route AA mail through it instead (the From then reads \"Anticipatory Action <that account's address>\"). Either way AA email - welcome, set-password, sign-up, approvals, pillar enquiries - sends as long as the chosen/default account can send.",
    "fieldname": "aa_email_sender",
    "fieldtype": "Link",
    "label": "Send AA emails via",
@@ -61,7 +61,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-06-17 00:00:00.000000",
+ "modified": "2026-06-18 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action Settings",

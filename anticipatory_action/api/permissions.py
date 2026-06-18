@@ -28,28 +28,94 @@ def _is_admin(user=None):
 
 def _can_review(user=None):
 	"""Admins, System Managers and Approvers — anyone allowed to see and act on
-	the full submission queue (not scoped to their own records)."""
+	the submission queue (an Approver only within their own organization; admins
+	across every organization — see ``reviewer_owner_scope``)."""
 	return bool(REVIEW_ROLES & set(frappe.get_roles(user or frappe.session.user)))
 
 
-def aa_query_conditions(user=None):
-	"""SQL WHERE fragment restricting non-admins to records they own."""
+# ---------------------------------------------------------------------------
+# Organisation scoping — an Approver reviews only the submissions of their own
+# organization. A submission's organization is the organization of its owner
+# (the member who filed it); the link is owner (User) -> roster
+# (Anticipatory Action User) -> organization. Full admins / System Managers are
+# never scoped.
+# ---------------------------------------------------------------------------
+
+def _user_org(user=None):
+	"""The AA organization a roster account belongs to, or None when the account
+	is not on the roster / has no organization set."""
 	user = user or frappe.session.user
-	if _can_review(user) or user == "Guest":
+	if user in ("Guest", "Administrator"):
+		return None
+	org = frappe.db.get_value("Anticipatory Action User", {"user": user}, "organization")
+	if not org:
+		org = frappe.db.get_value("Anticipatory Action User", {"email": user}, "organization")
+	return org or None
+
+
+def _org_logins(org):
+	"""Every login account (User name + email) of the roster members of ``org`` —
+	the set of possible submission ``owner`` values for that organization."""
+	logins = set()
+	if not org:
+		return logins
+	for r in frappe.get_all(
+		"Anticipatory Action User",
+		filters={"organization": org},
+		fields=["user", "email"],
+	):
+		if r.user:
+			logins.add(r.user)
+		if r.email:
+			logins.add(r.email)
+	return logins
+
+
+def reviewer_owner_scope(user=None):
+	"""The submission ``owner`` values a user is allowed to see/act on.
+
+	* ``None``  — no restriction (full admins and System Managers see every
+	  organization's submissions).
+	* a ``set`` — the owners the user is confined to:
+	    - an Approver: every roster member of their own organization (plus
+	      themselves), so they review only their organization's submissions;
+	    - anyone else: only their own submissions.
+	"""
+	user = user or frappe.session.user
+	if _is_admin(user):
+		return None
+	if APPROVER_ROLE in set(frappe.get_roles(user)):
+		logins = _org_logins(_user_org(user))
+		logins.add(user)
+		return logins
+	return {user}
+
+
+def aa_query_conditions(user=None):
+	"""SQL WHERE fragment scoping the caller to the submissions they may see."""
+	user = user or frappe.session.user
+	if user == "Guest":
 		return ""
-	return f"`tabAnticipatory Action`.`owner` = {frappe.db.escape(user)}"
+	scope = reviewer_owner_scope(user)
+	if scope is None:
+		return ""  # admins / System Managers — the full picture
+	owners = ", ".join(frappe.db.escape(o) for o in sorted(scope))
+	return f"`tabAnticipatory Action`.`owner` in ({owners})"
 
 
 def aa_has_permission(doc, ptype=None, user=None):
-	"""Deny non-admins access to submissions they don't own.
+	"""Deny access to submissions outside the caller's scope.
 
-	Returns None to defer to the normal role-based check (for admins, guests,
-	and the owner), and False to actively deny everyone else.
+	Returns None to defer to the normal role-based check (for admins, guests, and
+	in-scope records), and False to actively deny everything else.
 	"""
 	user = user or frappe.session.user
-	if _can_review(user) or user == "Guest":
+	if user == "Guest":
 		return None
-	return None if getattr(doc, "owner", None) == user else False
+	scope = reviewer_owner_scope(user)
+	if scope is None:
+		return None
+	return None if getattr(doc, "owner", None) in scope else False
 
 
 # ---------------------------------------------------------------------------

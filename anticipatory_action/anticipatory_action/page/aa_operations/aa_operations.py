@@ -19,6 +19,15 @@ def get_summary():
 	"""
 	is_admin = _is_admin()
 
+	# Organisation scoping: an Approver's submission counters reflect only their
+	# own organization's submissions (admins see every organization). The approved
+	# impact aggregates below (people / funds / counties / hazards) are programme-
+	# wide figures and are intentionally left unscoped.
+	from anticipatory_action.api.permissions import reviewer_owner_scope
+
+	scope = reviewer_owner_scope()
+	owner_filter = {} if scope is None else {"owner": ["in", sorted(scope)]}
+
 	totals = frappe.db.sql(
 		"""
 		SELECT
@@ -39,9 +48,9 @@ def get_summary():
 	_live = {"awaiting_account": ["!=", 1], "is_test": ["!=", 1]}
 	data = {
 		"is_admin": is_admin,
-		"activations_total": frappe.db.count("Anticipatory Action", _live),
-		"activations_pending": frappe.db.count("Anticipatory Action", {"status": "Pending", **_live}),
-		"activations_approved": frappe.db.count("Anticipatory Action", {"status": "Approved"}),
+		"activations_total": frappe.db.count("Anticipatory Action", {**_live, **owner_filter}),
+		"activations_pending": frappe.db.count("Anticipatory Action", {"status": "Pending", **_live, **owner_filter}),
+		"activations_approved": frappe.db.count("Anticipatory Action", {"status": "Approved", **owner_filter}),
 		"people_reached": int(t.get("people") or 0),
 		"households": int(t.get("households") or 0),
 		"funds_kes": float(t.get("funds") or 0),
@@ -51,7 +60,7 @@ def get_summary():
 		"activities": frappe.db.count("Anticipatory Activity"),
 		"reports": frappe.db.count("Anticipatory Report"),
 		"hazards": _hazard_breakdown(),
-		"recent": _recent_activations(),
+		"recent": _recent_activations(owner_filter),
 	}
 
 	if is_admin:
@@ -88,9 +97,10 @@ def _hazard_breakdown():
 	]
 
 
-def _recent_activations():
+def _recent_activations(owner_filter=None):
 	return frappe.get_all(
 		"Anticipatory Action",
+		filters=owner_filter or {},
 		fields=["name", "implementing_organization", "anticipated_hazard", "status", "modified"],
 		order_by="modified desc",
 		limit=6,
@@ -189,6 +199,17 @@ def get_activations(status=None, hazard=None, county=None, test_only=0):
 	else:
 		conditions.append("(p.is_test = 0 OR p.is_test IS NULL)")
 	values = {}
+
+	# Organisation scoping: an Approver only sees their own organization's
+	# submissions, a plain member only their own; admins see everything. This is
+	# enforced here (not only in the portal wrapper) because this endpoint is
+	# whitelisted and could otherwise be called directly to bypass the wrapper.
+	from anticipatory_action.api.permissions import reviewer_owner_scope
+
+	scope = reviewer_owner_scope()
+	if scope is not None:
+		conditions.append("p.owner IN %(owners)s")
+		values["owners"] = tuple(scope) or ("\x00",)
 	if status:
 		conditions.append("p.status = %(status)s")
 		values["status"] = status
