@@ -5,7 +5,10 @@
  "engine": "InnoDB",
  "field_order": [
   "testing_enabled",
-  "testing_note"
+  "test_batch_name",
+  "testing_note",
+  "testing_enabled_by",
+  "testing_enabled_on"
  ],
  "fields": [
   {
@@ -17,9 +20,29 @@
   },
   {
    "depends_on": "eval:doc.testing_enabled",
+   "description": "Name this round of testing, e.g. \"Garissa testing 2026\". Every entry submitted through the test form while testing is on is tagged with this batch.",
+   "fieldname": "test_batch_name",
+   "fieldtype": "Data",
+   "label": "Test batch name"
+  },
+  {
+   "depends_on": "eval:doc.testing_enabled",
    "fieldname": "testing_note",
    "fieldtype": "Small Text",
    "label": "Note shown on the test form"
+  },
+  {
+   "fieldname": "testing_enabled_by",
+   "fieldtype": "Link",
+   "label": "Testing turned on by",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "testing_enabled_on",
+   "fieldtype": "Datetime",
+   "label": "Testing turned on at",
+   "read_only": 1
   }
  ],
  "issingle": 1,

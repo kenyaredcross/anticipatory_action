@@ -35,7 +35,7 @@ footer, .web-footer, .footer { display: none !important; }
 .aa-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 20px;
   padding: 20px 28px;
   background: var(--white);
@@ -45,7 +45,7 @@ footer, .web-footer, .footer { display: none !important; }
   margin-bottom: 0;
 }
 .aa-logo { height: 60px; width: auto; object-fit: contain; flex-shrink: 0; }
-.aa-header-center { text-align: left; flex: 1; min-width: 0; }
+.aa-header-center { text-align: center; flex: 0 1 auto; min-width: 0; }
 .aa-header-title {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: 0.01em;
   font-size: 22px; font-weight: 700; color: var(--charcoal); line-height: 1.2;
@@ -352,7 +352,7 @@ select.aa-input {
 
 <!-- ── Header with logos ── -->
 <div class="aa-header">
-  <img src="/aadashboard.png" alt="NDOC" class="aa-logo" />
+  <img src="/aadashboard.png" alt="NDRMA" class="aa-logo" />
   <div class="aa-header-center">
     <div class="aa-header-title">Anticipatory Action</div>
     <div class="aa-header-sub">Data Collection &amp; Monitoring Platform</div>
@@ -362,7 +362,7 @@ select.aa-input {
 <!-- ── Introduction ── -->
 <div class="aa-intro">
   <p>This tool tracks and monitors implementation of Anticipatory Action across Kenya. Partners and government agencies are encouraged to share intervention data to consolidate information, enhance coordination and avoid duplication.</p>
-  <p style="margin-top:8px">For questions: <a href="mailto:datateam@redcross.or.ke">Datateam@icha.net</a> &nbsp;&middot;&nbsp; <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a></p>
+  <p style="margin-top:8px">For questions: <a href="mailto:aadashboard@ndoc.go.ke">aadashboard@ndoc.go.ke</a></p>
 </div>
 
 <!-- ── Form ── -->
@@ -513,7 +513,7 @@ select.aa-input {
       </div>
       <div class="aa-field">
         <label>Upload supporting materials (optional)</label>
-        <div class="aa-field-hint">PDF, image or document - optional</div>
+        <div class="aa-field-hint">PDF or document - optional</div>
 
         <!-- Existing file shown in edit mode; choosing a new file replaces it -->
         <div id="aa-attachment-current" style="display:none;margin-bottom:10px">
@@ -562,7 +562,7 @@ select.aa-input {
 
 <!-- ── Form footer ── -->
 <div style="text-align:center;padding:24px 0 8px;font-size:13px;color:#9CA3AF;letter-spacing:0.02em;">
-  Made by <strong style="color:#6B7280">Kenya Red Cross Digital Transformation</strong>
+  Developed and maintained by <strong style="color:#6B7280">Kenya Red Cross</strong>
 </div>
 
 <!-- ── Success state ── -->

@@ -65,8 +65,8 @@
 <div class="su-shell">
   <aside class="su-brand">
     <a href="/aa" class="su-logo">
-      <img src="/aadashboard.png" alt="NDOC" />
-      <div>Anticipatory Action<span>Kenya · NDOC / KRCS</span></div>
+      <img src="/aadashboard.png" alt="NDRMA" />
+      <div>Anticipatory Action<span>Kenya · NDRMA / KRCS</span></div>
     </a>
     <div>
       <div class="su-kicker">Join the Platform</div>
@@ -99,6 +99,17 @@
             <div class="su-field"><label for="position">Position / Role</label><input id="position" /></div>
             <div class="su-field full"><label for="message">Why would you like access?</label><textarea id="message" rows="3"></textarea></div>
           </div>
+          {% if policies %}
+          <div class="su-policies" style="margin-top:20px;font-size:13px;color:#6B7280">
+            <div style="font-weight:600;margin-bottom:6px;color:#374151">Before you sign up, please review:</div>
+            <ul style="margin:0;padding-left:18px;line-height:1.8">
+            {% for p in policies %}
+              <li><a href="{{ p.url }}" target="_blank" rel="noopener" style="color:var(--red)">{{ p.title }}</a></li>
+            {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          <p class="su-terms" style="margin-top:16px;font-size:12.5px;color:#6B7280;line-height:1.6">By submitting this request you confirm you have read and accept the {% if terms_url %}<a href="{{ terms_url }}" target="_blank" rel="noopener" style="color:var(--red)">Terms &amp; Conditions</a>{% else %}platform's Terms &amp; Conditions{% endif %}.</p>
           <button type="submit" class="su-submit" id="submitBtn">
             <span id="submitLabel">Submit Request</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>

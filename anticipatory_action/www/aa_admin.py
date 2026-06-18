@@ -31,4 +31,12 @@ def get_context(context):
 	# Both AA Admins and System Managers may now assign roles (constrained to the
 	# three AA roles server-side); approvers cannot.
 	context.can_set_role = is_admin
+	# An approver whom an admin has granted the account-approval capability also
+	# sees the sign-up Requests tab. APIs are guarded independently server-side.
+	can_approve_accounts = is_admin
+	if not can_approve_accounts and is_approver:
+		flag = (frappe.db.get_value("Anticipatory Action User", {"user": frappe.session.user}, "can_approve_accounts")
+				or frappe.db.get_value("Anticipatory Action User", {"email": frappe.session.user}, "can_approve_accounts"))
+		can_approve_accounts = bool(flag)
+	context.can_approve_accounts = can_approve_accounts
 	context.csrf_token = frappe.sessions.get_csrf_token()

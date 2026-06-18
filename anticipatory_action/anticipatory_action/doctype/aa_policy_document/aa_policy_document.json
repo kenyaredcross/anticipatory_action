@@ -1,0 +1,86 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:AA-POL-{####}",
+ "creation": "2026-06-18 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "policy_type",
+  "display_order",
+  "published",
+  "description",
+  "section_break_file",
+  "attachment",
+  "link"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "default": "Terms & Conditions",
+   "fieldname": "policy_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "Terms & Conditions\nPrivacy Policy\nCode of Conduct\nData Sharing Agreement\nGuideline\nOther"
+  },
+  {
+   "default": "0",
+   "description": "Lower numbers appear first.",
+   "fieldname": "display_order",
+   "fieldtype": "Int",
+   "label": "Display order"
+  },
+  {
+   "default": "1",
+   "fieldname": "published",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Published"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "section_break_file",
+   "fieldtype": "Section Break"
+  },
+  {
+   "description": "Upload the document (PDF, etc.) or paste an external link below.",
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Document file"
+  },
+  {
+   "fieldname": "link",
+   "fieldtype": "Data",
+   "label": "External link (URL)"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-06-18 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Anticipatory Action",
+ "name": "AA Policy Document",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1},
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Anticipatory Action Admin", "share": 1, "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}

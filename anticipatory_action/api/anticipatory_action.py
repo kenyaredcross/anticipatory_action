@@ -80,6 +80,9 @@ def submit_test_application(data):
 	try:
 		d = frappe.parse_json(data)
 		doc = frappe.get_doc(_submission_dict(d, is_test=1))
+		# Tag the entry with the batch named when testing was switched on, so all
+		# entries from one test run group together (e.g. "Garissa testing 2026").
+		doc.test_batch = frappe.db.get_single_value("Anticipatory Action Settings", "test_batch_name") or None
 		doc.flags.ignore_permissions = True
 		doc.insert()
 		frappe.db.commit()
@@ -157,6 +160,53 @@ def get_anticipatory_action_data(limit=100):
 
 	except Exception as e:
 		frappe.log_error(frappe.get_traceback(), "get_anticipatory_action_data")
+		return {"success": False, "error": str(e)}
+
+
+@frappe.whitelist(allow_guest=False)
+def get_test_data(limit=500):
+	"""Power BI feed for the test / dissemination form.
+
+	Returns ONLY records filed through the test form (is_test = 1), with the exact
+	same field shape as get_anticipatory_action_data so a Power BI report built
+	against this can be pointed at the live feed later without rework. Test records
+	are never submitted/approved, so we do NOT filter on status or docstatus."""
+	try:
+		limit = int(limit)
+
+		test_actions = frappe.db.get_all(
+			"Anticipatory Action",
+			filters={"is_test": 1},
+			fields=[
+				"name", "test_batch",
+				"implementing_organization", "entity_or_organization_type",
+				"other_organization_entity", "funding_source", "reporting_person", "reporter_email",
+				"reporter_phone_number", "anticipated_hazard", "other_anticipated_hazards",
+				"implementing_partners", "other_implementing_partners", "activation_start_date",
+				"activation_end_date", "triggers_and_thresholds", "lessons_learnt", "challenges",
+				"recommendations", "supporting_materials", "email_me_a_copy"
+			],
+			limit=limit,
+			order_by="modified desc"
+		)
+
+		for aa in test_actions:
+			aa["anticipatory_action_details"] = frappe.db.get_all(
+				"Anticipatory Action Details",
+				filters={"parent": aa["name"]},
+				fields=[
+					"subcounty_level", "county", "subcounty", "sector",
+					"amount_for_anticipatory_action_kes",
+					"describe_the_anticipatory_action_intervention",
+					"number_of_people_targeted", "number_of_hh_targeted",
+					"number_of_males_targeted", "number_of_females_targeted",
+				]
+			)
+
+		return {"success": True, "data": _sanitize(test_actions)}
+
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "get_test_data")
 		return {"success": False, "error": str(e)}
 
 
@@ -264,6 +314,22 @@ def get_faqs():
 		order_by="category asc, display_order asc, creation asc",
 		limit=500,
 	)
+	return {"success": True, "data": rows}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_policies():
+	"""Published policy / terms documents, for the public sign-up page so visitors
+	can read the terms before creating an account."""
+	rows = frappe.get_all(
+		"AA Policy Document",
+		filters={"published": 1},
+		fields=["title", "policy_type", "description", "attachment", "link", "display_order"],
+		order_by="display_order asc, creation asc",
+		limit=50,
+	)
+	for r in rows:
+		r["url"] = r.get("link") or r.get("attachment") or None
 	return {"success": True, "data": rows}
 
 
