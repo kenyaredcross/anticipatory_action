@@ -313,6 +313,13 @@
 <script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }}; window.AA_IS_ADMIN = {{ 1 if is_admin else 0 }}; window.AA_IS_APPROVER = {{ 1 if is_approver else 0 }}; window.AA_CAN_MANAGE = {{ 1 if can_manage_users else 0 }}; window.AA_CAN_SET_ROLE = {{ 1 if can_set_role else 0 }};</script>
 <script src="/aa-portal-ui.js"></script>
 <script>
+  // Quieten error popups on the admin console for now (success confirmations stay).
+  if (window.AA && AA.toast) {
+    var _aaToast = AA.toast;
+    AA.toast = function (msg, ok) { if (ok) _aaToast(msg, ok); };
+  }
+</script>
+<script>
 (function () {
   'use strict';
   var P = 'anticipatory_action.api.portal.';

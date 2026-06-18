@@ -1124,27 +1124,27 @@ select.aa-input {
       const data = buildDataObj();
       if (fileUrl) data.supporting_materials = fileUrl;
 
-      frappe.call({
-        method: 'anticipatory_action.api.anticipatory_action.submit_test_application',
-        headers: { 'X-Frappe-CSRF-Token': (window.frappe && frappe.csrf_token) || 'Guest' },
-        args: { data: JSON.stringify(data) },
-        callback: function (r) {
-          const res = (r && r.message) || r;
-          if (res && res.success) {
-            showSuccess(res.name);
-          } else {
-            resetSubmitButton('Submit Test Entry');
-            frappe.msgprint({
-              title: 'Test Submission Failed',
-              message: (res && res.error) || 'An unexpected error occurred. Please try again.',
-              indicator: 'red'
-            });
-          }
-        },
-        error: function () {
+      // Plain fetch (not frappe.call, which is unreliable on this site) — mirrors
+      // the request that succeeds from the console.
+      fetch('/api/method/anticipatory_action.api.anticipatory_action.submit_test_application', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': (window.frappe && frappe.csrf_token) || 'Guest' },
+        body: JSON.stringify({ data: JSON.stringify(data) })
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        var res = (d && d.message) || d;
+        if (res && res.success) {
+          showSuccess(res.name);
+        } else {
           resetSubmitButton('Submit Test Entry');
-          frappe.msgprint({ title: 'Error', message: 'Could not connect to the server. Please check your connection and try again.', indicator: 'red' });
+          frappe.msgprint({
+            title: 'Test Submission Failed',
+            message: (res && res.error) || 'An unexpected error occurred. Please try again.',
+            indicator: 'red'
+          });
         }
+      }).catch(function () {
+        resetSubmitButton('Submit Test Entry');
+        frappe.msgprint({ title: 'Error', message: 'Could not connect to the server. Please check your connection and try again.', indicator: 'red' });
       });
     }).catch(function () {
       resetSubmitButton('Submit Test Entry');
