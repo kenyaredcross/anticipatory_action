@@ -23,7 +23,17 @@ AA_INBOX = "aadashboard@ndoc.go.ke"
 
 
 def aa_sender():
-	"""The configured AA From identity, or None to use the site default."""
+	"""The configured AA From identity, or None to use the site default.
+
+	Read from the Anticipatory Action Settings page first (so it can be set from
+	the UI / browser console with no server access — handy on Frappe Cloud), then
+	fall back to the ``aa_email_sender`` site_config key."""
+	try:
+		val = frappe.db.get_single_value("Anticipatory Action Settings", "aa_email_sender")
+		if val and val.strip():
+			return val.strip()
+	except Exception:
+		pass
 	return frappe.conf.get("aa_email_sender")
 
 
