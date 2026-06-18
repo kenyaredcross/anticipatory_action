@@ -333,6 +333,35 @@ def get_policies():
 	return {"success": True, "data": rows}
 
 
+@frappe.whitelist(allow_guest=True)
+def submit_uat_feedback(data):
+	"""Public UAT feedback form, for users acceptance-testing the platform."""
+	try:
+		d = frappe.parse_json(data) if isinstance(data, str) else (data or {})
+		if not (d.get("tester_name") or "").strip() or not (d.get("feedback") or "").strip():
+			return {"success": False, "error": "Please provide your name and your feedback."}
+		doc = frappe.get_doc({
+			"doctype": "AA UAT Feedback",
+			"tester_name": d.get("tester_name"),
+			"tester_email": d.get("tester_email"),
+			"organization": d.get("organization"),
+			"area_tested": d.get("area_tested"),
+			"outcome": d.get("outcome") or "Worked well",
+			"severity": d.get("severity"),
+			"rating": d.get("rating"),
+			"feedback": d.get("feedback"),
+			"suggestion": d.get("suggestion"),
+			"browser_device": d.get("browser_device"),
+		})
+		doc.flags.ignore_permissions = True
+		doc.insert()
+		frappe.db.commit()
+		return {"success": True, "name": doc.name}
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "submit_uat_feedback")
+		return {"success": False, "error": "Could not submit your feedback. Please try again."}
+
+
 def _sanitize(data):
 	if isinstance(data, dict):
 		return {k: _sanitize(v) for k, v in data.items()}

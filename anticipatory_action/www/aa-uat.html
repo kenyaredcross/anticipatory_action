@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UAT Feedback - Kenya Anticipatory Action</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { background: var(--ink); margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .su-shell { display: grid; grid-template-columns: 0.9fr 1.1fr; min-height: 100vh; }
+    .su-brand { position: relative; overflow: hidden; background: var(--ink); color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 56px; }
+    .su-brand::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 80% 15%, rgba(230,24,50,0.30), transparent 60%); }
+    .su-brand > * { position: relative; z-index: 1; }
+    .su-logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+    .su-logo img { height: 44px; }
+    .su-logo div { font-size: 16px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; line-height: 1.1; }
+    .su-logo div span { display: block; font-size: 10px; font-weight: 400; letter-spacing: 0.16em; color: rgba(255,255,255,0.55); margin-top: 3px; }
+    .su-kicker { display: inline-flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #fff; margin-bottom: 22px; }
+    .su-kicker::before { content: ''; width: 32px; height: 2px; background: var(--red); }
+    .su-title { font-size: clamp(30px, 3.8vw, 50px); font-weight: 900; line-height: 0.92; text-transform: uppercase; letter-spacing: -0.022em; color: #fff; margin: 0 0 18px; }
+    .su-title .accent { color: var(--red); font-style: italic; font-weight: 700; }
+    .su-sub { font-size: 15.5px; font-weight: 300; line-height: 1.65; color: rgba(255,255,255,0.72); max-width: 46ch; }
+    .su-foot { font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+    .su-main { background: var(--paper); display: flex; align-items: center; justify-content: center; padding: 44px 40px; overflow-y: auto; }
+    .su-card { width: 100%; max-width: 580px; }
+    .su-h { font-size: 38px; font-weight: 900; line-height: 0.95; text-transform: uppercase; letter-spacing: -0.02em; color: var(--text); margin: 0 0 8px; }
+    .su-intro { font-size: 14.5px; color: var(--text-2); line-height: 1.6; margin-bottom: 26px; }
+    .su-alert { display: none; font-size: 13.5px; line-height: 1.5; padding: 12px 16px; margin-bottom: 20px; border-left: 3px solid; }
+    .su-alert.show.err { display: block; background: var(--red-tint); border-color: var(--red); color: var(--red-dark); }
+    .su-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+    .su-field { display: flex; flex-direction: column; }
+    .su-field.full { grid-column: 1 / -1; }
+    .su-field label { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .su-field input, .su-field textarea, .su-field select { width: 100%; padding: 13px 15px; background: var(--paper); border: 1px solid var(--line); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; color: var(--text); outline: none; transition: border-color 0.2s; }
+    .su-field textarea { resize: vertical; min-height: 96px; }
+    .su-field input:focus, .su-field textarea:focus, .su-field select:focus { border-color: var(--red); }
+    .su-submit { width: 100%; margin-top: 24px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 16px 24px; background: var(--red); color: #fff; border: 1px solid var(--red); font-size: 14px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+    .su-submit:hover:not(:disabled) { background: var(--red-dark); }
+    .su-submit:disabled { background: var(--muted); border-color: var(--muted); cursor: not-allowed; }
+    .su-success { display: none; text-align: center; padding: 24px 0; }
+    .su-success.show { display: block; }
+    .su-success .ic { width: 64px; height: 64px; border-radius: 50%; background: rgba(10,122,74,0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 22px; }
+    .su-success h2 { font-size: 30px; font-weight: 800; text-transform: uppercase; color: var(--text); margin: 0 0 12px; }
+    .su-success p { font-size: 15px; color: var(--text-2); line-height: 1.6; max-width: 42ch; margin: 0 auto 24px; }
+    @media (max-width: 940px) { .su-shell { grid-template-columns: 1fr; } .su-brand { display: none; } .su-grid { grid-template-columns: 1fr; } .su-main { padding: 36px 22px; } }
+  </style>
+</head>
+<body>
+
+<div class="su-shell">
+  <aside class="su-brand">
+    <a href="/aa" class="su-logo">
+      <img src="/aadashboard.png" alt="NDRMA" />
+      <div>Anticipatory Action<span>Kenya · NDRMA</span></div>
+    </a>
+    <div>
+      <div class="su-kicker">User Acceptance Testing</div>
+      <h1 class="su-title">Tell us how<br><span class="accent">it went.</span></h1>
+      <p class="su-sub">You're helping test the Kenya Anticipatory Action platform. Share what you tried, what worked, and anything that broke or could be better. Every note helps us get it right before go-live.</p>
+    </div>
+    <div class="su-foot">Predict · Prepare · Protect</div>
+  </aside>
+
+  <main class="su-main">
+    <div class="su-card">
+      <div id="formWrap">
+        <h2 class="su-h">UAT Feedback</h2>
+        <p class="su-intro">Takes about a minute. Only your name and feedback are required — fill in the rest where it helps.</p>
+
+        <div class="su-alert" id="alert" role="alert"></div>
+
+        <form id="uatForm" novalidate>
+          <div class="su-grid">
+            <div class="su-field"><label for="tester_name">Your name *</label><input id="tester_name" required /></div>
+            <div class="su-field"><label for="tester_email">Email</label><input type="email" id="tester_email" autocomplete="email" /></div>
+            <div class="su-field"><label for="organization">Organisation</label><input id="organization" autocomplete="organization" /></div>
+            <div class="su-field">
+              <label for="area_tested">What did you test?</label>
+              <select id="area_tested">
+                <option value="">Select an area…</option>
+                <option>Sign up / Request access</option>
+                <option>Login</option>
+                <option>Submitting an anticipatory action</option>
+                <option>Editing / updating a submission</option>
+                <option>Reviewing &amp; approving (admin)</option>
+                <option>Results dashboard</option>
+                <option>Reports / documents</option>
+                <option>Member organisations page</option>
+                <option>FAQ</option>
+                <option>Email notifications</option>
+                <option>General / Other</option>
+              </select>
+            </div>
+            <div class="su-field">
+              <label for="outcome">How did it go?</label>
+              <select id="outcome">
+                <option>Worked well</option>
+                <option>Worked with issues</option>
+                <option>Did not work</option>
+              </select>
+            </div>
+            <div class="su-field" id="severityWrap" style="display:none">
+              <label for="severity">How serious is the issue?</label>
+              <select id="severity">
+                <option value="">Select…</option>
+                <option>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+                <option>Blocker</option>
+              </select>
+            </div>
+            <div class="su-field full">
+              <label for="rating">Overall rating</label>
+              <select id="rating">
+                <option value="">Select…</option>
+                <option>5 - Excellent</option>
+                <option>4 - Good</option>
+                <option>3 - Okay</option>
+                <option>2 - Poor</option>
+                <option>1 - Very poor</option>
+              </select>
+            </div>
+            <div class="su-field full"><label for="feedback">What did you do, and what happened? *</label><textarea id="feedback" rows="4" required placeholder="e.g. I submitted an action for Garissa — it saved, but the county dropdown was slow to load."></textarea></div>
+            <div class="su-field full"><label for="suggestion">Suggestions for improvement</label><textarea id="suggestion" rows="3"></textarea></div>
+          </div>
+          <button type="submit" class="su-submit" id="submitBtn">
+            <span id="submitLabel">Submit Feedback</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
+          </button>
+        </form>
+      </div>
+
+      <div class="su-success" id="success">
+        <div class="ic">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0a7a4a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2>Thank you!</h2>
+        <p>Your feedback has been recorded. It goes straight to the team improving the platform.</p>
+        <a href="#" id="againBtn" class="su-submit" style="display:inline-flex;width:auto;text-decoration:none">Submit more feedback</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  var csrf = (window.frappe && frappe.csrf_token) || 'Guest';
+  var form = document.getElementById('uatForm');
+  var alertEl = document.getElementById('alert');
+  var btn = document.getElementById('submitBtn');
+  var label = document.getElementById('submitLabel');
+  var outcome = document.getElementById('outcome');
+  var severityWrap = document.getElementById('severityWrap');
+
+  function showErr(msg) { alertEl.textContent = msg; alertEl.className = 'su-alert show err'; }
+  function clearErr() { alertEl.className = 'su-alert'; }
+  function val(id) { var e = document.getElementById(id); return e ? String(e.value).trim() : ''; }
+
+  // Show the severity field only when something didn't work perfectly.
+  function syncSeverity() { severityWrap.style.display = (outcome.value && outcome.value !== 'Worked well') ? 'flex' : 'none'; }
+  outcome.addEventListener('change', syncSeverity); syncSeverity();
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault(); clearErr();
+    if (!val('tester_name') || !val('feedback')) { showErr('Please add your name and tell us what happened.'); return; }
+    btn.disabled = true; label.textContent = 'Submitting…';
+    var payload = {
+      tester_name: val('tester_name'), tester_email: val('tester_email'), organization: val('organization'),
+      area_tested: val('area_tested'), outcome: val('outcome'),
+      severity: (outcome.value !== 'Worked well') ? val('severity') : '',
+      rating: val('rating'), feedback: val('feedback'), suggestion: val('suggestion'),
+      browser_device: (navigator.userAgent || '').slice(0, 200)
+    };
+    try {
+      var res = await fetch('/api/method/anticipatory_action.api.anticipatory_action.submit_uat_feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf },
+        body: JSON.stringify({ data: JSON.stringify(payload) })
+      });
+      var data = {}; try { data = await res.json(); } catch (_) {}
+      var out = (data && data.message) || data;
+      if (res.ok && out && out.success) {
+        document.getElementById('formWrap').style.display = 'none';
+        document.getElementById('success').className = 'su-success show';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      showErr((out && out.error) || 'Could not submit your feedback. Please try again.');
+    } catch (_) {
+      showErr('Could not reach the server. Check your connection and try again.');
+    }
+    btn.disabled = false; label.textContent = 'Submit Feedback';
+  });
+
+  document.getElementById('againBtn').addEventListener('click', function (e) {
+    e.preventDefault(); form.reset(); syncSeverity();
+    document.getElementById('success').className = 'su-success';
+    document.getElementById('formWrap').style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+</body>
+</html>
