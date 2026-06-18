@@ -696,7 +696,11 @@ def send_password_reset(name):
 		frappe.throw("This member does not have a login account yet.")
 	with _elevated():
 		user = frappe.get_doc("User", target)
-		user.reset_password(send_email=True)
+		# Frappe renamed User.reset_password -> _reset_password in newer versions.
+		reset = getattr(user, "reset_password", None) or getattr(user, "_reset_password", None)
+		if not callable(reset):
+			frappe.throw("Could not generate a password-reset link on this version.")
+		reset(send_email=True)
 	frappe.db.commit()
 	return {"success": True, "email": target}
 
