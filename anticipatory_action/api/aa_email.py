@@ -21,20 +21,27 @@ AA_RED = "#CC0000"
 # stays on the ndoc.go.ke domain regardless of the NDRMA display rebrand).
 AA_INBOX = "aadashboard@ndoc.go.ke"
 
+# Default From identity for branded AA mail. The email part must match the Email
+# ID of an enabled outgoing Email Account (here: the "Anticipatory TWG Team"
+# account, aadashboard@ndoc.go.ke) so Frappe routes through it — keeping AA mail
+# separate from the site's default (redhive) account with zero configuration.
+AA_DEFAULT_SENDER = "Anticipatory Action <aadashboard@ndoc.go.ke>"
+
 
 def aa_sender():
-	"""The configured AA From identity, or None to use the site default.
-
-	Read from the Anticipatory Action Settings page first (so it can be set from
-	the UI / browser console with no server access — handy on Frappe Cloud), then
-	fall back to the ``aa_email_sender`` site_config key."""
+	"""The AA From identity. Precedence:
+	1. the Anticipatory Action Settings field (UI / browser-console settable — handy
+	   on Frappe Cloud), then
+	2. the ``aa_email_sender`` site_config key, then
+	3. the built-in default above — so branded AA mail works out of the box with no
+	   configuration after deploy."""
 	try:
 		val = frappe.db.get_single_value("Anticipatory Action Settings", "aa_email_sender")
 		if val and val.strip():
 			return val.strip()
 	except Exception:
 		pass
-	return frappe.conf.get("aa_email_sender")
+	return frappe.conf.get("aa_email_sender") or AA_DEFAULT_SENDER
 
 
 def portal_url(path="/aa-portal"):
