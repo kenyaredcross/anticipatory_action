@@ -8,7 +8,9 @@
   "test_batch_name",
   "testing_note",
   "testing_enabled_by",
-  "testing_enabled_on"
+  "testing_enabled_on",
+  "section_email",
+  "aa_email_sender"
  ],
  "fields": [
   {
@@ -43,6 +45,17 @@
    "fieldtype": "Datetime",
    "label": "Testing turned on at",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_email",
+   "fieldtype": "Section Break",
+   "label": "Email"
+  },
+  {
+   "description": "Branded AA emails (welcome, sign-up, pillar enquiries) are sent FROM this address. Format: \"Name <email@domain>\" or just \"email@domain\". The email part MUST match the Email ID of an Email Account set up for outgoing. Leave blank to use the built-in default, Anticipatory Action <aadashboard@ndoc.go.ke>.",
+   "fieldname": "aa_email_sender",
+   "fieldtype": "Data",
+   "label": "AA email sender (From)"
   }
  ],
  "issingle": 1,
