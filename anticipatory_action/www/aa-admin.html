@@ -188,7 +188,7 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           <span>Overview</span>
         </button>
-        {% if can_manage_users %}
+        {% if can_view_users %}
         <button class="tab" data-tab="users">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span>Users</span><span class="count" id="cnt-users" style="display:none"></span>
@@ -581,7 +581,7 @@
       var rows = (r && r.data) || [];
       var html = toolbar(
         searchBox('user-search', 'Search by name, email or organization…', usersSearch) +
-        '<button class="btn" id="add-user"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add User</button>');
+        (CAN_MANAGE ? '<button class="btn" id="add-user"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add User</button>' : ''));
       if (!rows.length) {
         html += '<div class="empty"><p>' + (usersSearch ? 'No users match "' + AA.esc(usersSearch) + '".' : 'No Anticipatory Action users yet.') + '</p></div>';
       } else {
@@ -589,7 +589,7 @@
         html += rows.map(function (u) {
           var role = (u.role || '').replace('Anticipatory Action ', 'AA ');
           var status = u.enabled ? '<span class="badge approved">Active</span>' : '<span class="badge off">Disabled</span>';
-          return '<tr class="clickable-row" data-row-user="' + AA.esc(u.name) + '" title="Click to edit this user">' +
+          return '<tr' + (CAN_MANAGE ? ' class="clickable-row" title="Click to edit this user"' : '') + ' data-row-user="' + AA.esc(u.name) + '">' +
             '<td class="strong">' + AA.esc(u.full_name || '-') + '</td>' +
             '<td>' + AA.esc(u.email) + '</td>' +
             '<td>' + AA.esc(u.phone || '-') + '</td>' +
@@ -604,7 +604,8 @@
       onDebounced(searchEl, function (val) { loadUsers(val); }, 250);
       // keep focus + caret after the debounced reload re-renders the toolbar
       if (searchEl && usersSearch) { searchEl.focus(); var L = searchEl.value.length; try { searchEl.setSelectionRange(L, L); } catch (e) {} }
-      document.getElementById('add-user').addEventListener('click', function () { userModal(null); });
+      var addUserBtn = document.getElementById('add-user');
+      if (addUserBtn) addUserBtn.addEventListener('click', function () { userModal(null); });
       document.querySelectorAll('#panel-users tr.clickable-row').forEach(function (tr) {
         tr.addEventListener('click', function () {
           userModal(rows.find(function (x) { return x.name === tr.dataset.rowUser; }));

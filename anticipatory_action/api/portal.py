@@ -17,7 +17,7 @@ from frappe.utils import strip_html
 
 from anticipatory_action.api.anticipatory_action import _sanitize
 from anticipatory_action.api.aa_email import AA_INBOX, aa_email_html, aa_sendmail
-from anticipatory_action.api.permissions import _can_review, _is_admin
+from anticipatory_action.api.permissions import _can_review, _is_admin, _user_org, reviewer_owner_scope
 
 # The roles an AA account may hold. "Approver" sits between User and Admin:
 # it can clear the submission queue and curate content, but not manage users,
@@ -75,6 +75,23 @@ def _require_account_approver():
 	_require_login()
 	if not _can_approve_accounts():
 		frappe.throw("You are not authorised to perform this action.", frappe.PermissionError)
+
+
+def _assert_submission_in_scope(doc_or_name):
+	"""An Approver may only view/act on submissions from their own organization;
+	full admins and System Managers see every submission. A submission's
+	organization is the organization of its owner (the member who filed it).
+	Raises PermissionError when the submission is out of scope."""
+	scope = reviewer_owner_scope()
+	if scope is None:
+		return  # admin — unrestricted
+	owner = (doc_or_name.owner if hasattr(doc_or_name, "owner")
+			 else frappe.db.get_value("Anticipatory Action", doc_or_name, "owner"))
+	if owner not in scope:
+		frappe.throw(
+			"This submission belongs to another organization.",
+			frappe.PermissionError,
+		)
 
 
 def _constrain_role(role):
@@ -280,8 +297,10 @@ def get_my_submission_versions(name):
 	"""Version history (amendment chain) for one owned submission."""
 	_require_login()
 	doc = frappe.get_doc("Anticipatory Action", name)
-	if doc.owner != frappe.session.user and not _can_review():
-		frappe.throw("You can only view your own submissions.", frappe.PermissionError)
+	if doc.owner != frappe.session.user:
+		if not _can_review():
+			frappe.throw("You can only view your own submissions.", frappe.PermissionError)
+		_assert_submission_in_scope(doc)
 	return {"success": True, "data": _version_chain(name)}
 
 
@@ -376,8 +395,10 @@ def download_my_submission_pdf(name):
 	reviewers may print any submission."""
 	_require_login()
 	doc = frappe.get_doc("Anticipatory Action", name)
-	if doc.owner != frappe.session.user and not _can_review():
-		frappe.throw("You can only download your own submissions.", frappe.PermissionError)
+	if doc.owner != frappe.session.user:
+		if not _can_review():
+			frappe.throw("You can only download your own submissions.", frappe.PermissionError)
+		_assert_submission_in_scope(doc)
 
 	from anticipatory_action.anticipatory_action.doctype.anticipatory_action.pdf import (
 		build_submission_pdf,
@@ -545,19 +566,31 @@ def _ensure_roster_for_aa_users():
 
 @frappe.whitelist()
 def list_aa_users(search=None):
-	"""Every AA member (anyone holding an AA role), with their roster details.
-	Self-heals missing roster records so legacy / desk-created users show up too."""
-	_require_admin()
-	try:
-		_ensure_roster_for_aa_users()
-	except Exception:
-		frappe.log_error(frappe.get_traceback(), "list_aa_users self-heal")
+	"""AA members with their roster details.
+
+	Admins see every member and may manage them. An Approver — their
+	organization's focal person — sees only the members of their own organization,
+	and read-only (the create/edit/deactivate endpoints stay admin-only).
+	Self-heals missing roster records (admin maintenance) so legacy / desk-created
+	users show up too."""
+	_require_approver()
+	if _is_admin():
+		try:
+			_ensure_roster_for_aa_users()
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "list_aa_users self-heal")
 	or_filters = None
 	if search:
 		like = f"%{search}%"
 		or_filters = {"full_name": ["like", like], "email": ["like", like]}
+	filters = {}
+	if not _is_admin():
+		# Focal person: confined to their own organization's members. The sentinel
+		# guarantees an empty result if the approver somehow has no organization.
+		filters["organization"] = _user_org() or "__no_org__"
 	users = frappe.get_all(
 		"Anticipatory Action User",
+		filters=filters,
 		or_filters=or_filters,
 		fields=[
 			"name", "full_name", "first_name", "last_name", "email", "phone",
@@ -723,6 +756,7 @@ def get_submission(name):
 	approving or rejecting."""
 	_require_approver()
 	doc = frappe.get_doc("Anticipatory Action", name)
+	_assert_submission_in_scope(doc)
 	data = {f: doc.get(f) for f in _PARENT_FIELDS}
 	data.update({
 		"name": doc.name,
@@ -764,6 +798,7 @@ def set_submission_status(name, status, reason=None):
 		frappe.throw("Please describe the information you need from the reporter.")
 
 	doc = frappe.get_doc("Anticipatory Action", name)
+	_assert_submission_in_scope(doc)
 	doc.flags.ignore_permissions = True
 	reason_val = reason if status == "Not Approved" else None
 	info_val = reason if status == "Replied" else None
@@ -1850,10 +1885,16 @@ def submit_membership_request(first_name, last_name=None, email=None, phone=None
 	approve or reject. No login account is created until it is approved."""
 	from frappe.utils import validate_email_address
 
+	# Everything is required except the free-text "Why would you like access?"
+	# (message). Mirror the form's client-side validation server-side.
 	first_name = (first_name or "").strip()
+	last_name = (last_name or "").strip()
 	email = (email or "").strip().lower()
-	if not first_name or not email:
-		return {"success": False, "error": "Your name and email are required."}
+	phone = (phone or "").strip()
+	organization = (organization or "").strip()
+	position = (position or "").strip()
+	if not (first_name and last_name and email and phone and organization and position):
+		return {"success": False, "error": "Please fill in all fields. Only “Why would you like access?” is optional."}
 	if not validate_email_address(email):
 		return {"success": False, "error": "Please enter a valid email address."}
 	if frappe.db.exists("AA Membership Request", {"email": email, "status": "Pending"}):

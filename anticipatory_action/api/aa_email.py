@@ -4,12 +4,12 @@ All AA-originated mail (account welcome, sign-up acknowledgements, pillar
 enquiries) goes through here so it carries the AA masthead + Kenya Red Cross
 footer and links to the AA portal — never the Frappe desk.
 
-Sending is centralised in ``aa_sendmail``, which stamps the AA sender so the
-mail is visibly *from* Anticipatory Action and never changes the parent
-(redhive) site's default outgoing identity. Until a dedicated AA email account
-is wired up it falls back to the site default; set ``aa_email_sender`` in
-site_config (e.g. "Anticipatory Action <aa@anticipatoryaction.ndoc.go.ke>") to
-switch the From address on once the mailbox exists.
+Sending is centralised in ``aa_sendmail``. By default the message goes out
+through the **site's default outgoing Email Account** — the AA part is purely the
+*format* (the branded HTML body), not a separate From address. An admin can
+optionally route AA mail through a specific Email Account by setting the
+``aa_email_sender`` switcher on the Anticipatory Action Settings page; when that
+is blank (the normal case) the default sender is used and mail always sends.
 """
 
 import frappe
@@ -21,10 +21,10 @@ AA_RED = "#CC0000"
 # stays on the ndoc.go.ke domain regardless of the NDRMA display rebrand).
 AA_INBOX = "aadashboard@ndoc.go.ke"
 
-# The brand name shown in the From of every AA email. The mailbox in front of it
-# is whichever Email Account is configured (see aa_sender) — so AA mail can be sent
-# through a well-delivering account (e.g. the redcross/Office 365 one) while still
-# reading as "Anticipatory Action <that-address>".
+# The brand name applied to the From only when an admin has explicitly chosen an
+# Email Account in the AA Settings switcher (see aa_sender). With the switcher
+# blank, mail goes out as the site's default outgoing account, unbranded in the
+# From — the AA branding is in the message body either way.
 AA_DISPLAY_NAME = "Anticipatory Action"
 
 
@@ -33,31 +33,25 @@ def _branded(email_id):
 
 
 def aa_sender():
-	"""The From identity for branded AA mail. Precedence:
-	1. the Email Account chosen on the Anticipatory Action Settings page (a Link —
-	   set it in the UI), rendered as "Anticipatory Action <its email>";
-	2. the ``aa_email_sender`` site_config value (a full "Name <email>" string);
-	3. the site's default outgoing account, still AA-branded — so mail keeps
-	   delivering even with nothing configured.
-	Returns None only if nothing is set and there is no default outgoing account
-	(then Frappe falls back to its own default)."""
-	# 1. UI-chosen Email Account (the Link field stores the account's name).
+	"""The From identity for AA mail.
+
+	* If an admin has chosen an Email Account in the "Send AA emails via" switcher
+	  on the Anticipatory Action Settings page, route mail through it (shown as
+	  "Anticipatory Action <its address>").
+	* Otherwise return ``None`` so Frappe sends through the **site's default
+	  outgoing Email Account** using its own From — i.e. the default email sender.
+
+	Either way the AA branding lives in the message *body*, never depends on a
+	separate AA mailbox existing, so mail always sends."""
 	try:
 		acct = frappe.db.get_single_value("Anticipatory Action Settings", "aa_email_sender")
 		if acct:
-			return _branded(frappe.db.get_value("Email Account", acct, "email_id"))
+			email_id = frappe.db.get_value("Email Account", acct, "email_id")
+			if email_id:
+				return _branded(email_id)
 	except Exception:
 		pass
-	# 2. site_config override (full "Name <email>" string).
-	conf = frappe.conf.get("aa_email_sender")
-	if conf:
-		return conf
-	# 3. Fall back to the site default outgoing account, still AA-branded.
-	try:
-		return _branded(frappe.db.get_value(
-			"Email Account", {"default_outgoing": 1, "enable_outgoing": 1}, "email_id"))
-	except Exception:
-		return None
+	return None  # use the site's default outgoing account
 
 
 def portal_url(path="/aa-portal"):
@@ -107,11 +101,11 @@ def aa_email_html(heading, body_html, rows=None, cta_label=None, cta_url=None, s
 
 
 def aa_sendmail(recipients, subject, message, **kwargs):
-	"""Send branded AA mail. Stamps the AA sender when one is configured, and
-	never raises (logs instead) so a mail hiccup can't break the action that
-	triggered it. With no AA email account / SMTP configured yet this simply
-	queues or no-ops — by design (templates are ready; sending is flipped on
-	later by configuring the account)."""
+	"""Send branded AA mail through the site's default outgoing account (or the
+	Email Account chosen in the AA Settings switcher). Never raises (logs instead)
+	so a mail hiccup can't break the action that triggered it. As long as the site
+	has a working default outgoing Email Account, AA mail sends — nothing AA-specific
+	needs configuring first."""
 	if not recipients:
 		return
 	args = {"recipients": recipients, "subject": subject, "message": message}

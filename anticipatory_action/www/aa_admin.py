@@ -27,6 +27,10 @@ def get_context(context):
 	context.is_admin = is_admin
 	context.is_approver = is_approver and not is_admin
 	context.can_manage_users = is_admin
+	# Focal persons (Approvers) may VIEW the members of their own organization
+	# (read-only); only full admins may add/edit/deactivate. The list endpoint is
+	# org-scoped server-side.
+	context.can_view_users = is_admin or is_approver
 	context.is_system_manager = "System Manager" in roles
 	# Both AA Admins and System Managers may now assign roles (constrained to the
 	# three AA roles server-side); approvers cannot.

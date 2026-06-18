@@ -92,11 +92,11 @@
         <form id="signupForm" novalidate>
           <div class="su-grid">
             <div class="su-field"><label for="first_name">First Name *</label><input id="first_name" autocomplete="given-name" required /></div>
-            <div class="su-field"><label for="last_name">Last Name</label><input id="last_name" autocomplete="family-name" /></div>
+            <div class="su-field"><label for="last_name">Last Name *</label><input id="last_name" autocomplete="family-name" required /></div>
             <div class="su-field"><label for="email">Email *</label><input type="email" id="email" autocomplete="email" required /></div>
             <div class="su-field"><label for="phone">Phone *</label><input id="phone" placeholder="254700000000" autocomplete="tel" required /></div>
-            <div class="su-field"><label for="organization">Organisation</label><input id="organization" autocomplete="organization" /></div>
-            <div class="su-field"><label for="position">Position / Role</label><input id="position" /></div>
+            <div class="su-field"><label for="organization">Organisation *</label><input id="organization" autocomplete="organization" required /></div>
+            <div class="su-field"><label for="position">Position / Role *</label><input id="position" required /></div>
             <div class="su-field full"><label for="message">Why would you like access?</label><textarea id="message" rows="3"></textarea></div>
           </div>
           {% if policies %}
@@ -145,7 +145,7 @@
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault(); clearErr();
-    if (!val('first_name') || !val('email') || !val('phone')) { showErr('Please fill in your name, email and phone.'); return; }
+    if (!val('first_name') || !val('last_name') || !val('email') || !val('phone') || !val('organization') || !val('position')) { showErr('Please fill in all fields. Only "Why would you like access?" is optional.'); return; }
     btn.disabled = true; label.textContent = 'Submitting…';
     try {
       var res = await fetch('/api/method/anticipatory_action.api.portal.submit_membership_request', {
