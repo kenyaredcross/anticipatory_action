@@ -123,3 +123,53 @@ def aa_sendmail(recipients, subject, message, **kwargs):
 		frappe.sendmail(**args)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "aa_sendmail")
+
+
+def send_submission_approved(doc, method=None):
+	"""on_submit handler for Anticipatory Action: when a submission is approved,
+	email the reporter a branded confirmation with the SAME form-style PDF the
+	portal download produces (build_submission_pdf), sent through the AA sender.
+
+	Replaces the old "AA Submission Approved" Notification (which attached a
+	different print format). Fully wrapped so a mail/PDF hiccup can never roll back
+	the approval transaction."""
+	try:
+		if doc.get("status") != "Approved" or doc.get("is_test"):
+			return
+		to = (doc.get("reporter_email") or "").strip()
+		if not to:
+			return
+		name = escape_html(doc.get("reporting_person") or "there")
+		body = (
+			"<p>Dear " + name + ",</p>"
+			"<p>Good news — your Anticipatory Action submission has been reviewed and "
+			"<strong>approved</strong> by the TWG Secretariat. A copy is attached as a PDF "
+			"for your records.</p>"
+		)
+		rows = [
+			("Reference", escape_html(doc.get("name") or "-")),
+			("Organisation", escape_html(doc.get("implementing_organization") or "-")),
+			("Hazard", escape_html(doc.get("anticipated_hazard") or "-")),
+			("Activation date", escape_html(str(doc.get("activation_start_date") or "-"))),
+		]
+		html = aa_email_html(
+			"Your submission has been approved", body, rows=rows,
+			cta_label="Open your portal", cta_url=portal_url("/aa-portal"),
+			sign_off='Questions? Contact <a href="mailto:' + AA_INBOX + '" style="color:#CC0000">' + AA_INBOX + '</a>.',
+		)
+		attachments = None
+		try:
+			from anticipatory_action.anticipatory_action.doctype.anticipatory_action.pdf import build_submission_pdf
+			pdf = build_submission_pdf(doc)
+			if pdf:
+				attachments = [{"fname": (doc.get("name") or "submission") + ".pdf", "fcontent": pdf}]
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "approved email pdf")
+		aa_sendmail(
+			[to],
+			"Your Anticipatory Action submission has been approved - " + (doc.get("name") or ""),
+			html,
+			attachments=attachments,
+		)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "send_submission_approved")

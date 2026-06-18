@@ -10,3 +10,4 @@ anticipatory_action.patches.confine_aa_users
 anticipatory_action.patches.reload_aa_meta
 anticipatory_action.patches.upgrade_activities
 anticipatory_action.patches.rename_member_workspace
+anticipatory_action.patches.disable_old_approval_notification
