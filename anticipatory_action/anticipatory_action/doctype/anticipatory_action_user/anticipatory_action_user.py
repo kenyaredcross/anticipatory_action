@@ -119,9 +119,14 @@ class AnticipatoryActionUser(Document):
 		the whole flow points at the portal, never the desk."""
 		try:
 			from anticipatory_action.api.aa_email import aa_email_html, aa_sendmail, portal_url
-			link = user.reset_password(send_email=False)
+			# Frappe renamed User.reset_password -> _reset_password in newer versions;
+			# support both. Returns the /update-password link without sending mail.
+			reset = getattr(user, "reset_password", None) or getattr(user, "_reset_password", None)
+			link = reset(send_email=False) if callable(reset) else None
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), "aa welcome email")
+			return
+		if not link:
 			return
 		body = (
 			"<p>Hi " + frappe.utils.escape_html(self.first_name or "there") + ",</p>"
