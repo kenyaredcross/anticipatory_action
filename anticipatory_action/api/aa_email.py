@@ -21,27 +21,43 @@ AA_RED = "#CC0000"
 # stays on the ndoc.go.ke domain regardless of the NDRMA display rebrand).
 AA_INBOX = "aadashboard@ndoc.go.ke"
 
-# Default From identity for branded AA mail. The email part must match the Email
-# ID of an enabled outgoing Email Account (here: the "Anticipatory TWG Team"
-# account, aadashboard@ndoc.go.ke) so Frappe routes through it — keeping AA mail
-# separate from the site's default (redhive) account with zero configuration.
-AA_DEFAULT_SENDER = "Anticipatory Action <aadashboard@ndoc.go.ke>"
+# The brand name shown in the From of every AA email. The mailbox in front of it
+# is whichever Email Account is configured (see aa_sender) — so AA mail can be sent
+# through a well-delivering account (e.g. the redcross/Office 365 one) while still
+# reading as "Anticipatory Action <that-address>".
+AA_DISPLAY_NAME = "Anticipatory Action"
+
+
+def _branded(email_id):
+	return "{0} <{1}>".format(AA_DISPLAY_NAME, email_id) if email_id else None
 
 
 def aa_sender():
-	"""The AA From identity. Precedence:
-	1. the Anticipatory Action Settings field (UI / browser-console settable — handy
-	   on Frappe Cloud), then
-	2. the ``aa_email_sender`` site_config key, then
-	3. the built-in default above — so branded AA mail works out of the box with no
-	   configuration after deploy."""
+	"""The From identity for branded AA mail. Precedence:
+	1. the Email Account chosen on the Anticipatory Action Settings page (a Link —
+	   set it in the UI), rendered as "Anticipatory Action <its email>";
+	2. the ``aa_email_sender`` site_config value (a full "Name <email>" string);
+	3. the site's default outgoing account, still AA-branded — so mail keeps
+	   delivering even with nothing configured.
+	Returns None only if nothing is set and there is no default outgoing account
+	(then Frappe falls back to its own default)."""
+	# 1. UI-chosen Email Account (the Link field stores the account's name).
 	try:
-		val = frappe.db.get_single_value("Anticipatory Action Settings", "aa_email_sender")
-		if val and val.strip():
-			return val.strip()
+		acct = frappe.db.get_single_value("Anticipatory Action Settings", "aa_email_sender")
+		if acct:
+			return _branded(frappe.db.get_value("Email Account", acct, "email_id"))
 	except Exception:
 		pass
-	return frappe.conf.get("aa_email_sender") or AA_DEFAULT_SENDER
+	# 2. site_config override (full "Name <email>" string).
+	conf = frappe.conf.get("aa_email_sender")
+	if conf:
+		return conf
+	# 3. Fall back to the site default outgoing account, still AA-branded.
+	try:
+		return _branded(frappe.db.get_value(
+			"Email Account", {"default_outgoing": 1, "enable_outgoing": 1}, "email_id"))
+	except Exception:
+		return None
 
 
 def portal_url(path="/aa-portal"):

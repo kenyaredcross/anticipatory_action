@@ -52,10 +52,11 @@
    "label": "Email"
   },
   {
-   "description": "Branded AA emails (welcome, sign-up, pillar enquiries) are sent FROM this address. Format: \"Name <email@domain>\" or just \"email@domain\". The email part MUST match the Email ID of an Email Account set up for outgoing. Leave blank to use the built-in default, Anticipatory Action <aadashboard@ndoc.go.ke>.",
+   "description": "Branded AA emails (welcome, sign-up, pillar enquiries) are sent THROUGH this Email Account; the From reads \"Anticipatory Action <that account's address>\". Pick any outgoing account on the site - e.g. the redcross / Office 365 one for best delivery to Outlook/Gmail. Leave blank to use the site's default outgoing account.",
    "fieldname": "aa_email_sender",
-   "fieldtype": "Data",
-   "label": "AA email sender (From)"
+   "fieldtype": "Link",
+   "label": "Send AA emails via",
+   "options": "Email Account"
   }
  ],
  "issingle": 1,
