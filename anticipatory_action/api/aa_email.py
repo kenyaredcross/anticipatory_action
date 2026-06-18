@@ -125,6 +125,33 @@ def aa_sendmail(recipients, subject, message, **kwargs):
 		frappe.log_error(frappe.get_traceback(), "aa_sendmail")
 
 
+def send_set_password_email(user, heading=None, intro=None):
+	"""Generate a set/reset-password link (cross-version) and email it inside the
+	branded AA shell, with the CTA pointing at the portal. ``user`` is a User doc.
+	Returns True if queued. Used by the welcome-on-approval and the admin
+	password-reset so both look identical and land members on the portal."""
+	try:
+		reset = getattr(user, "reset_password", None) or getattr(user, "_reset_password", None)
+		link = reset(send_email=False) if callable(reset) else None
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "aa set-password link")
+		return False
+	if not link:
+		return False
+	first = (user.get("first_name") if hasattr(user, "get") else None) or "there"
+	heading = heading or "Set your Anticipatory Action password"
+	intro = intro or ("Use the button below to set your password and activate your account, "
+		"then sign in to the member portal to record and track anticipatory action across Kenya.")
+	body = "<p>Hi " + escape_html(first) + ",</p><p>" + intro + "</p>"
+	html = aa_email_html(
+		heading, body, cta_label="Set your password", cta_url=link,
+		sign_off='You can always sign in at <a href="' + portal_url("/anticipatory-login")
+			+ '">the Anticipatory Action portal</a>.',
+	)
+	aa_sendmail([user.name], heading, html)
+	return True
+
+
 def send_submission_approved(doc, method=None):
 	"""on_submit handler for Anticipatory Action: when a submission is approved,
 	email the reporter a branded confirmation with the SAME form-style PDF the

@@ -696,11 +696,11 @@ def send_password_reset(name):
 		frappe.throw("This member does not have a login account yet.")
 	with _elevated():
 		user = frappe.get_doc("User", target)
-		# Frappe renamed User.reset_password -> _reset_password in newer versions.
-		reset = getattr(user, "reset_password", None) or getattr(user, "_reset_password", None)
-		if not callable(reset):
+		# Send the branded AA set-password email (not Frappe's plain reset), so it
+		# matches the welcome email and lands the member on the portal.
+		from anticipatory_action.api.aa_email import send_set_password_email
+		if not send_set_password_email(user):
 			frappe.throw("Could not generate a password-reset link on this version.")
-		reset(send_email=True)
 	frappe.db.commit()
 	return {"success": True, "email": target}
 
