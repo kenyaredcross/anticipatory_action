@@ -338,19 +338,28 @@ def submit_uat_feedback(data):
 	"""Public UAT feedback form, for users acceptance-testing the platform."""
 	try:
 		d = frappe.parse_json(data) if isinstance(data, str) else (data or {})
-		if not (d.get("tester_name") or "").strip() or not (d.get("feedback") or "").strip():
-			return {"success": False, "error": "Please provide your name and your feedback."}
+		if not (d.get("tester_name") or "").strip():
+			return {"success": False, "error": "Please tell us your name so we can credit your feedback."}
 		doc = frappe.get_doc({
 			"doctype": "AA UAT Feedback",
 			"tester_name": d.get("tester_name"),
 			"tester_email": d.get("tester_email"),
 			"organization": d.get("organization"),
-			"area_tested": d.get("area_tested"),
-			"outcome": d.get("outcome") or "Worked well",
-			"severity": d.get("severity"),
-			"rating": d.get("rating"),
-			"feedback": d.get("feedback"),
-			"suggestion": d.get("suggestion"),
+			"roles_tested": d.get("roles_tested"),
+			"website_rating": d.get("website_rating") or None,
+			"website_findability": d.get("website_findability"),
+			"website_liked": d.get("website_liked"),
+			"website_improve": d.get("website_improve"),
+			"member_rating": d.get("member_rating") or None,
+			"member_liked": d.get("member_liked"),
+			"member_improve": d.get("member_improve"),
+			"approver_rating": d.get("approver_rating") or None,
+			"approver_liked": d.get("approver_liked"),
+			"approver_improve": d.get("approver_improve"),
+			"overall_rating": d.get("overall_rating") or None,
+			"would_recommend": d.get("would_recommend"),
+			"most_valuable": d.get("most_valuable"),
+			"general_feedback": d.get("general_feedback"),
 			"browser_device": d.get("browser_device"),
 		})
 		doc.flags.ignore_permissions = True

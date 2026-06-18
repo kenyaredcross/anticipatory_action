@@ -3,205 +3,413 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UAT Feedback - Kenya Anticipatory Action</title>
+  <title>Tell us how it went · Kenya Anticipatory Action</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/aa-base.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box; }
-    body { background: var(--ink); margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-    .su-shell { display: grid; grid-template-columns: 0.9fr 1.1fr; min-height: 100vh; }
-    .su-brand { position: relative; overflow: hidden; background: var(--ink); color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 56px; }
-    .su-brand::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 80% 15%, rgba(230,24,50,0.30), transparent 60%); }
-    .su-brand > * { position: relative; z-index: 1; }
-    .su-logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
-    .su-logo img { height: 44px; }
-    .su-logo div { font-size: 16px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; line-height: 1.1; }
-    .su-logo div span { display: block; font-size: 10px; font-weight: 400; letter-spacing: 0.16em; color: rgba(255,255,255,0.55); margin-top: 3px; }
-    .su-kicker { display: inline-flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #fff; margin-bottom: 22px; }
-    .su-kicker::before { content: ''; width: 32px; height: 2px; background: var(--red); }
-    .su-title { font-size: clamp(30px, 3.8vw, 50px); font-weight: 900; line-height: 0.92; text-transform: uppercase; letter-spacing: -0.022em; color: #fff; margin: 0 0 18px; }
-    .su-title .accent { color: var(--red); font-style: italic; font-weight: 700; }
-    .su-sub { font-size: 15.5px; font-weight: 300; line-height: 1.65; color: rgba(255,255,255,0.72); max-width: 46ch; }
-    .su-foot { font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
-    .su-main { background: var(--paper); display: flex; align-items: center; justify-content: center; padding: 44px 40px; overflow-y: auto; }
-    .su-card { width: 100%; max-width: 580px; }
-    .su-h { font-size: 38px; font-weight: 900; line-height: 0.95; text-transform: uppercase; letter-spacing: -0.02em; color: var(--text); margin: 0 0 8px; }
-    .su-intro { font-size: 14.5px; color: var(--text-2); line-height: 1.6; margin-bottom: 26px; }
-    .su-alert { display: none; font-size: 13.5px; line-height: 1.5; padding: 12px 16px; margin-bottom: 20px; border-left: 3px solid; }
-    .su-alert.show.err { display: block; background: var(--red-tint); border-color: var(--red); color: var(--red-dark); }
-    .su-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
-    .su-field { display: flex; flex-direction: column; }
-    .su-field.full { grid-column: 1 / -1; }
-    .su-field label { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-    .su-field input, .su-field textarea, .su-field select { width: 100%; padding: 13px 15px; background: var(--paper); border: 1px solid var(--line); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; color: var(--text); outline: none; transition: border-color 0.2s; }
-    .su-field textarea { resize: vertical; min-height: 96px; }
-    .su-field input:focus, .su-field textarea:focus, .su-field select:focus { border-color: var(--red); }
-    .su-submit { width: 100%; margin-top: 24px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 16px 24px; background: var(--red); color: #fff; border: 1px solid var(--red); font-size: 14px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
-    .su-submit:hover:not(:disabled) { background: var(--red-dark); }
-    .su-submit:disabled { background: var(--muted); border-color: var(--muted); cursor: not-allowed; }
-    .su-success { display: none; text-align: center; padding: 24px 0; }
-    .su-success.show { display: block; }
-    .su-success .ic { width: 64px; height: 64px; border-radius: 50%; background: rgba(10,122,74,0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 22px; }
-    .su-success h2 { font-size: 30px; font-weight: 800; text-transform: uppercase; color: var(--text); margin: 0 0 12px; }
-    .su-success p { font-size: 15px; color: var(--text-2); line-height: 1.6; max-width: 42ch; margin: 0 auto 24px; }
-    @media (max-width: 940px) { .su-shell { grid-template-columns: 1fr; } .su-brand { display: none; } .su-grid { grid-template-columns: 1fr; } .su-main { padding: 36px 22px; } }
+    :root{
+      --ink:#0B0B0E; --ink-2:#16161A; --paper:#FFFFFF; --cream:#F5F4EF; --cream-2:#ECEAE3;
+      --line:#E2DFD6; --text:#14140F; --text-2:#4A4A44; --muted:#8A8980;
+      --red:#E61832; --red-dark:#B8142A; --red-tint:#FBE7EA;
+      --disp:'Barlow Condensed','Helvetica Neue',Helvetica,Arial,sans-serif;
+      --body:'Barlow','Helvetica Neue',Helvetica,Arial,sans-serif;
+    }
+    *{box-sizing:border-box;}
+    html,body{margin:0;}
+    body{
+      font-family:var(--body); color:var(--text); background:var(--cream);
+      background-image:radial-gradient(circle at 85% -10%, rgba(230,24,50,0.06), transparent 45%),
+                       radial-gradient(circle at 0% 110%, rgba(11,11,14,0.05), transparent 40%);
+      min-height:100vh; -webkit-font-smoothing:antialiased;
+    }
+    a{color:var(--red);}
+
+    /* ---- top bar + progress ---- */
+    .top{position:sticky; top:0; z-index:20; background:rgba(255,255,255,0.92); backdrop-filter:blur(8px);
+         border-bottom:1px solid var(--line);}
+    .top-row{max-width:1080px; margin:0 auto; padding:14px 28px; display:flex; align-items:center; justify-content:space-between; gap:16px;}
+    .brand{display:flex; align-items:center; gap:12px; text-decoration:none;}
+    .brand img{height:34px; display:block;}
+    .brand b{font-family:var(--disp); font-weight:800; font-size:17px; letter-spacing:.01em; color:var(--ink); text-transform:uppercase; line-height:1;}
+    .brand span{display:block; font-size:9.5px; letter-spacing:.22em; color:var(--muted); text-transform:uppercase; margin-top:3px; font-weight:600;}
+    .top-tag{font-family:var(--disp); font-weight:700; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--red);}
+    .pbar{height:3px; background:var(--cream-2);}
+    .pfill{height:100%; width:0; background:var(--red); transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+    /* ---- stage ---- */
+    .stage{max-width:760px; margin:0 auto; padding:46px 28px 140px;}
+    .step{display:none;}
+    .step.active{display:block; animation:rise .5s cubic-bezier(.2,.7,.2,1) both;}
+    @keyframes rise{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;}}
+    .step.active .reveal{opacity:0; animation:rise .55s cubic-bezier(.2,.7,.2,1) forwards;}
+    .step.active .reveal:nth-child(1){animation-delay:.04s;} .step.active .reveal:nth-child(2){animation-delay:.1s;}
+    .step.active .reveal:nth-child(3){animation-delay:.16s;} .step.active .reveal:nth-child(4){animation-delay:.22s;}
+    .step.active .reveal:nth-child(5){animation-delay:.28s;} .step.active .reveal:nth-child(6){animation-delay:.34s;}
+    .step.active .reveal:nth-child(7){animation-delay:.4s;} .step.active .reveal:nth-child(8){animation-delay:.46s;}
+
+    .kicker{font-family:var(--disp); font-weight:700; font-size:13px; letter-spacing:.22em; text-transform:uppercase; color:var(--red); display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+    .kicker::before{content:''; width:26px; height:2px; background:var(--red);}
+    .h{font-family:var(--disp); font-weight:800; font-size:clamp(38px,6vw,62px); line-height:.92; letter-spacing:-.01em; color:var(--ink); margin:0 0 14px; text-transform:uppercase;}
+    .h em{font-style:italic; color:var(--red); font-weight:700;}
+    .lead{font-size:17px; line-height:1.6; color:var(--text-2); max-width:54ch; margin:0 0 30px; font-weight:300;}
+
+    /* ---- exhibit (screenshot) ---- */
+    .exhibit{position:relative; margin:0 0 32px; border:1px solid var(--line); background:var(--paper);
+             box-shadow:0 24px 60px -34px rgba(11,11,14,.5); border-radius:3px; overflow:hidden;}
+    .exhibit::before{content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--red); z-index:2;}
+    .exhibit img{display:block; width:100%; height:auto; max-height:380px; object-fit:cover; object-position:top center;}
+    .exhibit figcaption{font-family:var(--disp); font-weight:600; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); padding:11px 16px; border-top:1px solid var(--line); background:var(--cream);}
+
+    /* ---- questions ---- */
+    .q{margin:0 0 26px;}
+    .q-label{font-family:var(--disp); font-weight:700; font-size:19px; letter-spacing:.005em; color:var(--ink); margin:0 0 12px; line-height:1.2;}
+    .q-hint{font-size:13.5px; color:var(--muted); margin:-6px 0 12px; font-weight:300;}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px 16px;}
+    input.f, textarea.f{width:100%; padding:14px 16px; background:var(--paper); border:1px solid var(--line); border-radius:2px;
+        font-family:var(--body); font-size:15.5px; color:var(--text); outline:none; transition:border-color .18s, box-shadow .18s;}
+    textarea.f{resize:vertical; min-height:92px; line-height:1.55;}
+    input.f::placeholder, textarea.f::placeholder{color:#B6B4AC;}
+    input.f:focus, textarea.f:focus{border-color:var(--red); box-shadow:0 0 0 3px var(--red-tint);}
+    .fld-label{display:block; font-family:var(--disp); font-weight:600; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;}
+
+    /* ---- chips ---- */
+    .chips{display:flex; flex-wrap:wrap; gap:10px;}
+    .chip{font-family:var(--body); font-size:14.5px; font-weight:500; padding:11px 18px; border:1px solid var(--line);
+          background:var(--paper); color:var(--text-2); border-radius:40px; cursor:pointer; transition:all .16s; display:inline-flex; align-items:center; gap:9px;}
+    .chip:hover{border-color:var(--ink); color:var(--ink);}
+    .chip.on{background:var(--red); border-color:var(--red); color:#fff; box-shadow:0 8px 20px -10px rgba(230,24,50,.7);}
+    .chip .tick{width:15px; height:15px; opacity:0; transform:scale(.6); transition:.16s;}
+    .chip.on .tick{opacity:1; transform:scale(1);}
+
+    /* ---- stars ---- */
+    .stars{display:inline-flex; gap:6px;}
+    .star{background:none; border:none; padding:4px; cursor:pointer; line-height:0; color:var(--cream-2);}
+    .star svg{width:34px; height:34px; transition:transform .12s, color .12s; stroke:var(--line); fill:none;}
+    .star.lit svg{fill:var(--red); stroke:var(--red); color:var(--red);}
+    .star:hover svg{transform:scale(1.16);}
+    .stars-hint{display:inline-block; margin-left:14px; font-size:13px; color:var(--muted); vertical-align:6px;}
+
+    /* ---- footer nav ---- */
+    .foot{position:fixed; left:0; right:0; bottom:0; z-index:20; background:rgba(255,255,255,0.94); backdrop-filter:blur(8px);
+          border-top:1px solid var(--line);}
+    .foot-row{max-width:760px; margin:0 auto; padding:16px 28px; display:flex; align-items:center; justify-content:space-between; gap:16px;}
+    .dots{display:flex; gap:8px;}
+    .dot{width:8px; height:8px; border-radius:50%; background:var(--cream-2); transition:.3s;}
+    .dot.done{background:var(--muted);} .dot.now{background:var(--red); transform:scale(1.35);}
+    .btn{font-family:var(--disp); font-weight:700; font-size:15px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; border-radius:2px; transition:all .18s; display:inline-flex; align-items:center; gap:10px;}
+    .btn-next{background:var(--red); color:#fff; border:1px solid var(--red); padding:14px 30px;}
+    .btn-next:hover{background:var(--red-dark); border-color:var(--red-dark);}
+    .btn-next:disabled{opacity:.55; cursor:not-allowed;}
+    .btn-back{background:transparent; color:var(--text-2); border:1px solid transparent; padding:14px 14px;}
+    .btn-back:hover{color:var(--ink);}
+    .btn-back[hidden]{visibility:hidden;}
+
+    .err{display:none; background:var(--red-tint); border-left:3px solid var(--red); color:var(--red-dark); font-size:14px; padding:11px 15px; margin:0 0 22px;}
+    .err.show{display:block;}
+
+    /* ---- success ---- */
+    .done-wrap{display:none; text-align:center; padding:60px 28px 120px; max-width:560px; margin:0 auto;}
+    .done-wrap.show{display:block; animation:rise .6s cubic-bezier(.2,.7,.2,1) both;}
+    .done-ic{width:88px; height:88px; border-radius:50%; background:var(--red); display:flex; align-items:center; justify-content:center; margin:0 auto 26px; box-shadow:0 18px 40px -16px rgba(230,24,50,.8);}
+    .done-wrap h2{font-family:var(--disp); font-weight:800; font-size:46px; text-transform:uppercase; color:var(--ink); margin:0 0 14px; line-height:.95;}
+    .done-wrap p{font-size:16.5px; color:var(--text-2); line-height:1.6; margin:0 auto 28px; max-width:42ch; font-weight:300;}
+
+    @media (max-width:680px){
+      .stage{padding:32px 20px 150px;} .grid2{grid-template-columns:1fr;}
+      .top-tag{display:none;} .h{font-size:40px;} .exhibit img{max-height:240px;}
+      .foot-row{padding:13px 18px;} .btn-next{padding:13px 22px;}
+    }
   </style>
 </head>
 <body>
 
-<div class="su-shell">
-  <aside class="su-brand">
-    <a href="/aa" class="su-logo">
+<header class="top">
+  <div class="top-row">
+    <a href="/aa" class="brand">
       <img src="/aadashboard.png" alt="NDRMA" />
-      <div>Anticipatory Action<span>Kenya · NDRMA</span></div>
+      <b>Anticipatory Action<span>Kenya · NDRMA</span></b>
     </a>
-    <div>
-      <div class="su-kicker">User Acceptance Testing</div>
-      <h1 class="su-title">Tell us how<br><span class="accent">it went.</span></h1>
-      <p class="su-sub">You're helping test the Kenya Anticipatory Action platform. Share what you tried, what worked, and anything that broke or could be better. Every note helps us get it right before go-live.</p>
-    </div>
-    <div class="su-foot">Predict · Prepare · Protect</div>
-  </aside>
+    <div class="top-tag">User Acceptance Testing</div>
+  </div>
+  <div class="pbar"><div class="pfill" id="pfill"></div></div>
+</header>
 
-  <main class="su-main">
-    <div class="su-card">
-      <div id="formWrap">
-        <h2 class="su-h">UAT Feedback</h2>
-        <p class="su-intro">Takes about a minute. Only your name and feedback are required — fill in the rest where it helps.</p>
+<main class="stage" id="stage">
+  <div class="err" id="err"></div>
 
-        <div class="su-alert" id="alert" role="alert"></div>
-
-        <form id="uatForm" novalidate>
-          <div class="su-grid">
-            <div class="su-field"><label for="tester_name">Your name *</label><input id="tester_name" required /></div>
-            <div class="su-field"><label for="tester_email">Email</label><input type="email" id="tester_email" autocomplete="email" /></div>
-            <div class="su-field"><label for="organization">Organisation</label><input id="organization" autocomplete="organization" /></div>
-            <div class="su-field">
-              <label for="area_tested">What did you test?</label>
-              <select id="area_tested">
-                <option value="">Select an area…</option>
-                <option>Sign up / Request access</option>
-                <option>Login</option>
-                <option>Submitting an anticipatory action</option>
-                <option>Editing / updating a submission</option>
-                <option>Reviewing &amp; approving (admin)</option>
-                <option>Results dashboard</option>
-                <option>Reports / documents</option>
-                <option>Member organisations page</option>
-                <option>FAQ</option>
-                <option>Email notifications</option>
-                <option>General / Other</option>
-              </select>
-            </div>
-            <div class="su-field">
-              <label for="outcome">How did it go?</label>
-              <select id="outcome">
-                <option>Worked well</option>
-                <option>Worked with issues</option>
-                <option>Did not work</option>
-              </select>
-            </div>
-            <div class="su-field" id="severityWrap" style="display:none">
-              <label for="severity">How serious is the issue?</label>
-              <select id="severity">
-                <option value="">Select…</option>
-                <option>Low</option>
-                <option>Medium</option>
-                <option>High</option>
-                <option>Blocker</option>
-              </select>
-            </div>
-            <div class="su-field full">
-              <label for="rating">Overall rating</label>
-              <select id="rating">
-                <option value="">Select…</option>
-                <option>5 - Excellent</option>
-                <option>4 - Good</option>
-                <option>3 - Okay</option>
-                <option>2 - Poor</option>
-                <option>1 - Very poor</option>
-              </select>
-            </div>
-            <div class="su-field full"><label for="feedback">What did you do, and what happened? *</label><textarea id="feedback" rows="4" required placeholder="e.g. I submitted an action for Garissa — it saved, but the county dropdown was slow to load."></textarea></div>
-            <div class="su-field full"><label for="suggestion">Suggestions for improvement</label><textarea id="suggestion" rows="3"></textarea></div>
-          </div>
-          <button type="submit" class="su-submit" id="submitBtn">
-            <span id="submitLabel">Submit Feedback</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>
-          </button>
-        </form>
-      </div>
-
-      <div class="su-success" id="success">
-        <div class="ic">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0a7a4a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <h2>Thank you!</h2>
-        <p>Your feedback has been recorded. It goes straight to the team improving the platform.</p>
-        <a href="#" id="againBtn" class="su-submit" style="display:inline-flex;width:auto;text-decoration:none">Submit more feedback</a>
+  <!-- STEP: about -->
+  <section class="step" data-step="about">
+    <div class="reveal"><div class="kicker"><span id="k-about">Step 1</span></div></div>
+    <h1 class="h reveal">First, the<br><em>basics.</em></h1>
+    <p class="lead reveal">Thanks for helping us test the platform before go-live. This takes about two minutes — we only ask about the parts you actually used. Your honest take is exactly what we need.</p>
+    <div class="q reveal">
+      <div class="grid2">
+        <div><label class="fld-label" for="tester_name">Your name *</label><input class="f" id="tester_name" data-field="tester_name" autocomplete="name" /></div>
+        <div><label class="fld-label" for="tester_email">Email</label><input class="f" id="tester_email" type="email" data-field="tester_email" autocomplete="email" /></div>
+        <div><label class="fld-label" for="organization">Organisation</label><input class="f" id="organization" data-field="organization" autocomplete="organization" /></div>
       </div>
     </div>
-  </main>
+    <div class="q reveal">
+      <div class="q-label">Which parts did you get to try?</div>
+      <div class="q-hint">Pick all that apply — we'll only ask about these.</div>
+      <div class="chips" data-chipgroup="roles" data-multi="1">
+        <button type="button" class="chip" data-val="The public website">{{tick}} The public website</button>
+        <button type="button" class="chip" data-val="The member portal">{{tick}} The member portal (logged in)</button>
+        <button type="button" class="chip" data-val="Approver / Admin console">{{tick}} Approver / Admin console</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP: website -->
+  <section class="step" data-step="website">
+    <div class="reveal"><div class="kicker"><span class="k-num"></span></div></div>
+    <h1 class="h reveal">The <em>website.</em></h1>
+    <p class="lead reveal">The public face of the programme — the pages anyone can browse without signing in.</p>
+    <figure class="exhibit reveal"><img src="/uat-website.png" alt="The Anticipatory Action public website" loading="lazy" /><figcaption>The public Anticipatory Action website</figcaption></figure>
+    <div class="q reveal">
+      <div class="q-label">First impressions?</div>
+      <div class="stars" data-stars="website_rating"></div>
+    </div>
+    <div class="q reveal">
+      <div class="q-label">Could you find what you were looking for?</div>
+      <div class="chips" data-chipgroup="website_findability">
+        <button type="button" class="chip" data-val="Yes, easily">Yes, easily</button>
+        <button type="button" class="chip" data-val="Mostly">Mostly</button>
+        <button type="button" class="chip" data-val="Not really">Not really</button>
+      </div>
+    </div>
+    <div class="q reveal">
+      <div class="q-label">What did you like about it?</div>
+      <textarea class="f" data-field="website_liked" placeholder="The bits that felt clear, useful or good-looking…"></textarea>
+    </div>
+    <div class="q reveal">
+      <div class="q-label">What was confusing, or could be better?</div>
+      <textarea class="f" data-field="website_improve" placeholder="Anything that slowed you down, looked off, or you'd change…"></textarea>
+    </div>
+  </section>
+
+  <!-- STEP: member -->
+  <section class="step" data-step="member">
+    <div class="reveal"><div class="kicker"><span class="k-num"></span></div></div>
+    <h1 class="h reveal">As a <em>member.</em></h1>
+    <p class="lead reveal">Signed in: recording an anticipatory action, tracking your submissions, and your dashboard.</p>
+    <figure class="exhibit reveal"><img src="/uat-member.png" alt="The member dashboard" loading="lazy" /><figcaption>Your member dashboard</figcaption></figure>
+    <div class="q reveal">
+      <div class="q-label">How did submitting &amp; tracking an action feel?</div>
+      <div class="stars" data-stars="member_rating"></div>
+    </div>
+    <div class="q reveal">
+      <div class="q-label">What worked well for you?</div>
+      <textarea class="f" data-field="member_liked" placeholder="e.g. the form was clear, saving a draft was easy…"></textarea>
+    </div>
+    <div class="q reveal">
+      <div class="q-label">Where did it trip you up?</div>
+      <textarea class="f" data-field="member_improve" placeholder="Steps that were unclear, slow, or you expected to work differently…"></textarea>
+    </div>
+  </section>
+
+  <!-- STEP: approver -->
+  <section class="step" data-step="approver">
+    <div class="reveal"><div class="kicker"><span class="k-num"></span></div></div>
+    <h1 class="h reveal">Reviewing &amp; <em>approving.</em></h1>
+    <p class="lead reveal">The console where approvers and admins review submissions, manage members, and curate content.</p>
+    <figure class="exhibit reveal"><img src="/uat-admin.png" alt="The admin & approver console" loading="lazy" /><figcaption>The approver / admin console</figcaption></figure>
+    <div class="q reveal">
+      <div class="q-label">How was the console to work in?</div>
+      <div class="stars" data-stars="approver_rating"></div>
+    </div>
+    <div class="q reveal">
+      <div class="q-label">What did you like?</div>
+      <textarea class="f" data-field="approver_liked" placeholder="e.g. the overview was clear, approving was quick…"></textarea>
+    </div>
+    <div class="q reveal">
+      <div class="q-label">What needed improvement?</div>
+      <textarea class="f" data-field="approver_improve" placeholder="Anything fiddly, missing, or that you'd rethink…"></textarea>
+    </div>
+  </section>
+
+  <!-- STEP: overall -->
+  <section class="step" data-step="overall">
+    <div class="reveal"><div class="kicker"><span class="k-num"></span></div></div>
+    <h1 class="h reveal">The <em>big picture.</em></h1>
+    <p class="lead reveal">Last few — your overall read on the platform.</p>
+    <div class="q reveal">
+      <div class="q-label">Overall, how would you rate it?</div>
+      <div class="stars" data-stars="overall_rating"></div>
+    </div>
+    <div class="q reveal">
+      <div class="q-label">Would you recommend it to a colleague?</div>
+      <div class="chips" data-chipgroup="would_recommend">
+        <button type="button" class="chip" data-val="Yes">Yes</button>
+        <button type="button" class="chip" data-val="Maybe">Maybe</button>
+        <button type="button" class="chip" data-val="No">Not yet</button>
+      </div>
+    </div>
+    <div class="q reveal">
+      <div class="q-label">The single most valuable thing about it?</div>
+      <textarea class="f" data-field="most_valuable" placeholder="The one thing you'd keep no matter what…"></textarea>
+    </div>
+    <div class="q reveal">
+      <div class="q-label">Anything else on your mind?</div>
+      <textarea class="f" data-field="general_feedback" placeholder="Bugs, ideas, a feature you wished existed — all welcome."></textarea>
+    </div>
+  </section>
+</main>
+
+<!-- success -->
+<div class="done-wrap" id="done">
+  <div class="done-ic"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+  <h2>Thank you.</h2>
+  <p>Your feedback is in — it goes straight to the team getting this ready for go-live. We're grateful you took the time.</p>
+  <a href="#" id="again" class="btn btn-next" style="text-decoration:none">Add more feedback</a>
 </div>
+
+<footer class="foot" id="foot">
+  <div class="foot-row">
+    <button class="btn btn-back" id="back" hidden>← Back</button>
+    <div class="dots" id="dots"></div>
+    <button class="btn btn-next" id="next">Next →</button>
+  </div>
+</footer>
 
 <script>
 (function () {
+  'use strict';
   var csrf = (window.frappe && frappe.csrf_token) || 'Guest';
-  var form = document.getElementById('uatForm');
-  var alertEl = document.getElementById('alert');
-  var btn = document.getElementById('submitBtn');
-  var label = document.getElementById('submitLabel');
-  var outcome = document.getElementById('outcome');
-  var severityWrap = document.getElementById('severityWrap');
 
-  function showErr(msg) { alertEl.textContent = msg; alertEl.className = 'su-alert show err'; }
-  function clearErr() { alertEl.className = 'su-alert'; }
-  function val(id) { var e = document.getElementById(id); return e ? String(e.value).trim() : ''; }
+  var state = {
+    tester_name:'', tester_email:'', organization:'', roles:[],
+    website_rating:0, website_findability:'', website_liked:'', website_improve:'',
+    member_rating:0, member_liked:'', member_improve:'',
+    approver_rating:0, approver_liked:'', approver_improve:'',
+    overall_rating:0, would_recommend:'', most_valuable:'', general_feedback:''
+  };
 
-  // Show the severity field only when something didn't work perfectly.
-  function syncSeverity() { severityWrap.style.display = (outcome.value && outcome.value !== 'Worked well') ? 'flex' : 'none'; }
-  outcome.addEventListener('change', syncSeverity); syncSeverity();
+  var STAR = '<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
 
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault(); clearErr();
-    if (!val('tester_name') || !val('feedback')) { showErr('Please add your name and tell us what happened.'); return; }
-    btn.disabled = true; label.textContent = 'Submitting…';
-    var payload = {
-      tester_name: val('tester_name'), tester_email: val('tester_email'), organization: val('organization'),
-      area_tested: val('area_tested'), outcome: val('outcome'),
-      severity: (outcome.value !== 'Worked well') ? val('severity') : '',
-      rating: val('rating'), feedback: val('feedback'), suggestion: val('suggestion'),
-      browser_device: (navigator.userAgent || '').slice(0, 200)
-    };
+  // build star widgets
+  document.querySelectorAll('[data-stars]').forEach(function (grp) {
+    var field = grp.getAttribute('data-stars'), hint = document.createElement('span');
+    hint.className = 'stars-hint';
+    for (var i = 1; i <= 5; i++) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'star'; b.dataset.v = i; b.innerHTML = STAR;
+      b.setAttribute('aria-label', i + ' star' + (i > 1 ? 's' : ''));
+      grp.appendChild(b);
+    }
+    grp.appendChild(hint);
+    var labels = {1:'Needs work',2:'Below par',3:'Okay',4:'Good',5:'Excellent'};
+    function paint(n) { grp.querySelectorAll('.star').forEach(function (s) { s.classList.toggle('lit', +s.dataset.v <= n); }); hint.textContent = n ? labels[n] : ''; }
+    grp.querySelectorAll('.star').forEach(function (s) {
+      s.addEventListener('mouseenter', function () { paint(+s.dataset.v); });
+      s.addEventListener('click', function () { state[field] = +s.dataset.v; paint(state[field]); });
+    });
+    grp.addEventListener('mouseleave', function () { paint(state[field]); });
+  });
+
+  // chip groups (the "tick" placeholder gets a real svg)
+  var TICK = '<svg class="tick" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  document.querySelectorAll('.chip').forEach(function (c) { c.innerHTML = c.innerHTML.replace('{{tick}}', TICK); });
+  document.querySelectorAll('[data-chipgroup]').forEach(function (grp) {
+    var field = grp.getAttribute('data-chipgroup'), multi = grp.hasAttribute('data-multi');
+    grp.querySelectorAll('.chip').forEach(function (c) {
+      c.addEventListener('click', function () {
+        var v = c.dataset.val;
+        if (multi) {
+          c.classList.toggle('on');
+          var arr = state.roles, i = arr.indexOf(v);
+          if (c.classList.contains('on')) { if (i < 0) arr.push(v); } else if (i > -1) arr.splice(i, 1);
+        } else {
+          grp.querySelectorAll('.chip').forEach(function (x) { x.classList.remove('on'); });
+          c.classList.add('on'); state[field] = v;
+        }
+      });
+    });
+  });
+
+  // text/select fields
+  document.querySelectorAll('[data-field]').forEach(function (el) {
+    el.addEventListener('input', function () { state[el.getAttribute('data-field')] = el.value; });
+  });
+
+  // ---- wizard ----
+  var stage = document.getElementById('stage'), pfill = document.getElementById('pfill');
+  var backBtn = document.getElementById('back'), nextBtn = document.getElementById('next'), dots = document.getElementById('dots');
+  var err = document.getElementById('err');
+  var idx = 0;
+
+  function steps() {
+    var s = ['about', 'website'];
+    if (state.roles.indexOf('The member portal') > -1) s.push('member');
+    if (state.roles.indexOf('Approver / Admin console') > -1) s.push('approver');
+    s.push('overall');
+    return s;
+  }
+  function showErr(m) { err.textContent = m; err.className = 'err show'; }
+  function clearErr() { err.className = 'err'; }
+
+  function render() {
+    var list = steps(), id = list[idx];
+    document.querySelectorAll('.step').forEach(function (el) { el.classList.toggle('active', el.dataset.step === id); });
+    // kicker numbering for non-about steps
+    var active = document.querySelector('.step[data-step="' + id + '"]');
+    var knum = active.querySelector('.k-num');
+    if (knum) knum.textContent = 'Step ' + (idx + 1) + ' of ' + list.length;
+    var kAbout = document.getElementById('k-about'); if (kAbout) kAbout.textContent = 'Step 1 of ' + list.length;
+    // progress + dots
+    pfill.style.width = Math.round((idx) / (list.length - 1) * 100) + '%';
+    dots.innerHTML = list.map(function (_, i) { return '<span class="dot ' + (i < idx ? 'done' : i === idx ? 'now' : '') + '"></span>'; }).join('');
+    backBtn.hidden = idx === 0;
+    nextBtn.innerHTML = (idx === list.length - 1) ? 'Submit feedback ✓' : 'Next →';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function validate(id) {
+    if (id === 'about' && !state.tester_name.trim()) { showErr('Just your name to start — the rest is optional.'); document.getElementById('tester_name').focus(); return false; }
+    return true;
+  }
+
+  nextBtn.addEventListener('click', function () {
+    var list = steps(), id = list[idx];
+    if (!validate(id)) return;
+    clearErr();
+    if (idx === list.length - 1) { submit(); return; }
+    idx++; render();
+  });
+  backBtn.addEventListener('click', function () { if (idx > 0) { idx--; clearErr(); render(); } });
+
+  async function submit() {
+    nextBtn.disabled = true; nextBtn.textContent = 'Sending…';
+    state.roles_tested = state.roles.join(', ');
+    state.browser_device = (navigator.userAgent || '').slice(0, 200);
     try {
       var res = await fetch('/api/method/anticipatory_action.api.anticipatory_action.submit_uat_feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf },
-        body: JSON.stringify({ data: JSON.stringify(payload) })
+        body: JSON.stringify({ data: JSON.stringify(state) })
       });
       var data = {}; try { data = await res.json(); } catch (_) {}
       var out = (data && data.message) || data;
       if (res.ok && out && out.success) {
-        document.getElementById('formWrap').style.display = 'none';
-        document.getElementById('success').className = 'su-success show';
+        document.getElementById('foot').style.display = 'none';
+        stage.style.display = 'none';
+        document.getElementById('done').className = 'done-wrap show';
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
-      showErr((out && out.error) || 'Could not submit your feedback. Please try again.');
+      showErr((out && out.error) || 'Could not submit — please try again.');
     } catch (_) {
       showErr('Could not reach the server. Check your connection and try again.');
     }
-    btn.disabled = false; label.textContent = 'Submit Feedback';
+    nextBtn.disabled = false; nextBtn.innerHTML = 'Submit feedback ✓';
+  }
+
+  document.getElementById('again').addEventListener('click', function (e) {
+    e.preventDefault(); window.location.reload();
   });
 
-  document.getElementById('againBtn').addEventListener('click', function (e) {
-    e.preventDefault(); form.reset(); syncSeverity();
-    document.getElementById('success').className = 'su-success';
-    document.getElementById('formWrap').style.display = '';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  render();
 })();
 </script>
 
