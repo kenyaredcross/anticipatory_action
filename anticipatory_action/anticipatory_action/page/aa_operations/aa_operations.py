@@ -1,6 +1,9 @@
 import frappe
 from frappe.utils import getdate, nowdate
 
+from anticipatory_action.api.anticipatory_action import _cached
+from anticipatory_action.api.permissions import require_aa_access
+
 # Roles that get the full operational picture (approvals, users, messages).
 ADMIN_ROLES = {"Anticipatory Action Admin", "System Manager"}
 
@@ -17,6 +20,9 @@ def get_summary():
 	permissions for speed. Actual data access stays gated by the permissioned
 	list/form views that each section opens.
 	"""
+	# SEC-002: whitelisted endpoints are callable by ANY logged-in user, including
+	# System Users of unrelated projects on a shared bench. Confine to AA members.
+	require_aa_access()
 	is_admin = _is_admin()
 
 	# Organisation scoping: an Approver's submission counters reflect only their
@@ -76,6 +82,12 @@ def get_summary():
 
 
 def _hazard_breakdown():
+	# PERF-006: programme-wide (unscoped) scan — cache briefly so every console open
+	# doesn't re-run it. The per-org counters around it stay live.
+	return _cached("aa:hazard_breakdown", 60, _build_hazard_breakdown)
+
+
+def _build_hazard_breakdown():
 	"""Approved activations grouped by hazard, with people targeted."""
 	rows = frappe.db.sql(
 		"""
@@ -115,6 +127,12 @@ def get_situation():
 	people targeted, the number of activations, and the spread of early-action
 	delivery status (Planned / Ongoing / Complete).
 	"""
+	require_aa_access()  # SEC-002
+	# PERF-006: unscoped programme-wide map — cache briefly (kept live via a short TTL).
+	return _cached("aa:situation", 60, _build_situation)
+
+
+def _build_situation():
 	rows = frappe.db.sql(
 		"""
 		SELECT
@@ -263,6 +281,7 @@ def get_events():
 	Split into upcoming (today onward) and past, so the console reads like an
 	operations calendar.
 	"""
+	require_aa_access()  # SEC-002
 	rows = frappe.get_all(
 		"Anticipatory Activity",
 		fields=["name", "start_date", "end_date", "date", "pillar", "activity",
@@ -291,6 +310,10 @@ def get_reports():
 	Merges the curated Reports register with formal Reference Documents into a
 	single, newest-first list with normalised fields.
 	"""
+	# SEC-002: this returns BOTH Public and Private reports on the premise that the
+	# caller is a portal member — but the endpoint itself must enforce that premise,
+	# or any logged-in user (incl. other tenants) can read Private reports.
+	require_aa_access()
 	library = []
 
 	# The portal is members-only, so it shows both Public and Private reports;

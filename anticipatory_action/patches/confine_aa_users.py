@@ -9,7 +9,18 @@ AA_MODULE = "Anticipatory Action"
 
 
 def _workspace_for(role):
-	return "Anticipatory Action Admin" if role == "Anticipatory Action Admin" else "Anticipatory Action"
+	# DATA-001: members land on the "Anticipatory Actions" (plural) workspace. On a
+	# fresh migrate the plural may not be imported yet when this patch runs, so fall
+	# back to the legacy singular — rename_member_workspace (later in the same migrate)
+	# deletes the singular and migrates any user still on it to the plural, so the end
+	# state is correct in every ordering, and we no longer hard-code a name that a
+	# later patch deletes.
+	if role == "Anticipatory Action Admin":
+		return "Anticipatory Action Admin"
+	for ws in ("Anticipatory Actions", "Anticipatory Action"):
+		if frappe.db.exists("Workspace", ws):
+			return ws
+	return "Anticipatory Actions"
 
 
 def execute():

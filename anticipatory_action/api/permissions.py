@@ -33,6 +33,42 @@ def _can_review(user=None):
 	return bool(REVIEW_ROLES & set(frappe.get_roles(user or frappe.session.user)))
 
 
+def _is_aa_member(user=None):
+	"""True when ``user`` is a genuine AA programme participant — a member,
+	approver or admin (or a System Manager). ``AA_ONLY_ROLES`` is defined further
+	down and resolved at call time."""
+	return bool((AA_ONLY_ROLES | {"System Manager"}) & set(frappe.get_roles(user or frappe.session.user)))
+
+
+def require_aa_access():
+	"""Guard for whitelisted endpoints that must stay inside the AA programme.
+
+	``@frappe.whitelist(allow_guest=False)`` (or a bare login) is an *authentication*
+	check, not an *authorisation* one: on a shared bench any System User from an
+	unrelated project would pass it. This confirms the caller is signed in AND holds
+	an AA role, so cross-tenant users are denied. Raises ``PermissionError`` otherwise.
+	"""
+	if frappe.session.user == "Guest":
+		frappe.throw("Please sign in to continue.", frappe.PermissionError)
+	if not _is_aa_member():
+		frappe.throw("You are not authorised to access this data.", frappe.PermissionError)
+
+
+def require_reporting_access():
+	"""Guard for the PowerBI / reporting feeds, which return cross-organisation PII.
+
+	Restricted to AA reviewers (Approver / Admin / System Manager) — not every
+	member — because these feeds hand back every approved (or every test) submission
+	regardless of organisation. Provision the PowerBI connection as a dedicated
+	service user that holds an AA reviewer role and authenticate with its API
+	key/secret; do NOT rely on ``allow_guest=False``. Raises ``PermissionError``.
+	"""
+	if frappe.session.user == "Guest":
+		frappe.throw("Please sign in to continue.", frappe.PermissionError)
+	if not _can_review():
+		frappe.throw("You are not authorised to access this data.", frappe.PermissionError)
+
+
 # ---------------------------------------------------------------------------
 # Organisation scoping — an Approver reviews only the submissions of their own
 # organization. A submission's organization is the organization of its owner
@@ -95,7 +131,11 @@ def aa_query_conditions(user=None):
 	"""SQL WHERE fragment scoping the caller to the submissions they may see."""
 	user = user or frappe.session.user
 	if user == "Guest":
-		return ""
+		# Explicit deny (never an empty, no-op fragment): a Guest list/report
+		# context must return zero rows even if the doctype's `All`-read ever
+		# resolves for Guest. Public data is served by the dedicated allow_guest
+		# aggregate endpoints, which use explicit filters, not this hook.
+		return "1=0"
 	scope = reviewer_owner_scope(user)
 	if scope is None:
 		return ""  # admins / System Managers — the full picture

@@ -50,7 +50,9 @@ def aa_sender():
 			if email_id:
 				return _branded(email_id)
 	except Exception:
-		pass
+		# CODE-002: don't swallow silently — a misconfigured sender is worth a log.
+		# We still fall back to the site's default account so mail keeps sending.
+		frappe.log_error(frappe.get_traceback(), "aa_email sender resolution")
 	return None  # use the site's default outgoing account
 
 

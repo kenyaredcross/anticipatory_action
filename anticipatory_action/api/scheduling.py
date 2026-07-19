@@ -22,11 +22,14 @@ _DATED_DOCTYPES = (
 )
 
 
-def derive_status(start_date, end_date):
-	"""Return Planned / Ongoing / Completed from the dates, or None if no start."""
+def derive_status(start_date, end_date, today=None):
+	"""Return Planned / Ongoing / Completed from the dates, or None if no start.
+
+	``today`` may be passed in so a batch caller computes it once instead of once
+	per row (BUG-002); when omitted it defaults to the current site date."""
 	if not start_date:
 		return None
-	today = getdate(nowdate())
+	today = today or getdate(nowdate())
 	start = getdate(start_date)
 	end = getdate(end_date) if end_date else None
 	if today < start:
@@ -47,18 +50,34 @@ def auto_set_status(doc):
 
 
 def refresh_statuses():
-	"""Daily scheduler: flip statuses as dates pass, across activities + events."""
+	"""Daily scheduler: flip statuses as dates pass, across activities + events.
+
+	Pages through every dated row (BUG-002: the old fixed limit=5000 silently left
+	statuses beyond the cap unrefreshed) and computes ``today`` once for the run.
+	Safe to page by offset because we only ever move rows between the non-manual
+	statuses, so no row drops out of the filtered set mid-run."""
+	today = getdate(nowdate())
+	page = 2000
 	for doctype, start_f, end_f in _DATED_DOCTYPES:
 		if not frappe.db.exists("DocType", doctype):
 			continue
-		rows = frappe.get_all(
-			doctype,
-			filters={"status": ["not in", MANUAL_STATUSES]},
-			fields=["name", start_f, end_f, "status"],
-			limit=5000,
-		)
-		for r in rows:
-			new = derive_status(r.get(start_f), r.get(end_f))
-			if new and new != r.get("status"):
-				frappe.db.set_value(doctype, r["name"], "status", new, update_modified=False)
+		start = 0
+		while True:
+			rows = frappe.get_all(
+				doctype,
+				filters={"status": ["not in", MANUAL_STATUSES]},
+				fields=["name", start_f, end_f, "status"],
+				order_by="name asc",
+				limit_start=start,
+				limit_page_length=page,
+			)
+			if not rows:
+				break
+			for r in rows:
+				new = derive_status(r.get(start_f), r.get(end_f), today)
+				if new and new != r.get("status"):
+					frappe.db.set_value(doctype, r["name"], "status", new, update_modified=False)
+			if len(rows) < page:
+				break
+			start += page
 	frappe.db.commit()

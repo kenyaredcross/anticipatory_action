@@ -1,5 +1,8 @@
 import frappe
+from frappe.rate_limiter import rate_limit
 from frappe.utils import strip_html
+
+from anticipatory_action.api.permissions import require_reporting_access
 
 
 def _submission_dict(d, is_test=0):
@@ -48,16 +51,30 @@ def _submission_dict(d, is_test=0):
 	}
 
 
+def _insert_submission(data, is_test=0):
+	"""Insert an Anticipatory Action from public form JSON and return the doc.
+
+	Shared by the rate-limited public endpoint and by guest checkout, which calls
+	this directly so one guest checkout isn't charged the public endpoint's per-IP
+	rate limit on top of its own (see SEC-004 / submit_guest_application)."""
+	d = frappe.parse_json(data) if isinstance(data, str) else (data or {})
+	# Save as a Draft (not submitted) so the reporter can edit or withdraw it from
+	# their portal while it is still Pending. An AA Admin submits it on approval -
+	# see anticipatory_action.api.portal.set_submission_status.
+	doc = frappe.get_doc(_submission_dict(d, is_test=is_test))
+	doc.flags.ignore_permissions = True
+	doc.insert()
+	return doc
+
+
 @frappe.whitelist(allow_guest=True)
+@rate_limit(limit=300, seconds=60 * 60)
 def submit_anticipatory_action(data):
+	# Rate limited per IP (SEC-004): a scripted flood files thousands/hour; 300/hour
+	# stops that while comfortably tolerating a whole workshop/venue behind one shared
+	# NAT or carrier-CGNAT IP (UAT, county-office bursts on Kenyan mobile networks).
 	try:
-		d = frappe.parse_json(data)
-		# Save as a Draft (not submitted) so the reporter can edit or withdraw
-		# it from their portal while it is still Pending. An AA Admin submits it
-		# when they approve - see anticipatory_action.api.portal.set_submission_status.
-		doc = frappe.get_doc(_submission_dict(d, is_test=0))
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		doc = _insert_submission(data, is_test=0)
 		frappe.db.commit()
 		return {"success": True, "name": doc.name}
 
@@ -67,6 +84,7 @@ def submit_anticipatory_action(data):
 
 
 @frappe.whitelist(allow_guest=True)
+@rate_limit(limit=300, seconds=60 * 60)
 def submit_test_application(data):
 	"""Submit through the test / dissemination form. Only works while an admin has
 	the test environment switched on. The record is flagged is_test and never
@@ -78,13 +96,14 @@ def submit_test_application(data):
 	if not testing_enabled():
 		return {"success": False, "error": "The test environment is currently switched off."}
 	try:
-		d = frappe.parse_json(data)
-		doc = frappe.get_doc(_submission_dict(d, is_test=1))
+		doc = _insert_submission(data, is_test=1)
 		# Tag the entry with the batch named when testing was switched on, so all
 		# entries from one test run group together (e.g. "Garissa testing 2026").
-		doc.test_batch = frappe.db.get_single_value("Anticipatory Action Settings", "test_batch_name") or None
-		doc.flags.ignore_permissions = True
-		doc.insert()
+		doc.db_set(
+			"test_batch",
+			frappe.db.get_single_value("Anticipatory Action Settings", "test_batch_name") or None,
+			update_modified=False,
+		)
 		frappe.db.commit()
 		return {"success": True, "name": doc.name, "test": True}
 
@@ -119,8 +138,41 @@ def get_form_meta():
 	}
 
 
+# Detail-row fields returned by the reporting feeds (shared shape).
+_DETAIL_FEED_FIELDS = [
+	"subcounty_level", "county", "subcounty", "sector",
+	"amount_for_anticipatory_action_kes",
+	"describe_the_anticipatory_action_intervention",
+	"number_of_people_targeted", "number_of_hh_targeted",
+	"number_of_males_targeted", "number_of_females_targeted",
+]
+
+
+def _attach_details(parents):
+	"""Attach each parent's detail rows in ONE query rather than one query per row
+	(CODE-004: the feeds used to fan out to 100-200 sequential queries)."""
+	names = [p["name"] for p in parents]
+	by_parent = {}
+	if names:
+		for d in frappe.db.get_all(
+			"Anticipatory Action Details",
+			filters={"parent": ["in", names]},
+			fields=["parent"] + _DETAIL_FEED_FIELDS,
+			order_by="parent asc, idx asc",
+		):
+			by_parent.setdefault(d.pop("parent"), []).append(d)
+	for p in parents:
+		p["anticipatory_action_details"] = by_parent.get(p["name"], [])
+	return parents
+
+
 @frappe.whitelist(allow_guest=False)
 def get_anticipatory_action_data(limit=100):
+	# SEC-001: allow_guest=False only authenticates; this feed returns every
+	# approved submission's PII (name/email/phone) via frappe.db.get_all, which
+	# bypasses the permission_query_conditions isolation. Gate it on an AA reviewer
+	# role (or a keyed reporting service user) so no cross-tenant user can dump it.
+	require_reporting_access()
 	try:
 		limit = int(limit)
 
@@ -143,24 +195,13 @@ def get_anticipatory_action_data(limit=100):
 			order_by="modified desc"
 		)
 
-		for aa in anticipatory_actions:
-			aa["anticipatory_action_details"] = frappe.db.get_all(
-				"Anticipatory Action Details",
-				filters={"parent": aa["name"]},
-				fields=[
-					"subcounty_level", "county", "subcounty", "sector",
-					"amount_for_anticipatory_action_kes",
-					"describe_the_anticipatory_action_intervention",
-					"number_of_people_targeted", "number_of_hh_targeted",
-					"number_of_males_targeted", "number_of_females_targeted",
-				]
-			)
+		_attach_details(anticipatory_actions)
 
 		return {"success": True, "data": _sanitize(anticipatory_actions)}
 
-	except Exception as e:
+	except Exception:
 		frappe.log_error(frappe.get_traceback(), "get_anticipatory_action_data")
-		return {"success": False, "error": str(e)}
+		return {"success": False, "error": "Could not load the data feed."}
 
 
 @frappe.whitelist(allow_guest=False)
@@ -171,6 +212,8 @@ def get_test_data(limit=500):
 	same field shape as get_anticipatory_action_data so a Power BI report built
 	against this can be pointed at the live feed later without rework. Test records
 	are never submitted/approved, so we do NOT filter on status or docstatus."""
+	# SEC-001: same PII exposure as get_anticipatory_action_data — reviewer-gated.
+	require_reporting_access()
 	try:
 		limit = int(limit)
 
@@ -190,24 +233,37 @@ def get_test_data(limit=500):
 			order_by="modified desc"
 		)
 
-		for aa in test_actions:
-			aa["anticipatory_action_details"] = frappe.db.get_all(
-				"Anticipatory Action Details",
-				filters={"parent": aa["name"]},
-				fields=[
-					"subcounty_level", "county", "subcounty", "sector",
-					"amount_for_anticipatory_action_kes",
-					"describe_the_anticipatory_action_intervention",
-					"number_of_people_targeted", "number_of_hh_targeted",
-					"number_of_males_targeted", "number_of_females_targeted",
-				]
-			)
+		_attach_details(test_actions)
 
 		return {"success": True, "data": _sanitize(test_actions)}
 
-	except Exception as e:
+	except Exception:
 		frappe.log_error(frappe.get_traceback(), "get_test_data")
-		return {"success": False, "error": str(e)}
+		return {"success": False, "error": "Could not load the data feed."}
+
+
+def _cached(key, ttl, builder):
+	"""Return a cached value or build+cache it. Short TTLs only — used to blunt
+	repeated/bot hits on guest-facing aggregates (PERF-001) while keeping the data
+	near-live (a new approval shows within `ttl` seconds).
+
+	Caching must never fail the request: if the cache backend is unavailable the
+	value is simply built fresh (uncached)."""
+	cache = None
+	try:
+		cache = frappe.cache()
+		val = cache.get_value(key)
+		if val is not None:
+			return val
+	except Exception:
+		cache = None
+	val = builder()
+	if cache is not None:
+		try:
+			cache.set_value(key, val, expires_in_sec=ttl)
+		except Exception:
+			pass
+	return val
 
 
 @frappe.whitelist(allow_guest=True)
@@ -216,7 +272,12 @@ def get_public_metrics():
 
 	Approved activations only: total approved submissions, funds committed (KES),
 	people targeted, counties reached and a per-hazard breakdown. Nothing here is
-	row-level sensitive, so it is safe for anonymous visitors."""
+	row-level sensitive, so it is safe for anonymous visitors. Cached for a short
+	window (PERF-001) since it is a public, uncached, bot-amplifiable endpoint."""
+	return _cached("aa:public_metrics", 60, _build_public_metrics)
+
+
+def _build_public_metrics():
 	totals = frappe.db.sql(
 		"""
 		SELECT
@@ -334,6 +395,7 @@ def get_policies():
 
 
 @frappe.whitelist(allow_guest=True)
+@rate_limit(limit=200, seconds=60 * 60)
 def submit_uat_feedback(data):
 	"""Public UAT feedback form, for users acceptance-testing the platform."""
 	try:
