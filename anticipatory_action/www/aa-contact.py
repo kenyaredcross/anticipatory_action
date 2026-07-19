@@ -9,22 +9,9 @@ def get_context(context):
 	context.error = None
 
 
-@frappe.whitelist(allow_guest=True)
-def submit_contact(full_name, email, organization, phone, subject, message):
-	try:
-		doc = frappe.get_doc({
-			"doctype": "AA Contact Message",
-			"full_name": full_name,
-			"email": email,
-			"organization": organization,
-			"phone": phone,
-			"subject": subject,
-			"message": message,
-			"status": "New"
-		})
-		doc.insert(ignore_permissions=True)
-		frappe.db.commit()
-		return {"success": True}
-	except Exception as e:
-		frappe.log_error(frappe.get_traceback(), "AA Contact Form Error")
-		return {"success": False, "error": str(e)}
+# NOTE (SEC-008): the contact form POSTs to the single, validated, deduping,
+# pillar-routing endpoint anticipatory_action.api.portal.submit_contact. A second
+# whitelisted submit_contact used to live here — unvalidated, and leaking the raw
+# exception string to the client — but this module's dotted path is hyphenated, so
+# /api/method could never import it anyway. It has been removed; do not re-add a
+# whitelisted method to a hyphen-named controller.

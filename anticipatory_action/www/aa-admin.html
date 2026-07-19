@@ -4,9 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Console - Kenya Anticipatory Action</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
   <link rel="stylesheet" href="/aa-portal-ui.css" />
   <style>
@@ -145,7 +142,7 @@
 
 <header class="portal-bar">
   <a href="/aa-portal" class="pb-brand">
-    <img src="/aadashboard.png" alt="NDRMA" />
+    <img src="/aadashboard.png" alt="Kenya Anticipatory Action" />
     <div class="pb-name">Admin Console</div>
   </a>
   <nav class="pb-links" id="pbLinks">
@@ -281,7 +278,7 @@
 </main>
 
 <div class="modal-overlay" id="modal">
-  <div class="modal-card">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
     <div class="modal-head"><h3 id="modal-title"></h3><button class="modal-close" id="modal-x" aria-label="Close">&times;</button></div>
     <div class="modal-body" id="modal-body"></div>
   </div>
@@ -313,10 +310,12 @@
 <script>window.AA_CSRF = "{{ csrf_token or '' }}"; window.AA_IS_SM = {{ 1 if is_system_manager else 0 }}; window.AA_IS_ADMIN = {{ 1 if is_admin else 0 }}; window.AA_IS_APPROVER = {{ 1 if is_approver else 0 }}; window.AA_CAN_MANAGE = {{ 1 if can_manage_users else 0 }}; window.AA_CAN_SET_ROLE = {{ 1 if can_set_role else 0 }};</script>
 <script src="/aa-portal-ui.js"></script>
 <script>
-  // Quieten error popups on the admin console for now (success confirmations stay).
+  // Route both success confirmations AND error messages through the shared toast,
+  // so a failed approve/delete/save always gives the user feedback (errors render
+  // with the red accent; successes with the green `ok` styling).
   if (window.AA && AA.toast) {
     var _aaToast = AA.toast;
-    AA.toast = function (msg, ok) { if (ok) _aaToast(msg, ok); };
+    AA.toast = function (msg, ok) { _aaToast(msg, ok); };
   }
 </script>
 <script>
@@ -353,6 +352,19 @@
     });
   });
 
+  // Whole-row targets (tr.clickable-row) are keyboard-operable: Enter/Space fires
+  // the same click. The rows carry tabindex="0" role="button"; delegation here
+  // avoids per-row key listeners. Keys pressed on an interactive child (button,
+  // link, form control) are left to that child.
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+    var row = e.target.closest ? e.target.closest('tr.clickable-row') : null;
+    if (!row) return;
+    if (e.target !== row && e.target.closest('button, a, input, select, textarea')) return;
+    e.preventDefault();
+    row.click();
+  });
+
   function loadTab(tab, force) {
     if (loaded[tab] && !force) return;
     loaded[tab] = true;
@@ -370,7 +382,7 @@
       '<form id="modal-form" novalidate><div class="form-grid">' + fields + '</div>' +
       '<div class="form-actions"><button type="submit" class="btn" id="modal-submit">' + (submitLabel || 'Save') + '</button>' +
       '<button type="button" class="btn ghost" id="modal-cancel">Cancel</button></div></form>';
-    document.getElementById('modal').classList.add('open');
+    showModal();
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
     document.getElementById('modal-form').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -379,10 +391,46 @@
       Promise.resolve(onSubmit()).catch(function (err) { modalErr(err.message); }).then(function () { done(); });
     });
   }
-  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+  // ---- modal a11y: focus move in, focus trap, Escape to close, focus restore ----
+  var _modalPrevFocus = null;
+  function _modalFocusables(root) {
+    return Array.prototype.slice.call(root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(function (el) { return el.offsetParent !== null; });
+  }
+  // Open the shared modal and move focus into the dialog (call after its body is set).
+  function showModal() {
+    var m = document.getElementById('modal');
+    _modalPrevFocus = document.activeElement;
+    m.classList.add('open');
+    var f = _modalFocusables(m);
+    var target = f[0] || m.querySelector('.modal-card');
+    if (target && target.focus) { try { target.focus(); } catch (e) {} }
+  }
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    if (_modalPrevFocus && _modalPrevFocus.focus) { try { _modalPrevFocus.focus(); } catch (e) {} }
+    _modalPrevFocus = null;
+  }
   function modalErr(msg) { var a = document.getElementById('modal-alert'); a.textContent = msg; a.className = 'alert show err'; }
   document.getElementById('modal-x').addEventListener('click', closeModal);
   document.getElementById('modal').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
+  // Escape closes the modal and Tab is trapped inside it. Registered before the
+  // review-overlay Escape handler, and stops propagation so only the modal reacts
+  // while it is open (prevents the review overlay behind it from also closing).
+  document.addEventListener('keydown', function (e) {
+    var m = document.getElementById('modal');
+    if (!m.classList.contains('open')) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeModal(); return; }
+    if (e.key === 'Tab') {
+      var f = _modalFocusables(m);
+      if (!f.length) { e.preventDefault(); var c = m.querySelector('.modal-card'); if (c) c.focus(); return; }
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      else if (!m.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    }
+  });
 
   function field(o) {
     var lab = '<label for="' + o.id + '">' + AA.esc(o.label) + (o.required ? ' *' : '') + '</label>';
@@ -419,7 +467,7 @@
   function detailModal(title, bodyHTML) {
     document.getElementById('modal-title').textContent = title;
     document.getElementById('modal-body').innerHTML = bodyHTML;
-    document.getElementById('modal').classList.add('open');
+    showModal();
   }
   function curSubFilter() { var f = document.getElementById('sub-filter'); return f ? f.value : ''; }
   function curReqFilter() { var f = document.getElementById('req-filter'); return f ? f.value : ''; }
@@ -442,7 +490,7 @@
   function goTab(name) { var t = document.querySelector('.tab[data-tab="' + name + '"]'); if (t) t.click(); }
 
   function stat(val, label, accent) {
-    return '<div class="stat' + (accent ? ' accent' : '') + '"><div class="v">' + val + '</div><div class="l">' + AA.esc(label) + '</div></div>';
+    return '<div class="stat' + (accent ? ' accent' : '') + '"><div class="v">' + AA.esc(val) + '</div><div class="l">' + AA.esc(label) + '</div></div>';
   }
   function setCount(id, val) {
     var c = document.getElementById(id); if (!c) return;
@@ -464,12 +512,12 @@
   function fileAffordance(attachmentUrl, linkUrl) {
     var out = [];
     if (attachmentUrl) {
-      out.push('<a class="file-chip" href="' + AA.esc(attachmentUrl) + '" target="_blank" rel="noopener" title="Open the attached file">' +
+      out.push('<a class="file-chip" href="' + AA.esc(AA.safeUrl(attachmentUrl)) + '" target="_blank" rel="noopener" title="Open the attached file">' +
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
         '<span>Open file</span></a>');
     }
     if (linkUrl) {
-      out.push('<a class="file-chip" href="' + AA.esc(linkUrl) + '" target="_blank" rel="noopener" title="Open the external link">' +
+      out.push('<a class="file-chip" href="' + AA.esc(AA.safeUrl(linkUrl)) + '" target="_blank" rel="noopener" title="Open the external link">' +
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
         '<span>Link</span></a>');
     }
@@ -547,7 +595,7 @@
       if (d.hazards && d.hazards.length) {
         html += '<div class="card"><h3 class="card-title">Approved Activations by Hazard</h3>' +
           tableHead(['Hazard', 'Activations', 'People Targeted']) +
-          d.hazards.map(function (h) { return '<tr><td class="strong">' + AA.esc(h.hazard) + '</td><td>' + h.activations + '</td><td>' + AA.fmtNum(h.people) + '</td></tr>'; }).join('') +
+          d.hazards.map(function (h) { return '<tr><td class="strong">' + AA.esc(h.hazard) + '</td><td>' + AA.esc(h.activations) + '</td><td>' + AA.esc(AA.fmtNum(h.people)) + '</td></tr>'; }).join('') +
           '</tbody></table></div></div>';
       }
 
@@ -589,7 +637,7 @@
         html += rows.map(function (u) {
           var role = (u.role || '').replace('Anticipatory Action ', 'AA ');
           var status = u.enabled ? '<span class="badge approved">Active</span>' : '<span class="badge off">Disabled</span>';
-          return '<tr' + (CAN_MANAGE ? ' class="clickable-row" title="Click to edit this user"' : '') + ' data-row-user="' + AA.esc(u.name) + '">' +
+          return '<tr' + (CAN_MANAGE ? ' class="clickable-row" tabindex="0" role="button" title="Click to edit this user"' : '') + ' data-row-user="' + AA.esc(u.name) + '">' +
             '<td class="strong">' + AA.esc(u.full_name || '-') + '</td>' +
             '<td>' + AA.esc(u.email) + '</td>' +
             '<td>' + AA.esc(u.phone || '-') + '</td>' +
@@ -717,7 +765,7 @@
             : '<span class="badge pending">Pending</span>';
           var ref = '<span class="strong">' + AA.esc(s.name) + '</span>';
           if (s.is_update) ref += '<div><span class="badge muted" title="This supersedes an earlier approved submission">Update to a previous submission</span></div>';
-          return '<tr class="clickable-row" data-row-open="' + AA.esc(s.name) + '" title="Click to review this submission">' +
+          return '<tr class="clickable-row" tabindex="0" role="button" data-row-open="' + AA.esc(s.name) + '" title="Click to review this submission">' +
             '<td>' + ref + '</td>' +
             '<td>' + AA.esc(s.organization || '-') + '</td>' +
             '<td>' + AA.esc(s.hazard || '-') + '</td>' +
@@ -897,7 +945,7 @@
       if (d.lessons_learnt) add += rvField('Key Lessons Learnt', d.lessons_learnt, { full: true });
       if (d.challenges) add += rvField('Challenges Faced', d.challenges, { full: true });
       if (d.recommendations) add += rvField('Recommendations', d.recommendations, { full: true });
-      if (d.supporting_materials) add += rvField('Supporting Materials', '<a href="' + AA.esc(d.supporting_materials) + '" target="_blank" rel="noopener">Open file ↗</a>', { full: true, html: true });
+      if (d.supporting_materials) add += rvField('Supporting Materials', '<a href="' + AA.esc(AA.safeUrl(d.supporting_materials)) + '" target="_blank" rel="noopener">Open file ↗</a>', { full: true, html: true });
 
       // Version / amendment history - shows that this supersedes an earlier approved submission.
       var versionsSec = '';
@@ -1150,7 +1198,7 @@
   function reportFileChip(o) {
     var sizeStr = o.size ? '<div class="rpt-file-size">' + fmtBytes(o.size) + '</div>' : '';
     var nameHTML = o.existing
-      ? '<a href="' + AA.esc(o.url) + '" target="_blank" rel="noopener" title="Open the attached file">' + AA.esc(o.name) + '</a>'
+      ? '<a href="' + AA.esc(AA.safeUrl(o.url)) + '" target="_blank" rel="noopener" title="Open the attached file">' + AA.esc(o.name) + '</a>'
       : AA.esc(o.name);
     return '<div class="rpt-file">' +
         '<span class="rpt-file-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>' +
@@ -1271,7 +1319,7 @@
           var thumb = x.image
             ? '<img src="' + AA.esc(x.image) + '" alt="" style="width:42px;height:42px;object-fit:cover;border:1px solid var(--line);display:block" />'
             : '<span style="color:var(--muted)">-</span>';
-          return '<tr class="clickable-row" data-row-act="' + AA.esc(x.name) + '" title="Click to open this activity">' +
+          return '<tr class="clickable-row" tabindex="0" role="button" data-row-act="' + AA.esc(x.name) + '" title="Click to open this activity">' +
             '<td>' + thumb + '</td>' +
             '<td>' + dates + '</td>' +
             '<td>' + AA.esc(x.pillar || '-') + '</td>' +
@@ -1369,7 +1417,7 @@
             : '<span style="color:var(--muted)">-</span>';
           var title = '<span class="strong">' + AA.esc(x.title || '-') + '</span>' +
             (x.description ? '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(x.description) + '</div>' : '');
-          return '<tr class="clickable-row" data-row-event="' + AA.esc(x.name) + '" title="Click to open this event">' +
+          return '<tr class="clickable-row" tabindex="0" role="button" data-row-event="' + AA.esc(x.name) + '" title="Click to open this event">' +
             '<td>' + thumb + '</td>' +
             '<td>' + title + '</td>' +
             '<td>' + dates + '</td>' +
@@ -1441,7 +1489,7 @@
   // links, bold/italic and lists. Value is the element's innerHTML (HTML).
   function richField(o) {
     return '<div class="field full">' +
-      '<label>' + AA.esc(o.label) + (o.required ? ' *' : '') + '</label>' +
+      '<label id="' + o.id + '_lbl">' + AA.esc(o.label) + (o.required ? ' *' : '') + '</label>' +
       '<div class="rte">' +
         '<div class="rte-toolbar">' +
           '<button type="button" class="rte-btn" data-cmd="bold" title="Bold"><b>B</b></button>' +
@@ -1450,7 +1498,7 @@
           '<button type="button" class="rte-btn" data-cmd="createLink" title="Add link">Link</button>' +
           '<button type="button" class="rte-btn" data-cmd="unlink" title="Remove link">Unlink</button>' +
         '</div>' +
-        '<div class="rte-area" id="' + o.id + '" contenteditable="true">' + (o.value || '') + '</div>' +
+        '<div class="rte-area" id="' + o.id + '" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="' + o.id + '_lbl">' + (o.value || '') + '</div>' +
       '</div>' +
       (o.hint ? '<div class="hint">' + AA.esc(o.hint) + '</div>' : '') +
     '</div>';
@@ -1485,7 +1533,7 @@
         html += tableHead(['Order', 'Question', 'Category', 'Visibility']);
         html += rows.map(function (x) {
           var vis = x.published ? '<span class="badge approved">Public</span>' : '<span class="badge off">Hidden</span>';
-          return '<tr class="clickable-row" data-row-faq="' + AA.esc(x.name) + '" title="Click to edit this FAQ">' +
+          return '<tr class="clickable-row" tabindex="0" role="button" data-row-faq="' + AA.esc(x.name) + '" title="Click to edit this FAQ">' +
             '<td>' + AA.esc(x.display_order != null ? x.display_order : '-') + '</td>' +
             '<td class="strong">' + AA.esc(x.question) + '</td>' +
             '<td>' + AA.esc(x.category || '-') + '</td>' +
@@ -1552,7 +1600,7 @@
           var vis = x.published ? '<span class="badge approved">Public</span>' : '<span class="badge off">Hidden</span>';
           var doc = x.attachment ? '<a href="' + AA.esc(x.attachment) + '" target="_blank" rel="noopener">File</a>'
             : x.link ? '<a href="' + AA.esc(x.link) + '" target="_blank" rel="noopener">Link</a>' : '-';
-          return '<tr class="clickable-row" data-row-policy="' + AA.esc(x.name) + '" title="Click to edit this document">' +
+          return '<tr class="clickable-row" tabindex="0" role="button" data-row-policy="' + AA.esc(x.name) + '" title="Click to edit this document">' +
             '<td>' + AA.esc(x.display_order != null ? x.display_order : '-') + '</td>' +
             '<td class="strong">' + AA.esc(x.title) + '</td>' +
             '<td>' + AA.esc(x.policy_type || '-') + '</td>' +
@@ -1626,7 +1674,7 @@
       else {
         html += tableHead(['Name', 'Type', 'Contact', 'Email', 'Phone']);
         html += rows.map(function (o) {
-          return '<tr class="clickable-row" data-row-org="' + AA.esc(o.name) + '" title="Click to ' + (CAN_MANAGE ? 'edit' : 'view') + ' this organization">' +
+          return '<tr class="clickable-row" tabindex="0" role="button" data-row-org="' + AA.esc(o.name) + '" title="Click to ' + (CAN_MANAGE ? 'edit' : 'view') + ' this organization">' +
             '<td class="strong">' + AA.esc(o.name_of_organization) + '</td>' +
             '<td>' + AA.esc(o.type_of_organization || '-') + '</td>' +
             '<td>' + AA.esc(o.primary_contact_person_name || '-') + '</td>' +
@@ -1686,7 +1734,7 @@
           '<div class="alert show info" style="margin-bottom:14px">Read-only. Only an administrator can edit organisation details.</div>' +
           '<div class="form-grid">' + f + '</div>' +
           '<div class="form-actions"><button type="button" class="btn ghost" id="org-close">Close</button></div>';
-        document.getElementById('modal').classList.add('open');
+        showModal();
         // disable every input so the read-only state is obvious even where readonly does not apply (textarea/select)
         document.querySelectorAll('#modal-body input, #modal-body select, #modal-body textarea').forEach(function (el) { el.disabled = true; });
         document.getElementById('org-close').addEventListener('click', closeModal);
@@ -1852,7 +1900,7 @@
         html += tableHead(['From', 'Subject', 'Received', 'Status', '']);
         html += rows.map(function (m) {
           var sb = m.status === 'New' ? 'new' : (m.status === 'Closed' ? 'off' : 'muted');
-          return '<tr class="clickable-row" data-row-msg="' + AA.esc(m.name) + '" title="Click to open this message">' +
+          return '<tr class="clickable-row" tabindex="0" role="button" data-row-msg="' + AA.esc(m.name) + '" title="Click to open this message">' +
             '<td class="strong">' + AA.esc(m.full_name) + '<div style="font-weight:400;color:var(--muted);font-size:12px">' + AA.esc(m.email) + '</div></td>' +
             '<td>' + AA.esc(m.subject || '-') + '</td>' +
             '<td>' + AA.esc((m.submitted_on || m.creation || '').slice(0, 16).replace('T', ' ')) + '</td>' +
@@ -1885,7 +1933,7 @@
       '<div class="form-actions">' +
         ['Read', 'Replied', 'Closed'].map(function (s) { return '<button class="btn ' + (s === 'Closed' ? 'ghost' : '') + '" data-msg-status="' + s + '">Mark ' + s + '</button>'; }).join('') +
       '</div>';
-    document.getElementById('modal').classList.add('open');
+    showModal();
     document.getElementById('modal-body').insertAdjacentHTML('beforeend', changeHistoryHTML());
     wireChangeHistory(document.getElementById('modal-body'), 'AA Contact Message', m.name);
     document.querySelectorAll('[data-msg-status]').forEach(function (b) {
@@ -1915,7 +1963,7 @@
             acts += '<button class="btn sm ok" data-approve-req="' + AA.esc(q.name) + '">Approve</button>' +
                     '<button class="btn sm danger" data-reject-req="' + AA.esc(q.name) + '">Reject</button>';
           }
-          return '<tr class="clickable-row" data-row-req="' + AA.esc(q.name) + '" title="Click to review this request">' +
+          return '<tr class="clickable-row" tabindex="0" role="button" data-row-req="' + AA.esc(q.name) + '" title="Click to review this request">' +
             '<td class="strong">' + AA.esc(q.full_name || '-') + '</td>' +
             '<td>' + AA.esc(q.email) + '</td>' +
             '<td>' + AA.esc(q.organization || '-') + '</td>' +
@@ -2077,7 +2125,7 @@
         html += tableHead(['Subject', 'Type', 'Raised by', 'Priority', 'Date', 'Status', '']);
         html += rows.map(function (q) {
           var who = AA.esc(q.raised_by || '-') + (q.raised_by_role ? '<div style="font-weight:400;color:var(--muted);font-size:12px">' + AA.esc(q.raised_by_role.replace('Anticipatory Action ', 'AA ')) + '</div>' : '');
-          return '<tr class="clickable-row" data-row-support="' + AA.esc(q.name) + '" title="Click to triage this request">' +
+          return '<tr class="clickable-row" tabindex="0" role="button" data-row-support="' + AA.esc(q.name) + '" title="Click to triage this request">' +
             '<td class="strong">' + AA.esc(q.subject || '-') + '</td>' +
             '<td>' + AA.esc(q.request_type || '-') + '</td>' +
             '<td>' + who + '</td>' +
@@ -2120,7 +2168,7 @@
       '<form id="modal-form" novalidate><div class="form-grid">' + f + '</div>' +
       '<div class="form-actions"><button type="submit" class="btn" id="modal-submit">Save</button>' +
       '<button type="button" class="btn ghost" id="modal-cancel">Cancel</button></div></form>';
-    document.getElementById('modal').classList.add('open');
+    showModal();
     document.getElementById('modal-body').insertAdjacentHTML('beforeend', changeHistoryHTML());
     wireChangeHistory(document.getElementById('modal-body'), 'AA Support Request', q.name);
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
@@ -2357,7 +2405,7 @@
           : s.status === 'Not Approved' ? '<span class="badge rejected">Not Approved</span>'
           : s.status === 'Replied' ? '<span class="badge new">Info Requested</span>'
           : '<span class="badge pending">Pending</span>';
-        return '<tr class="clickable-row" data-row-test="' + AA.esc(s.name) + '" title="Click to review this test submission">' +
+        return '<tr class="clickable-row" tabindex="0" role="button" data-row-test="' + AA.esc(s.name) + '" title="Click to review this test submission">' +
           '<td class="strong">' + AA.esc(s.name) + '</td>' +
           '<td>' + AA.esc(s.test_batch || '-') + '</td>' +
           '<td>' + AA.esc(s.organization || '-') + '</td>' +
@@ -2389,7 +2437,7 @@
   <div class="footer-top">
     <div>
       <div class="footer-brand-row">
-        <img src="/aadashboard.png" alt="NDRMA" />
+        <img src="/aadashboard.png" alt="Kenya Anticipatory Action" />
         <div class="footer-brand-name">Kenya Anticipatory Action</div>
       </div>
       <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Risk Management Authority with the Kenya Red Cross Society.</p>

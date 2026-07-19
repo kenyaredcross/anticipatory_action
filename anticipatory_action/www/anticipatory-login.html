@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign In - Kenya Anticipatory Action</title>
   <link rel="preload" as="image" href="/ndoc1.webp" type="image/webp" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    .skip-link { position: absolute; left: -999px; top: 0; background: #0B0B0E; color: #fff; padding: 8px 14px; z-index: 1000; text-decoration: none; }
+    .skip-link:focus { left: 8px; }
+  </style>
   <style>
     body { background: var(--ink); }
 
@@ -219,13 +220,14 @@
   </style>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to content</a>
 
 <div class="login-shell">
 
   <!-- ============ BRAND PANEL ============ -->
   <aside class="login-brand">
     <a href="/aa" class="lb-brand">
-      <img src="/aadashboard.png" alt="NDRMA" />
+      <img src="/aadashboard.png" alt="Kenya Anticipatory Action — home" />
       <div class="lb-brand-text">Anticipatory Action<span>Kenya · NDRMA</span></div>
     </a>
 
@@ -243,7 +245,7 @@
   </aside>
 
   <!-- ============ FORM PANEL ============ -->
-  <main class="login-main">
+  <main class="login-main" id="main">
     <div class="login-card">
 
       <a href="/aa" class="back-link">
@@ -252,7 +254,7 @@
       </a>
 
       <div class="login-mobile-brand">
-        <img src="/aadashboard.png" alt="NDRMA" />
+        <img src="/aadashboard.png" alt="" />
         <div class="t">Anticipatory Action</div>
       </div>
 
