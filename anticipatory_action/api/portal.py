@@ -17,7 +17,7 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import sanitize_html, strip_html
 
 from anticipatory_action.api.anticipatory_action import _sanitize
-from anticipatory_action.api.aa_email import AA_INBOX, aa_email_html, aa_sendmail
+from anticipatory_action.api.aa_email import AA_INBOX, aa_email_html, aa_sendmail, send_submission_replied
 from anticipatory_action.api.permissions import _can_review, _is_admin, _user_org, reviewer_owner_scope
 
 # The roles an AA account may hold. "Approver" sits between User and Admin:
@@ -610,6 +610,13 @@ def list_aa_users(search=None):
 		order_by="creation desc",
 		limit=1000,
 	)
+	# Resolve the opaque AA-ORG-#### docname to the human organisation name for display.
+	org_names = dict(frappe.get_all(
+		"Anticipatory Action Organization",
+		fields=["name", "name_of_organization"], as_list=True,
+	))
+	for u in users:
+		u["organization_name"] = org_names.get(u.get("organization")) or u.get("organization")
 	return {"success": True, "data": users}
 
 
@@ -836,6 +843,8 @@ def set_submission_status(name, status, reason=None):
 					"status": status, "reason_for_rejection": reason_val, "info_request": info_val,
 				}, update_modified=False)
 				frappe.db.commit()
+				if status == "Replied":
+					send_submission_replied(doc, reason)
 				return {"success": True, "status": status, "name": existing}
 			doc.cancel()
 			amended = frappe.copy_doc(doc)
@@ -848,6 +857,8 @@ def set_submission_status(name, status, reason=None):
 			amended.flags.ignore_permissions = True
 			amended.insert()
 			frappe.db.commit()
+			if status == "Replied":
+				send_submission_replied(amended, reason)
 			return {"success": True, "status": status, "name": amended.name}
 		# Approved (already) / Pending — status / reason are the only mutable bits.
 		doc.db_set("status", status)
@@ -865,6 +876,8 @@ def set_submission_status(name, status, reason=None):
 		doc.save()
 
 	frappe.db.commit()
+	if status == "Replied":
+		send_submission_replied(doc, reason)
 	return {"success": True, "status": status}
 
 
@@ -1932,50 +1945,6 @@ def get_admin_meta():
 
 
 # ===========================================================================
-# FORM BUILDER (concept preview — read-only)
-# ===========================================================================
-
-# The form whose structure the builder previews. Read-only for now: the
-# builder shows how the Anticipatory Action submission form is composed
-# (sections, fields, properties) but does not yet edit it.
-_BUILDER_FORMS = {
-	"Anticipatory Action": "Anticipatory Action — Submission",
-	"Anticipatory Action Details": "Anticipatory Action — Intervention Detail (row)",
-}
-
-
-@frappe.whitelist()
-def get_form_schema(doctype="Anticipatory Action"):
-	"""Return the live field layout of a submission form so the admin Form
-	Builder can render it. Concept stage: read-only, no mutation."""
-	_require_admin()
-	if doctype not in _BUILDER_FORMS:
-		frappe.throw("Unknown form.")
-	meta = frappe.get_meta(doctype)
-	fields = [
-		{
-			"fieldname": df.fieldname,
-			"label": df.label,
-			"fieldtype": df.fieldtype,
-			"options": df.options,
-			"reqd": int(df.reqd or 0),
-			"read_only": int(df.read_only or 0),
-			"hidden": int(df.hidden or 0),
-			"in_list_view": int(df.in_list_view or 0),
-			"description": df.description,
-		}
-		for df in meta.fields
-	]
-	return {
-		"success": True,
-		"doctype": doctype,
-		"label": _BUILDER_FORMS[doctype],
-		"forms": [{"doctype": k, "label": v} for k, v in _BUILDER_FORMS.items()],
-		"fields": fields,
-	}
-
-
-# ===========================================================================
 # SIGN-UP / MEMBERSHIP REQUESTS
 # ===========================================================================
 
@@ -2086,22 +2055,23 @@ def _route_to_pillar_lead(msg, pillar):
 		lead_email = (row.get("lead_email") or "").strip()
 		lead_user = frappe.db.get_value("Anticipatory Action User", row.lead, "user") if row.get("lead") else None
 		body = (
-			"<p>A new <strong>" + frappe.utils.escape_html(msg.request_type) + "</strong> enquiry for the "
-			"<strong>" + frappe.utils.escape_html(pillar) + "</strong> pillar has come in.</p>"
+			"<p>A new enquiry has come in through the website for the "
+			"<strong>" + frappe.utils.escape_html(pillar) + "</strong> pillar. The details are below.</p>"
 		)
 		rows = [
-			("From", frappe.utils.escape_html(msg.full_name) + " (" + frappe.utils.escape_html(msg.email) + ")"),
+			("From", frappe.utils.escape_html(msg.full_name) + "<br>" + frappe.utils.escape_html(msg.email)),
 			("Organisation", frappe.utils.escape_html(msg.organization) if msg.organization else "-"),
-			("Subject", frappe.utils.escape_html(msg.subject or "-")),
+			("Type", frappe.utils.escape_html(msg.request_type or "-")),
 			("Message", frappe.utils.escape_html(msg.message or "-")),
 		]
 		html = aa_email_html(
-			"New " + frappe.utils.escape_html(msg.request_type) + " enquiry", body, rows=rows,
+			"New enquiry for the " + pillar + " pillar", body, rows=rows,
 			cta_label="Open the admin console", cta_url=portal_url("/aa-admin"),
+			chip="New enquiry", chip_tone="blue",
 		)
 		# Both the pillar lead and the central AA inbox are notified.
 		recipients = [e for e in [lead_email, AA_INBOX] if e]
-		aa_sendmail(recipients, "[" + pillar + "] New " + msg.request_type + " enquiry", html)
+		aa_sendmail(recipients, "New enquiry - " + pillar + " pillar", html)
 		if lead_user:
 			with contextlib.suppress(Exception):
 				frappe.get_doc({
@@ -2111,6 +2081,28 @@ def _route_to_pillar_lead(msg, pillar):
 					"for_user": lead_user, "type": "Alert",
 					"document_type": "AA Contact Message", "document_name": msg.name,
 				}).insert(ignore_permissions=True)
+		else:
+			# No lead is assigned to this pillar yet: the enquiry still lands in the
+			# central inbox, but nobody owns it. Alert every admin in-system to
+			# appoint a pillar lead so future enquiries reach an owner.
+			with contextlib.suppress(Exception):
+				admins = frappe.get_all(
+					"Anticipatory Action User",
+					filters={"role": "Anticipatory Action Admin", "enabled": 1},
+					pluck="user",
+				)
+				for admin_user in {a for a in admins if a}:
+					frappe.get_doc({
+						"doctype": "Notification Log",
+						"subject": f"Pillar lead needed: {pillar}",
+						"email_content": (
+							f"A new {msg.request_type} enquiry came in for the {pillar} pillar, "
+							f"which has no lead assigned. Set a pillar lead in the admin console "
+							f"so future enquiries reach an owner."
+						),
+						"for_user": admin_user, "type": "Alert",
+						"document_type": "AA Contact Message", "document_name": msg.name,
+					}).insert(ignore_permissions=True)
 		frappe.db.commit()
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "route_to_pillar_lead")
@@ -2292,28 +2284,22 @@ def _email_request_received(req):
 	if not (req.email or "").strip():
 		return
 	try:
-		name = (req.first_name or "there").strip()
-		html = f"""
-		<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;">
-		  <div style="background:#1F2937;border-bottom:3px solid #CC0000;padding:22px 32px;text-align:center;">
-		    <img src="{frappe.utils.get_url('/aadashboard.png')}" alt="NDRMA" height="40" style="height:40px;margin-bottom:8px;" />
-		    <p style="margin:0;font-size:18px;font-weight:700;color:#fff;">Anticipatory Action</p>
-		    <p style="margin:4px 0 0;font-size:11px;color:#9CA3AF;">Data Collection &amp; Monitoring Platform</p>
-		  </div>
-		  <div style="padding:30px 32px;color:#374151;font-size:14px;line-height:1.7;">
-		    <p style="margin:0 0 14px;font-weight:700;color:#1A1A1A;">Dear {frappe.utils.escape_html(name)},</p>
-		    <p style="margin:0 0 18px;">Thank you for requesting access to the Kenya Anticipatory Action platform.
-		    <strong style="color:#059669;">We have received your request.</strong></p>
-		    <p style="margin:0 0 18px;">The TWG Secretariat will review it and get back to you. If it is approved,
-		    you will receive a follow-up email with a link to set your password and sign in.</p>
-		    <p style="margin:0;">Questions? Contact
-		    <a href="mailto:aadashboard@ndoc.go.ke" style="color:#CC0000;">aadashboard@ndoc.go.ke</a>.</p>
-		  </div>
-		  <div style="border-top:1px solid #E5E7EB;padding:14px 32px;text-align:center;font-size:11px;color:#9CA3AF;">
-		    Developed and maintained by Kenya Red Cross
-		  </div>
-		</div>"""
-		aa_sendmail([req.email], "We received your Anticipatory Action access request", html)
+		name = frappe.utils.escape_html((req.first_name or "there").strip())
+		body = (
+			"<p>Dear " + name + ",</p>"
+			"<p>Thank you for requesting access to the Kenya Anticipatory Action platform. This "
+			"confirms that your request has been received.</p>"
+			"<p>The National Technical Working Group (TWG) Secretariat is now reviewing your request "
+			"and will respond in due course. If your request is approved, you'll receive a follow-up "
+			"email with a secure link to set your password and sign in.</p>"
+			"<p>There's nothing further you need to do in the meantime.</p>"
+		)
+		html = aa_email_html(
+			"Thank you for your interest", body,
+			chip="Request received", chip_tone="slate",
+			sign_off='Questions? Write to us at <a href="mailto:' + AA_INBOX + '" style="color:#CC0000">' + AA_INBOX + '</a>.',
+		)
+		aa_sendmail([req.email], "We've received your access request", html)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "request_received email")
 
@@ -2323,28 +2309,26 @@ def _email_request_rejected(req, reason):
 	if not (req.email or "").strip():
 		return
 	try:
-		name = (req.first_name or "there").strip()
-		html = f"""
-		<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;">
-		  <div style="background:#1F2937;border-bottom:3px solid #CC0000;padding:22px 32px;text-align:center;">
-		    <img src="{frappe.utils.get_url('/aadashboard.png')}" alt="NDRMA" height="40" style="height:40px;margin-bottom:8px;" />
-		    <p style="margin:0;font-size:18px;font-weight:700;color:#fff;">Anticipatory Action</p>
-		    <p style="margin:4px 0 0;font-size:11px;color:#9CA3AF;">Data Collection &amp; Monitoring Platform</p>
-		  </div>
-		  <div style="padding:30px 32px;color:#374151;font-size:14px;line-height:1.7;">
-		    <p style="margin:0 0 14px;font-weight:700;color:#1A1A1A;">Dear {frappe.utils.escape_html(name)},</p>
-		    <p style="margin:0 0 18px;">Thank you for your interest in the Kenya Anticipatory Action platform.
-		    After review, the TWG Secretariat is unable to approve your access request at this time.</p>
-		    <div style="background:#FEF2F2;border-left:3px solid #CC0000;padding:12px 16px;margin:0 0 18px;color:#991B1B;">
-		      <strong>Reason:</strong> {frappe.utils.escape_html(reason)}
-		    </div>
-		    <p style="margin:0;">If you believe this was in error or can provide more information,
-		    please reply to this email or contact <a href="mailto:aadashboard@ndoc.go.ke" style="color:#CC0000;">aadashboard@ndoc.go.ke</a>.</p>
-		  </div>
-		  <div style="border-top:1px solid #E5E7EB;padding:14px 32px;text-align:center;font-size:11px;color:#9CA3AF;">
-		    Developed and maintained by Kenya Red Cross
-		  </div>
-		</div>"""
-		aa_sendmail([req.email], "Your Anticipatory Action access request", html)
+		name = frappe.utils.escape_html((req.first_name or "there").strip())
+		body = (
+			"<p>Dear " + name + ",</p>"
+			"<p>Thank you for your interest in the Kenya Anticipatory Action platform. After careful "
+			"review, the National TWG Secretariat is unable to approve your access request at this "
+			"time.</p>"
+			'<div style="margin:16px 0;padding:13px 16px;background:#FEF2F2;border-left:3px solid #CC0000;'
+			'color:#5b1e1e;font-size:13.5px;line-height:1.55;border-radius:0 6px 6px 0">'
+			'<span style="display:block;font-size:11px;font-weight:700;letter-spacing:0.06em;'
+			'text-transform:uppercase;color:#6B7280;margin-bottom:5px">Reason</span>'
+			+ frappe.utils.escape_html(reason or "-") +
+			'</div>'
+			"<p>If you believe this was made in error, or you can provide further information to "
+			'support your request, please reply to this email or contact <a href="mailto:' + AA_INBOX
+			+ '" style="color:#CC0000">' + AA_INBOX + "</a>. We'd be glad to take another look.</p>"
+		)
+		html = aa_email_html(
+			"Regarding your access request", body,
+			chip="Not approved", chip_tone="red",
+		)
+		aa_sendmail([req.email], "An update on your access request", html)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "reject_request email")

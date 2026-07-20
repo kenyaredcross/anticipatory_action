@@ -157,7 +157,7 @@
     <a href="/aa-portal" class="active">Dashboard</a>
     <a href="/anticipatory-action">New Submission</a>
     <a href="/aa-impact">Impact</a>
-    {% if is_admin %}<a href="/aa-admin">Admin Console</a>{% endif %}
+    {% if is_reviewer %}<a href="/aa-admin">{{ "Admin Console" if is_admin else "Review Console" }}</a>{% endif %}
     <a href="/aa-profile">Profile</a>
     {% if is_system_manager %}<a href="/app" title="Open the Frappe desk">Desk ↗</a>{% endif %}
   </nav>

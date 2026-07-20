@@ -1121,7 +1121,7 @@ select.aa-input {
       const data = buildDataObj();
       if (fileUrl) data.supporting_materials = fileUrl;
 
-      // Plain fetch (not frappe.call, which is unreliable on this site) — mirrors
+      // Plain fetch (not frappe.call, which is unreliable on this site) - mirrors
       // the request that succeeds from the console.
       fetch('/api/method/anticipatory_action.api.anticipatory_action.submit_test_application', {
         method: 'POST',

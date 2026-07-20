@@ -142,7 +142,7 @@
   <section class="step" data-step="about">
     <div class="reveal"><div class="kicker"><span id="k-about">Step 1</span></div></div>
     <h1 class="h reveal">First, the<br><em>basics.</em></h1>
-    <p class="lead reveal">Thanks for helping us test the platform before go-live. This takes about two minutes — we only ask about the parts you actually used. Your honest take is exactly what we need.</p>
+    <p class="lead reveal">Thanks for helping us test the platform before go-live. This takes about two minutes - we only ask about the parts you actually used. Your honest take is exactly what we need.</p>
     <div class="q reveal">
       <div class="grid2">
         <div><label class="fld-label" for="tester_name">Your name *</label><input class="f" id="tester_name" data-field="tester_name" autocomplete="name" /></div>
@@ -152,7 +152,7 @@
     </div>
     <div class="q reveal">
       <div class="q-label">Which parts did you get to try?</div>
-      <div class="q-hint">Pick all that apply — we'll only ask about these.</div>
+      <div class="q-hint">Pick all that apply - we'll only ask about these.</div>
       <div class="chips" data-chipgroup="roles" data-multi="1">
         <button type="button" class="chip" data-val="The public website">{{tick}} The public website</button>
         <button type="button" class="chip" data-val="The member portal">{{tick}} The member portal (logged in)</button>
@@ -165,7 +165,7 @@
   <section class="step" data-step="website">
     <div class="reveal"><div class="kicker"><span class="k-num"></span></div></div>
     <h1 class="h reveal">The <em>website.</em></h1>
-    <p class="lead reveal">The public face of the programme — the pages anyone can browse without signing in.</p>
+    <p class="lead reveal">The public face of the programme - the pages anyone can browse without signing in.</p>
     <figure class="exhibit reveal"><img src="/uat-website.png" alt="The Anticipatory Action public website" loading="lazy" /><figcaption>The public Anticipatory Action website</figcaption></figure>
     <div class="q reveal">
       <div class="q-label">First impressions?</div>
@@ -233,7 +233,7 @@
   <section class="step" data-step="overall">
     <div class="reveal"><div class="kicker"><span class="k-num"></span></div></div>
     <h1 class="h reveal">The <em>big picture.</em></h1>
-    <p class="lead reveal">Last few — your overall read on the platform.</p>
+    <p class="lead reveal">Last few - your overall read on the platform.</p>
     <div class="q reveal">
       <div class="q-label">Overall, how would you rate it?</div>
       <div class="stars" data-stars="overall_rating"></div>
@@ -252,7 +252,7 @@
     </div>
     <div class="q reveal">
       <div class="q-label">Anything else on your mind?</div>
-      <textarea class="f" data-field="general_feedback" placeholder="Bugs, ideas, a feature you wished existed — all welcome."></textarea>
+      <textarea class="f" data-field="general_feedback" placeholder="Bugs, ideas, a feature you wished existed - all welcome."></textarea>
     </div>
   </section>
 </main>
@@ -261,7 +261,7 @@
 <div class="done-wrap" id="done">
   <div class="done-ic"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
   <h2>Thank you.</h2>
-  <p>Your feedback is in — it goes straight to the team getting this ready for go-live. We're grateful you took the time.</p>
+  <p>Your feedback is in - it goes straight to the team getting this ready for go-live. We're grateful you took the time.</p>
   <a href="#" id="again" class="btn btn-next" style="text-decoration:none">Add more feedback</a>
 </div>
 
@@ -366,7 +366,7 @@
   }
 
   function validate(id) {
-    if (id === 'about' && !state.tester_name.trim()) { showErr('Just your name to start — the rest is optional.'); document.getElementById('tester_name').focus(); return false; }
+    if (id === 'about' && !state.tester_name.trim()) { showErr('Just your name to start - the rest is optional.'); document.getElementById('tester_name').focus(); return false; }
     return true;
   }
 
@@ -398,7 +398,7 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
-      showErr((out && out.error) || 'Could not submit — please try again.');
+      showErr((out && out.error) || 'Could not submit - please try again.');
     } catch (_) {
       showErr('Could not reach the server. Check your connection and try again.');
     }

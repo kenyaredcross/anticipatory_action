@@ -67,6 +67,46 @@ def _insert_submission(data, is_test=0):
 	return doc
 
 
+def _new_submission_reviewers(doc):
+	"""Emails of who should review a new submission: the approvers of the reporter's
+	organisation (org-scoped) plus all AA admins (who oversee every organisation).
+	Public submitters who are not roster members resolve to no org, so only admins
+	are notified in that case."""
+	emails = set()
+	for e in frappe.get_all(
+		"Anticipatory Action User",
+		filters={"role": "Anticipatory Action Admin", "enabled": 1}, pluck="email",
+	):
+		if e:
+			emails.add(e)
+	org = frappe.db.get_value(
+		"Anticipatory Action User", {"email": (doc.get("reporter_email") or "").strip()}, "organization"
+	)
+	if org:
+		for e in frappe.get_all(
+			"Anticipatory Action User",
+			filters={"role": "Anticipatory Action Approver", "organization": org, "enabled": 1},
+			pluck="email",
+		):
+			if e:
+				emails.add(e)
+	return sorted(emails)
+
+
+def _notify_new_submission(doc):
+	"""Send the branded emails for a freshly-filed submission: a receipt to the
+	reporter (PDF attached if they asked for a copy) and a review alert to the
+	organisation's approvers + all admins. Fully wrapped so mail issues never fail
+	the submission."""
+	try:
+		from anticipatory_action.api.aa_email import send_new_submission_alert, send_submission_received
+
+		send_submission_received(doc)
+		send_new_submission_alert(doc, _new_submission_reviewers(doc))
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "notify_new_submission")
+
+
 @frappe.whitelist(allow_guest=True)
 @rate_limit(limit=300, seconds=60 * 60)
 def submit_anticipatory_action(data):
@@ -76,6 +116,7 @@ def submit_anticipatory_action(data):
 	try:
 		doc = _insert_submission(data, is_test=0)
 		frappe.db.commit()
+		_notify_new_submission(doc)
 		return {"success": True, "name": doc.name}
 
 	except Exception:
