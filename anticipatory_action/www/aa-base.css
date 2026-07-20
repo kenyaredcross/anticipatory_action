@@ -23,6 +23,8 @@
   --red:       #E61832;
   --red-dark:  #B8142A;
   --red-tint:  #FBE7EA;
+  --red-ink:   #B8142A;    /* small red text (kickers/chips) on light — a11y contrast */
+  --accent:    var(--red); /* alias so stray var(--accent, #CC0000) resolves to brand red */
 
   /* accents (charts/badges) */
   --teal:      #00A6B8;
@@ -119,13 +121,14 @@ nav.aa-nav {
 .nav-dropdown-inner .pillar-num {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
-  color: var(--red); background: var(--red-tint);
+  color: var(--red-ink); background: var(--red-tint);
   padding: 3px 7px; flex-shrink: 0;
 }
 
 .nav-end { display: flex; align-items: center; gap: 12px; margin-left: auto; }
 .btn-ghost {
   display: inline-flex; align-items: center; gap: 10px;
+  min-height: 44px;
   padding: 10px 18px;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600;
   color: var(--text); text-decoration: none;
@@ -136,6 +139,7 @@ nav.aa-nav {
 
 .btn-red {
   display: inline-flex; align-items: center; gap: 10px;
+  min-height: 44px;
   padding: 11px 18px; background: var(--red); color: #fff;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600;
   text-decoration: none; transition: background 0.2s;
@@ -166,12 +170,12 @@ nav.aa-nav {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 600;
   letter-spacing: 0.22em; text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.75);
   margin-bottom: 28px;
 }
-.breadcrumb a { color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.2s; }
+.breadcrumb a { color: rgba(255,255,255,0.75); text-decoration: none; transition: color 0.2s; }
 .breadcrumb a:hover { color: #fff; }
-.breadcrumb span { color: rgba(255,255,255,0.2); }
+.breadcrumb span { color: rgba(255,255,255,0.75); }
 
 .page-hero-label {
   display: inline-flex; align-items: center; gap: 12px;
@@ -218,7 +222,7 @@ nav.aa-nav {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 12px; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.22em;
-  color: var(--red);
+  color: var(--red-ink);
   margin-bottom: 28px;
 }
 .kicker::before { content: ''; width: 32px; height: 2px; background: var(--red); }
@@ -318,7 +322,7 @@ nav.aa-nav {
   background: var(--red-tint); color: var(--red);
   margin-bottom: 20px;
 }
-.obj-card h4 {
+.obj-card h4, .obj-card h3 {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 20px; font-weight: 700;
   text-transform: uppercase; letter-spacing: -0.005em;
@@ -354,7 +358,7 @@ nav.aa-nav {
   font-size: 36px; font-weight: 900;
   color: var(--red); line-height: 1; letter-spacing: -0.02em;
 }
-.act-item h4 {
+.act-item h4, .act-item h3 {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 19px; font-weight: 700;
   text-transform: uppercase; letter-spacing: -0.005em;
@@ -392,7 +396,7 @@ nav.aa-nav {
 .pillar-chip .pn {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
-  color: var(--red); letter-spacing: 0.04em;
+  color: var(--red-ink); letter-spacing: 0.04em;
 }
 
 /* ============ PILLAR LIST (about page) ============ */
@@ -458,7 +462,7 @@ nav.aa-nav {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.22em; text-transform: uppercase;
-  color: var(--red);
+  color: var(--red-ink);
   margin-bottom: 14px;
 }
 .mv-card.dark .mv-card-label { color: var(--red); }
@@ -535,7 +539,7 @@ nav.aa-nav {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--red); background: var(--red-tint);
+  color: var(--red-ink); background: var(--red-tint);
   padding: 4px 10px;
 }
 .org-name, .report-title {
@@ -603,6 +607,8 @@ nav.aa-nav {
   margin-right: 8px;
 }
 .filter-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px;
   padding: 10px 18px;
   background: var(--paper);
   border: 1px solid var(--line);
@@ -690,7 +696,7 @@ nav.aa-nav {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--red); background: var(--red-tint);
+  color: var(--red-ink); background: var(--red-tint);
   padding: 4px 10px;
   white-space: nowrap;
 }
@@ -737,7 +743,7 @@ nav.aa-nav {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.22em; text-transform: uppercase;
-  color: var(--muted);
+  color: var(--text-2);
   margin-bottom: 8px;
 }
 .form-group input,
@@ -928,7 +934,7 @@ footer.aa-footer {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11px; text-transform: uppercase;
   letter-spacing: 0.22em; font-weight: 700;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.72);
   margin-bottom: 22px;
 }
 .footer-col a {
@@ -946,7 +952,7 @@ footer.aa-footer {
   display: flex; justify-content: space-between;
   flex-wrap: wrap; gap: 16px;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 12px; color: rgba(255,255,255,0.3);
+  font-size: 12px; color: rgba(255,255,255,0.7);
 }
 .footer-bottom a { color: var(--red); text-decoration: none; opacity: 0.7; }
 

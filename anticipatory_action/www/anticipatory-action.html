@@ -3,9 +3,6 @@
 {% block title %}Anticipatory Action - Submit{% endblock %}
 
 {% block head_include %}
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 {% endblock %}
 
 {% block style %}
@@ -352,7 +349,7 @@ select.aa-input {
 
 <!-- ── Header with logos ── -->
 <div class="aa-header">
-  <img src="/aadashboard.png" alt="NDRMA" class="aa-logo" />
+  <img src="/aadashboard.png" alt="" class="aa-logo" />
   <div class="aa-header-center">
     <div class="aa-header-title">Anticipatory Action</div>
     <div class="aa-header-sub">Data Collection &amp; Monitoring Platform</div>
@@ -760,7 +757,7 @@ select.aa-input {
 
   // ── frappe.call shim ─────────────────────────────────────────────────────────
   // frappe.call is unreliable on this site (the page often loads with frappe only
-  // half-booted), so route every call through a plain fetch — the same request that
+  // half-booted), so route every call through a plain fetch - the same request that
   // works from the console. Keeps the {method, args, headers, callback, error}
   // shape used below; the callback still receives {message: ...}.
   if (!window.frappe) window.frappe = {};
@@ -910,7 +907,7 @@ select.aa-input {
       .catch(function (e) {
         // Never leave the dropdowns stuck on "Loading…": show a retriable state.
         document.querySelectorAll('[data-meta]').forEach(function (el) {
-          el.innerHTML = '<option value="">Couldn’t load — please refresh</option>';
+          el.innerHTML = '<option value="">Couldn’t load - please refresh</option>';
         });
         console.error('get_form_meta failed:', e);
       });

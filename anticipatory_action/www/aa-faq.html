@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FAQ - Kenya Anticipatory Action</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    .skip-link { position: absolute; left: -999px; top: 0; background: #0B0B0E; color: #fff; padding: 8px 14px; z-index: 1000; text-decoration: none; }
+    .skip-link:focus { left: 8px; }
+  </style>
   <style>
     .faq-cat { margin-bottom: 40px; }
     .faq-cat-title {
@@ -35,9 +36,10 @@
   </style>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to content</a>
 
 <nav class="aa-nav">
-  <a href="/aa" class="nav-brand"><img src="/aadashboard.png" alt="NDRMA" /></a>
+  <a href="/aa" class="nav-brand"><img src="/aadashboard.png" alt="Kenya Anticipatory Action - home" /></a>
   <div class="nav-links">
     <a href="/aa-activities" class="nav-link">Activities</a>
     <a href="/aa-dashboard" class="nav-link">Results Dashboard</a>
@@ -52,7 +54,7 @@
   </div>
 </nav>
 
-<section class="page-hero">
+<section class="page-hero" id="main">
   <div class="breadcrumb"><a href="/aa">Home</a><span>›</span>FAQ</div>
   <div class="page-hero-label">Help &amp; Answers</div>
   <h1 class="page-hero-title">Frequently asked<br><span class="accent">questions.</span></h1>
@@ -69,7 +71,7 @@
   <div class="footer-top">
     <div>
       <div class="footer-brand-row">
-        <img src="/aadashboard.png" alt="NDRMA" />
+        <img src="/aadashboard.png" alt="" />
         <div class="footer-brand-name">Kenya Anticipatory Action</div>
       </div>
       <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Risk Management Authority with the Kenya Red Cross Society.</p>
@@ -120,16 +122,24 @@
         if (!groups[c]) { groups[c] = []; order.push(c); }
         groups[c].push(f);
       });
+      var uid = 0;
       body.innerHTML = order.map(function (cat) {
         return '<div class="faq-cat"><div class="faq-cat-title">' + esc(cat) + '</div>' +
           groups[cat].map(function (f) {
+            var aid = 'faq-a-' + (++uid);
             return '<div class="faq-item">' +
-              '<button class="faq-q" type="button"><span>' + esc(f.question) + '</span><span class="pm">+</span></button>' +
-              '<div class="faq-a"><div class="faq-a-inner">' + (f.answer || '') + '</div></div></div>';
+              '<button class="faq-q" type="button" aria-expanded="false" aria-controls="' + aid + '"><span>' + esc(f.question) + '</span><span class="pm">+</span></button>' +
+              '<div class="faq-a" id="' + aid + '" hidden><div class="faq-a-inner">' + (f.answer || '') + '</div></div></div>';
           }).join('') + '</div>';
       }).join('');
       body.querySelectorAll('.faq-q').forEach(function (btn) {
-        btn.addEventListener('click', function () { btn.closest('.faq-item').classList.toggle('open'); });
+        btn.addEventListener('click', function () {
+          var item = btn.closest('.faq-item');
+          var panel = document.getElementById(btn.getAttribute('aria-controls'));
+          var open = item.classList.toggle('open');
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+          if (panel) { panel.hidden = !open; }
+        });
       });
     })
     .catch(function () { body.innerHTML = '<div class="faq-empty">Could not load questions. Please try again later.</div>'; });

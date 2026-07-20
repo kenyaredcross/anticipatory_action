@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Programme Impact - Kenya Anticipatory Action</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    .skip-link { position: absolute; left: -999px; top: 0; background: #0B0B0E; color: #fff; padding: 8px 14px; z-index: 1000; text-decoration: none; }
+    .skip-link:focus { left: 8px; }
+  </style>
   <style>
     .impact-grid {
       display: grid; grid-template-columns: repeat(4, 1fr);
@@ -41,10 +42,11 @@
   </style>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to content</a>
 
 <nav class="aa-nav">
   <a href="/aa" class="nav-brand">
-    <img src="/aadashboard.png" alt="NDRMA" />
+    <img src="/aadashboard.png" alt="Kenya Anticipatory Action - home" />
   </a>
   <div class="nav-links">
     <a href="/aa-activities" class="nav-link">Activities</a>
@@ -60,7 +62,7 @@
   </div>
 </nav>
 
-<section class="page-hero">
+<section class="page-hero" id="main">
   <div class="breadcrumb"><a href="/aa">Home</a><span>›</span>Programme Impact</div>
   <div class="page-hero-label">Approved Anticipatory Actions</div>
   <h1 class="page-hero-title">Collective<br><span class="accent">impact.</span></h1>
@@ -88,6 +90,8 @@
       </div>
     </div>
 
+    <p id="impactStatus" class="impact-note" role="status" aria-live="polite" style="display:none;text-align:center;margin-top:20px;"></p>
+
     <div class="hazard-rows" id="hazardRows" style="display:none;"></div>
 
     <div style="margin-top:40px;text-align:center;">
@@ -102,7 +106,7 @@
   <div class="footer-top">
     <div>
       <div class="footer-brand-row">
-        <img src="/aadashboard.png" alt="NDRMA" />
+        <img src="/aadashboard.png" alt="" />
         <div class="footer-brand-name">Kenya Anticipatory Action</div>
       </div>
       <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Risk Management Authority with the Kenya Red Cross Society.</p>
@@ -161,7 +165,13 @@
         box.style.display = 'block';
       }
     })
-    .catch(function () {});
+    .catch(function () {
+      var s = document.getElementById('impactStatus');
+      if (s) {
+        s.textContent = 'Live figures are temporarily unavailable - please refresh the page to try again.';
+        s.style.display = 'block';
+      }
+    });
 })();
 </script>
 </body>

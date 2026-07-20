@@ -129,19 +129,23 @@ class AnticipatoryActionUser(Document):
 		if not link:
 			return
 		body = (
-			"<p>Hi " + frappe.utils.escape_html(self.first_name or "there") + ",</p>"
-			"<p>Your Anticipatory Action account has been approved. Set a password to activate it, "
-			"then sign in to the member portal to record and track anticipatory action across Kenya.</p>"
+			"<p>Dear " + frappe.utils.escape_html(self.first_name or "there") + ",</p>"
+			"<p>We're pleased to let you know that your account on the Kenya Anticipatory Action "
+			"platform has been approved.</p>"
+			"<p>To activate it, set your password using the button below. Once you're signed in, "
+			"you'll be able to record, submit and track anticipatory action across Kenya's counties.</p>"
 		)
 		html = aa_email_html(
-			"Your account is ready",
+			"Welcome to Kenya Anticipatory Action",
 			body,
 			cta_label="Set your password",
 			cta_url=link,
-			sign_off='You can always sign in at <a href="' + portal_url("/anticipatory-login")
+			chip="Account approved", chip_tone="green",
+			sign_off="For your security this link is unique to you - please don't forward this email. "
+				'You can sign in any time at <a href="' + portal_url("/anticipatory-login")
 				+ '">the Anticipatory Action portal</a>.',
 		)
-		aa_sendmail([user.name], "Welcome to Anticipatory Action — set your password", html)
+		aa_sendmail([user.name], "Your Anticipatory Action account is ready", html)
 
 
 # The module these accounts are allowed to see on the desk; everything else is

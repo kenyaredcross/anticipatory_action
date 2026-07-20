@@ -4,9 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Dashboard - Kenya Anticipatory Action</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
   <link rel="stylesheet" href="/aa-portal-ui.css" />
   <style>
@@ -153,14 +150,14 @@
 
 <header class="portal-bar">
   <a href="/aa-portal" class="pb-brand">
-    <img src="/aadashboard.png" alt="NDRMA" />
+    <img src="/aadashboard.png" alt="Kenya Anticipatory Action" />
     <div class="pb-name">Member Portal</div>
   </a>
   <nav class="pb-links" id="pbLinks">
     <a href="/aa-portal" class="active">Dashboard</a>
     <a href="/anticipatory-action">New Submission</a>
     <a href="/aa-impact">Impact</a>
-    {% if is_admin %}<a href="/aa-admin">Admin Console</a>{% endif %}
+    {% if is_reviewer %}<a href="/aa-admin">{{ "Admin Console" if is_admin else "Review Console" }}</a>{% endif %}
     <a href="/aa-profile">Profile</a>
     {% if is_system_manager %}<a href="/app" title="Open the Frappe desk">Desk ↗</a>{% endif %}
   </nav>
@@ -248,9 +245,9 @@
 
 <!-- Member report upload -->
 <div class="modal-overlay" id="reportModal">
-  <div class="modal-card">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle" tabindex="-1">
     <div class="modal-head">
-      <h3>Upload report</h3>
+      <h3 id="reportModalTitle">Upload report</h3>
       <button class="modal-close" id="reportModalClose" type="button" aria-label="Close">&times;</button>
     </div>
     <div class="modal-body">
@@ -325,9 +322,9 @@
 
 <!-- Member "Report a problem" -->
 <div class="modal-overlay" id="supportModal">
-  <div class="modal-card">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="supportModalTitle" tabindex="-1">
     <div class="modal-head">
-      <h3>Report a problem</h3>
+      <h3 id="supportModalTitle">Report a problem</h3>
       <button class="modal-close" id="supportModalClose" type="button" aria-label="Close">&times;</button>
     </div>
     <div class="modal-body">
@@ -377,6 +374,41 @@
       if (t.dataset.tab === 'reports' && !REPORTS.length) loadReports();
       if (t.dataset.tab === 'support') loadSupport();
     });
+  });
+
+  // ---- modal a11y: focus move in, focus trap, Escape to close, focus restore ----
+  var _ovPrevFocus = null;
+  function _ovFocusables(root) {
+    return Array.prototype.slice.call(root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(function (el) { return el.offsetParent !== null; });
+  }
+  function openOverlay(el) {
+    _ovPrevFocus = document.activeElement;
+    el.classList.add('open');
+    var f = _ovFocusables(el);
+    var target = f[0] || el.querySelector('.modal-card');
+    if (target && target.focus) { try { target.focus(); } catch (e) {} }
+  }
+  function closeOverlay(el) {
+    el.classList.remove('open');
+    if (_ovPrevFocus && _ovPrevFocus.focus) { try { _ovPrevFocus.focus(); } catch (e) {} }
+    _ovPrevFocus = null;
+  }
+  // Registered before the review-overlay Escape handler so the trap wins while a
+  // modal is open (stopImmediatePropagation prevents the review from also closing).
+  document.addEventListener('keydown', function (e) {
+    var el = document.querySelector('.modal-overlay.open');
+    if (!el) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeOverlay(el); return; }
+    if (e.key === 'Tab') {
+      var f = _ovFocusables(el);
+      if (!f.length) { e.preventDefault(); return; }
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      else if (!el.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    }
   });
 
   function statusBadge(s) {
@@ -578,7 +610,7 @@
   function reportCard(r) {
     var when = [r.month, r.year].filter(Boolean).join(' ');
     var link = r.url
-      ? '<a class="btn sm ghost" href="' + AA.esc(r.url) + '" target="_blank" rel="noopener">Open</a>'
+      ? '<a class="btn sm ghost" href="' + AA.esc(AA.safeUrl(r.url)) + '" target="_blank" rel="noopener">Open</a>'
       : '<span class="badge muted">No link</span>';
     var vis = r.visibility ? ' ' + visibilityBadge(r.visibility) : '';
     return '<tr>' +
@@ -620,7 +652,7 @@
   function myReportRow(r) {
     var dest = r.link || r.attachment;
     var open = dest
-      ? '<a class="btn sm ghost" href="' + AA.esc(dest) + '" target="_blank" rel="noopener">Open</a>'
+      ? '<a class="btn sm ghost" href="' + AA.esc(AA.safeUrl(dest)) + '" target="_blank" rel="noopener">Open</a>'
       : '<span class="badge muted">No link</span>';
     var removeCell;
     if (r.removed) {
@@ -770,9 +802,9 @@
     try { rfFileInput.value = ''; } catch (e) {}
     rfRenderEmpty();
     rfSetVisibility('Private');  // members default to Private
-    reportModal.classList.add('open');
+    openOverlay(reportModal);
   }
-  function closeReportModal() { reportModal.classList.remove('open'); }
+  function closeReportModal() { closeOverlay(reportModal); }
 
   document.getElementById('uploadReportBtn').addEventListener('click', openReportModal);
   document.getElementById('reportModalClose').addEventListener('click', closeReportModal);
@@ -894,7 +926,7 @@
       if (d.recommendations) add += rvField('Recommendations', d.recommendations, { full: true });
       if (d.supporting_materials) {
         add += rvField('Supporting materials',
-          '<a href="' + AA.esc(d.supporting_materials) + '" target="_blank" rel="noopener">Open attachment</a>',
+          '<a href="' + AA.esc(AA.safeUrl(d.supporting_materials)) + '" target="_blank" rel="noopener">Open attachment</a>',
           { full: true, html: true });
       }
 
@@ -999,9 +1031,9 @@
     supportForm.reset();
     supportFormErr.classList.remove('show');
     supportFormErr.textContent = '';
-    supportModal.classList.add('open');
+    openOverlay(supportModal);
   }
-  function closeSupportModal() { supportModal.classList.remove('open'); }
+  function closeSupportModal() { closeOverlay(supportModal); }
 
   document.getElementById('reportProblemBtn').addEventListener('click', openSupportModal);
   document.getElementById('supportModalClose').addEventListener('click', closeSupportModal);
@@ -1084,7 +1116,7 @@
   <div class="footer-top">
     <div>
       <div class="footer-brand-row">
-        <img src="/aadashboard.png" alt="NDRMA" />
+        <img src="/aadashboard.png" alt="Kenya Anticipatory Action" />
         <div class="footer-brand-name">Kenya Anticipatory Action</div>
       </div>
       <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Risk Management Authority with the Kenya Red Cross Society.</p>

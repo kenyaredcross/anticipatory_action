@@ -2,7 +2,7 @@ import base64
 import os
 
 import frappe
-from frappe.utils import format_date, now
+from frappe.utils import escape_html, format_date, now
 from frappe.utils.pdf import get_pdf
 
 # Brand palette mirrored from the public submission form (anticipatory-action.html)
@@ -22,6 +22,11 @@ def build_submission_pdf(doc):
 	return get_pdf(html, options={
 		"disable-external-links": "",
 		"disable-javascript": "",
+		# SEC-006: block file:/// and other local-resource loads at render time so an
+		# injected <img src="file:///…"> / SSRF payload can't reach the server's disk
+		# or metadata endpoints. The NDOC logo is embedded as a data: URI, not a file
+		# path, so it is unaffected.
+		"disable-local-file-access": "",
 		"encoding": "UTF-8",
 	})
 
@@ -37,7 +42,9 @@ def _logo_data_uri():
 
 
 def _val(v, fallback="-"):
-	return v if v else fallback
+	# SEC-006: every doc/row field flows through here into the PDF HTML; these are
+	# guest-controlled (set by the public submit form), so escape to inert text.
+	return escape_html(v) if v else fallback
 
 
 def _fmt_date(d):
@@ -98,7 +105,7 @@ def _build_html(doc):
 	# ── Section 1: Organisation ──────────────────────────────────────────────
 	org_type = _val(doc.entity_or_organization_type)
 	if doc.other_organization_entity:
-		org_type += f" - {doc.other_organization_entity}"
+		org_type += f" - {escape_html(doc.other_organization_entity)}"
 
 	sec1 = _grid(
 		_field("Organization Name", _val(doc.implementing_organization)),
@@ -112,11 +119,11 @@ def _build_html(doc):
 	# ── Section 2: Hazard ────────────────────────────────────────────────────
 	hazard = _val(doc.anticipated_hazard)
 	if doc.other_anticipated_hazards:
-		hazard += f" - {doc.other_anticipated_hazards}"
+		hazard += f" - {escape_html(doc.other_anticipated_hazards)}"
 
 	partners = _val(doc.implementing_partners)
 	if doc.other_implementing_partners:
-		partners += f": {doc.other_implementing_partners}"
+		partners += f": {escape_html(doc.other_implementing_partners)}"
 
 	sec2 = _grid(
 		_field("Hazard Type", hazard),
@@ -135,12 +142,12 @@ def _build_html(doc):
 		rows_html = ""
 		for i, row in enumerate(doc.anticipatory_action_details):
 			bg = BG if i % 2 == 0 else "#ffffff"
-			loc = f"<strong>{row.county}</strong>"
+			loc = f"<strong>{escape_html(row.county)}</strong>"
 			if row.subcounty:
-				loc += f"<br><span style='color:{MID};font-size:10px;'>{row.subcounty}</span>"
+				loc += f"<br><span style='color:{MID};font-size:10px;'>{escape_html(row.subcounty)}</span>"
 			s = (row.status_of_the_early_action or "Planned").lower()
 			badge_style = badge_colors.get(s, badge_colors["planned"])
-			badge = f'<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;{badge_style}">{row.status_of_the_early_action or "Planned"}</span>'
+			badge = f'<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;{badge_style}">{escape_html(row.status_of_the_early_action or "Planned")}</span>'
 			rows_html += f"""
 			<tr style="background:{bg};">
 				<td style="padding:7px 10px;vertical-align:top;border-bottom:1px solid {LIGHT};font-size:11px;">{loc}</td>
@@ -172,13 +179,13 @@ def _build_html(doc):
 	# ── Section 4: Additional Information ────────────────────────────────────
 	additional = ""
 	if doc.triggers_and_thresholds:
-		additional += _field("Triggers &amp; Thresholds", doc.triggers_and_thresholds)
+		additional += _field("Triggers &amp; Thresholds", escape_html(doc.triggers_and_thresholds))
 	if doc.lessons_learnt:
-		additional += _field("Key Lessons Learnt", doc.lessons_learnt)
+		additional += _field("Key Lessons Learnt", escape_html(doc.lessons_learnt))
 	if doc.challenges:
-		additional += _field("Challenges", doc.challenges)
+		additional += _field("Challenges", escape_html(doc.challenges))
 	if doc.recommendations:
-		additional += _field("Recommendations", doc.recommendations)
+		additional += _field("Recommendations", escape_html(doc.recommendations))
 	sec4 = _section(4, "Additional Information", additional) if additional else ""
 
 	# ── Header ───────────────────────────────────────────────────────────────
@@ -218,7 +225,7 @@ def _build_html(doc):
     <tr>
       <td style="padding:14px 20px;">
         <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:{MID};">Reference Number</div>
-        <div style="font-size:18px;font-weight:700;color:{CHARCOAL};margin-top:3px;">{doc.name}</div>
+        <div style="font-size:18px;font-weight:700;color:{CHARCOAL};margin-top:3px;">{escape_html(doc.name)}</div>
       </td>
     </tr>
   </table>

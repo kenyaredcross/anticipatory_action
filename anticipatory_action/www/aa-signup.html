@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Request Access - Kenya Anticipatory Action</title>
   <link rel="preload" as="image" href="/ndoc1.webp" type="image/webp" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    .skip-link { position: absolute; left: -999px; top: 0; background: #0B0B0E; color: #fff; padding: 8px 14px; z-index: 1000; text-decoration: none; }
+    .skip-link:focus { left: 8px; }
+  </style>
   <style>
     * { box-sizing: border-box; }
     body { background: var(--ink); margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
@@ -61,11 +62,12 @@
   </style>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to content</a>
 
 <div class="su-shell">
   <aside class="su-brand">
     <a href="/aa" class="su-logo">
-      <img src="/aadashboard.png" alt="NDRMA" />
+      <img src="/aadashboard.png" alt="Kenya Anticipatory Action - home" />
       <div>Anticipatory Action<span>Kenya · NDRMA / KRCS</span></div>
     </a>
     <div>
@@ -76,7 +78,7 @@
     <div class="su-foot">Predict · Prepare · Protect</div>
   </aside>
 
-  <main class="su-main">
+  <main class="su-main" id="main">
     <div class="su-card">
       <a href="/anticipatory-login" class="back-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -94,7 +96,7 @@
             <div class="su-field"><label for="first_name">First Name *</label><input id="first_name" autocomplete="given-name" required /></div>
             <div class="su-field"><label for="last_name">Last Name *</label><input id="last_name" autocomplete="family-name" required /></div>
             <div class="su-field"><label for="email">Email *</label><input type="email" id="email" autocomplete="email" required /></div>
-            <div class="su-field"><label for="phone">Phone *</label><input id="phone" placeholder="254700000000" autocomplete="tel" required /></div>
+            <div class="su-field"><label for="phone">Phone *</label><input type="tel" id="phone" inputmode="tel" pattern="^(\+?254|0)[17]\d{8}$" title="Enter a Kenyan number, e.g. 0712345678 or +254712345678" placeholder="254700000000" autocomplete="tel" required /></div>
             <div class="su-field"><label for="organization">Organisation *</label><input id="organization" autocomplete="organization" required /></div>
             <div class="su-field"><label for="position">Position / Role *</label><input id="position" required /></div>
             <div class="su-field full"><label for="message">Why would you like access?</label><textarea id="message" rows="3"></textarea></div>

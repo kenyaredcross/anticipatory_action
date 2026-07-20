@@ -4,16 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reports &amp; Documents - Kenya Anticipatory Action</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,500;1,700&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/aa-base.css" />
+  <style>
+    .skip-link { position: absolute; left: -999px; top: 0; background: #0B0B0E; color: #fff; padding: 8px 14px; z-index: 1000; text-decoration: none; }
+    .skip-link:focus { left: 8px; }
+  </style>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to content</a>
 
 <nav class="aa-nav">
   <a href="/aa" class="nav-brand">
-    <img src="/aadashboard.png" alt="NDRMA" />
+    <img src="/aadashboard.png" alt="Kenya Anticipatory Action - home" />
   </a>
   <div class="nav-links">
     <div class="nav-item">
@@ -59,7 +61,7 @@
   </div>
 </nav>
 
-<section class="page-hero">
+<section class="page-hero" id="main">
   <div class="breadcrumb"><a href="/aa">Home</a><span>›</span>Knowledge Hub<span>›</span>Reports &amp; Documents</div>
   <div class="page-hero-label">Knowledge Hub</div>
   <h1 class="page-hero-title">Reports &amp;<br><span class="accent">Documents.</span></h1>
@@ -72,13 +74,13 @@
     <div class="filter-row">
       <div class="search-box">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="searchInput" placeholder="Search reports by title or keyword…" oninput="filterReports()" />
+        <input type="text" id="searchInput" aria-label="Search reports" placeholder="Search reports by title or keyword…" oninput="filterReports()" />
       </div>
-      <select class="filter-select" id="catFilter" onchange="filterReports()">
+      <select class="filter-select" id="catFilter" aria-label="Filter by category" onchange="filterReports()">
         <option value="">All Categories</option>
         {% for cat in categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}
       </select>
-      <select class="filter-select" id="yearFilter" onchange="filterReports()">
+      <select class="filter-select" id="yearFilter" aria-label="Filter by year" onchange="filterReports()">
         <option value="">All Years</option>
         {% for yr in years %}<option value="{{ yr }}">{{ yr }}</option>{% endfor %}
       </select>
@@ -96,8 +98,8 @@
         <div class="report-footer">
           <span class="report-source">{% if r.source %}{{ r.source }}{% endif %}</span>
           {% if r.link or r.attachment %}
-          <a href="{{ r.link or r.attachment }}" target="_blank" rel="noopener" class="report-link">
-            Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <a href="{{ r.link or r.attachment }}" target="_blank" rel="noopener" class="report-link" aria-label="Download {{ r.title }}">
+            Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </a>
           {% else %}<span class="no-link">Link coming soon</span>{% endif %}
         </div>
@@ -138,7 +140,7 @@
   <div class="footer-top">
     <div>
       <div class="footer-brand-row">
-        <img src="/aadashboard.png" alt="NDRMA" />
+        <img src="/aadashboard.png" alt="" />
         <div class="footer-brand-name">Kenya Anticipatory Action</div>
       </div>
       <p class="footer-tag">National Technical Working Group on Anticipatory Action, coordinated by the National Disaster Risk Management Authority with the Kenya Red Cross Society.</p>

@@ -58,6 +58,17 @@
     });
   };
 
+  // Neutralise dangerous URL schemes before a user/report-controlled URL reaches
+  // an href. Allows http/https/mailto/tel and scheme-less / relative / anchor
+  // URLs; anything else (javascript:, data:, vbscript: …) becomes '#'.
+  // Always combine with AA.esc when interpolating into an attribute.
+  AA.safeUrl = function (u) {
+    u = (u == null ? '' : String(u)).trim();
+    if (/^\s*(https?:|mailto:|tel:)/i.test(u)) return u;
+    if (u && !/^[a-z][a-z0-9+.\-]*:/i.test(u)) return u; // relative/anchor ok
+    return '#';
+  };
+
   AA.fmtNum = function (n) {
     n = Number(n || 0);
     return n.toLocaleString('en-KE');
