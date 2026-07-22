@@ -113,8 +113,24 @@ def submit_anticipatory_action(data):
 	# Rate limited per IP (SEC-004): a scripted flood files thousands/hour; 300/hour
 	# stops that while comfortably tolerating a whole workshop/venue behind one shared
 	# NAT or carrier-CGNAT IP (UAT, county-office bursts on Kenyan mobile networks).
+	from frappe.utils import validate_email_address
+
+	d = frappe.parse_json(data) if isinstance(data, str) else (data or {})
+	# A real submission's whole point is its intervention rows; reject an empty one
+	# with a clear message instead of quietly filing a hollow record. (The test /
+	# dissemination form uses submit_test_application, which is not gated this way.)
+	if not (isinstance(d, dict) and (d.get("anticipatory_action_details") or [])):
+		return {"success": False, "error": "Please add at least one anticipatory action entry before submitting."}
+	# The reporter's email is where the receipt and every review update are sent — a
+	# mistyped one fails silently. Validate the format (the doctype only checks it is
+	# non-empty), naming the field so it's actionable.
+	rep_email = (d.get("reporter_email") or "").strip()
+	if not rep_email:
+		return {"success": False, "error": "Please enter the reporter's email address."}
+	if not validate_email_address(rep_email):
+		return {"success": False, "error": "Please enter a valid reporter email address."}
 	try:
-		doc = _insert_submission(data, is_test=0)
+		doc = _insert_submission(d, is_test=0)
 		frappe.db.commit()
 		_notify_new_submission(doc)
 		return {"success": True, "name": doc.name}

@@ -667,7 +667,7 @@
       field({ label: 'First Name', id: 'u_first', value: u && u.first_name, required: true }) +
       field({ label: 'Last Name', id: 'u_last', value: u && u.last_name, required: true }) +
       field({ label: 'Email', id: 'u_email', type: 'email', value: u && u.email, required: true, readonly: editing, hint: editing ? 'Email is the account identity and cannot be changed.' : 'A welcome email with a set-password link is sent on creation.' }) +
-      field({ label: 'Phone', id: 'u_phone', value: u && u.phone }) +
+      field({ label: 'Phone', id: 'u_phone', value: u && u.phone, required: true }) +
       field({ label: 'Organization', id: 'u_org', type: 'select', options: orgs, value: u && u.organization, required: true, full: true }) +
       roleField;
     // On an existing user, the per-account actions (reset password, enable/
@@ -695,7 +695,11 @@
     openModal(editing ? 'Edit User' : 'Add User', f + extras, async function () {
       var payload = { first_name: v('u_first'), last_name: v('u_last'), phone: v('u_phone'), organization: v('u_org') };
       if (CAN_SET_ROLE) payload.role = v('u_role');
-      if (!payload.first_name || !payload.organization) { modalErr('First name and organization are required.'); return; }
+      // last_name and phone are mandatory on the roster — validate them here so a
+      // blank produces a clear inline message, not a raw server "X is mandatory".
+      if (!payload.first_name || !payload.last_name || !payload.phone || !payload.organization) {
+        modalErr('First name, last name, phone and organization are all required.'); return;
+      }
       if (editing) {
         await AA.call(P + 'update_aa_user', Object.assign({ name: u.name }, payload));
       } else {
@@ -994,14 +998,22 @@
         catch (e) { AA.toast(e.message); done(); }
       });
       var rj = document.getElementById('rv-reject');
-      if (rj) rj.addEventListener('click', function () { reviewReject(name); });
-      document.getElementById('rv-info').addEventListener('click', function () { reviewRequestInfo(name); });
+      if (rj) rj.addEventListener('click', function () { reviewReject(name, d.status); });
+      document.getElementById('rv-info').addEventListener('click', function () { reviewRequestInfo(name, d.status); });
     } catch (e) { AA.toast(e.message); }
   }
 
+  // A submission that is currently Approved is live/published; reopening it (to reject
+  // or to ask for more info) retracts that approval. Warn the reviewer before they do.
+  function retractWarning(curStatus) {
+    return curStatus === 'Approved'
+      ? '<div class="review-alert" style="background:#FEF2F2;border-color:#991B1B;color:#5c1a1a;margin-bottom:12px"><b>This submission is currently Approved and published.</b> Continuing retracts the approval and reopens it as an editable draft for the reporter.</div>'
+      : '';
+  }
+
   // Reject from the review screen - reason required, then both layers close.
-  function reviewReject(name) {
-    openModal('Reject Submission', field({ label: 'Reason for rejection', id: 'rej_reason', type: 'textarea', required: true, full: true, hint: 'Shared with the reporter so they can revise and resubmit.' }), async function () {
+  function reviewReject(name, curStatus) {
+    openModal('Reject Submission', retractWarning(curStatus) + field({ label: 'Reason for rejection', id: 'rej_reason', type: 'textarea', required: true, full: true, hint: 'Shared with the reporter so they can revise and resubmit.' }), async function () {
       var reason = v('rej_reason');
       if (!reason) { modalErr('Please give a reason.'); return; }
       await AA.call(P + 'set_submission_status', { name: name, status: 'Not Approved', reason: reason });
@@ -1010,8 +1022,8 @@
   }
 
   // Request more info from the review screen - a message is required and sent to the reporter.
-  function reviewRequestInfo(name) {
-    openModal('Request More Information', field({ label: 'Message to the reporter', id: 'info_msg', type: 'textarea', required: true, full: true, hint: 'Sent to the reporter, telling them what to add or clarify before this can be decided.' }), async function () {
+  function reviewRequestInfo(name, curStatus) {
+    openModal('Request More Information', retractWarning(curStatus) + field({ label: 'Message to the reporter', id: 'info_msg', type: 'textarea', required: true, full: true, hint: 'Sent to the reporter, telling them what to add or clarify before this can be decided.' }), async function () {
       var reason = v('info_msg');
       if (!reason) { modalErr('Please write a message for the reporter.'); return; }
       await AA.call(P + 'set_submission_status', { name: name, status: 'Replied', reason: reason });

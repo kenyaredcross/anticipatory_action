@@ -175,30 +175,38 @@
     const email = document.getElementById('email').value.trim();
     const subject = document.getElementById('subject').value.trim();
     const message = document.getElementById('message').value.trim();
-    if (!full_name || !email || !subject || !message) {
-      err.textContent = 'Please fill in all required fields.';
-      err.style.display = 'block';
-      return;
-    }
+    const requestType = document.getElementById('request_type').value;
+    const pillar = document.getElementById('pillar').value;
+    const showErr = function (msg) { err.textContent = msg; err.style.display = 'block'; };
+    if (!full_name || !email || !subject || !message) { showErr('Please fill in all required fields.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('Please enter a valid email address.'); return; }
+    // A "Join a pillar" enquiry with no pillar can't be routed to a lead — require it.
+    if (requestType === 'Join a pillar' && !pillar) { showErr("Please choose which pillar you'd like to join."); return; }
+    const sendLabel = btn.innerHTML;
+    const resetBtn = function () { btn.disabled = false; btn.innerHTML = sendLabel; };
     btn.disabled = true;
     btn.textContent = 'Sending…';
     try {
       const res = await fetch('/api/method/anticipatory_action.api.portal.submit_contact', {
         method: 'POST',
         headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': (window.frappe && frappe.csrf_token) || ''},
-        body: JSON.stringify({full_name, email, organization: document.getElementById('organization').value.trim(), phone: document.getElementById('phone').value.trim(), subject, message, request_type: document.getElementById('request_type').value, pillar: document.getElementById('pillar').value})
+        body: JSON.stringify({full_name, email, organization: document.getElementById('organization').value.trim(), phone: document.getElementById('phone').value.trim(), subject, message, request_type: requestType, pillar: pillar})
       });
       const data = await res.json();
       if (data.message && data.message.success) {
         document.getElementById('sentEmail').textContent = email;
         document.getElementById('formView').style.display = 'none';
         document.getElementById('successView').style.display = 'block';
-      } else { throw new Error(data.message?.error || 'Submission failed'); }
+      } else {
+        // Surface the server's specific reason (e.g. invalid email, missing pillar)
+        // instead of a generic message the user can't act on.
+        showErr((data.message && data.message.error) || 'Your message could not be sent. Please try again.');
+        resetBtn();
+      }
     } catch (e) {
-      err.textContent = 'Something went wrong. Please try again or email us directly.';
-      err.style.display = 'block';
-      btn.disabled = false;
-      btn.innerHTML = 'Send Message <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.3437 7.55584L7.05025 16.8492M7.15127 6.84873L16.9497 6.94975L17.0508 16.7482" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/></svg>';
+      // Network / unexpected failure only.
+      showErr('Something went wrong. Please check your connection and try again, or email us directly.');
+      resetBtn();
     }
   }
 
