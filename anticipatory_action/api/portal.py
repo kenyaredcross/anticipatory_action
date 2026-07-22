@@ -369,6 +369,11 @@ def update_my_submission(name, data):
 		frappe.throw("This submission has been finalised and can no longer be edited.")
 
 	d = frappe.parse_json(data)
+	# A submission must keep at least one intervention row — that content is the
+	# submission. Block an edit that would empty it out (the form's client-side
+	# check catches this first with a friendlier message).
+	if not (d.get("anticipatory_action_details") or []):
+		frappe.throw("Please keep at least one anticipatory action entry.")
 	for f in _PARENT_FIELDS:
 		if f in d:
 			doc.set(f, d.get(f))
@@ -450,6 +455,16 @@ def get_my_profile():
 def update_my_profile(first_name=None, last_name=None, phone=None):
 	"""Update the signed-in user's basic details. Never touches email / roles."""
 	_require_login()
+	# Validate BEFORE touching anything. The roster doctype makes first_name,
+	# last_name and phone mandatory; the old code saved the User first, then hit a
+	# raw mandatory error on roster.save() before commit — rolling back the whole
+	# edit (even the field the user actually changed) with a misleading message.
+	if first_name is not None and not first_name.strip():
+		frappe.throw("First name is required.")
+	if last_name is not None and not (last_name or "").strip():
+		frappe.throw("Last name is required.")
+	if phone is not None and not (phone or "").strip():
+		frappe.throw("Phone number is required.")
 	user = frappe.get_doc("User", frappe.session.user)
 	if first_name is not None:
 		user.first_name = first_name.strip()
@@ -647,9 +662,21 @@ def create_aa_user(first_name, last_name, email, phone, organization, role="Anti
 		# can never be set outside the three AA roles (never System Manager).
 		role = "Anticipatory Action User"
 	_constrain_role(role)
+	# Name each missing field explicitly. The roster doctype makes first_name,
+	# last_name and phone mandatory, so without these guards a blank one falls
+	# through to a raw "X is mandatory" error for a field the modal never flagged.
+	first_name = (first_name or "").strip()
+	last_name = (last_name or "").strip()
+	phone = (phone or "").strip()
 	email = (email or "").strip().lower()
+	if not first_name:
+		frappe.throw("First name is required.")
+	if not last_name:
+		frappe.throw("Last name is required.")
 	if not email:
 		frappe.throw("Email is required.")
+	if not phone:
+		frappe.throw("Phone number is required.")
 	if frappe.db.exists("Anticipatory Action User", {"email": email}):
 		frappe.throw("An Anticipatory Action user with this email already exists.")
 	# Refuse to attach AA roles onto an account that belongs to another project.
@@ -680,12 +707,21 @@ def update_aa_user(name, first_name=None, last_name=None, phone=None, organizati
 	_require_admin()
 	_assert_is_aa_user(name)
 	doc = frappe.get_doc("Anticipatory Action User", name)
+	# These three are mandatory on the roster; reject a cleared value with a named
+	# message rather than letting roster.save() raise a raw "X is mandatory" for a
+	# field the modal didn't flag.
 	if first_name is not None:
-		doc.first_name = first_name
+		if not first_name.strip():
+			frappe.throw("First name is required.")
+		doc.first_name = first_name.strip()
 	if last_name is not None:
-		doc.last_name = last_name
+		if not last_name.strip():
+			frappe.throw("Last name is required.")
+		doc.last_name = last_name.strip()
 	if phone is not None:
-		doc.phone = phone
+		if not phone.strip():
+			frappe.throw("Phone number is required.")
+		doc.phone = phone.strip()
 	if organization is not None:
 		if not frappe.db.exists("Anticipatory Action Organization", organization):
 			frappe.throw("Please choose a valid organization.")
@@ -864,6 +900,13 @@ def set_submission_status(name, status, reason=None):
 			amended.docstatus = 0
 			amended.flags.ignore_permissions = True
 			amended.insert()
+			# WKF-001: insert() stamps owner = the current user (the REVIEWER), which would
+			# strand the reporter — the whole member portal keys off owner, so the reporter
+			# would lose their own submission and the Replied -> edit -> Pending round-trip.
+			# Force ownership back to the original reporter after insert (set_user_and_timestamp
+			# overrides any owner set beforehand, so this must happen post-insert).
+			if doc.owner and doc.owner != amended.owner:
+				frappe.db.set_value("Anticipatory Action", amended.name, "owner", doc.owner, update_modified=False)
 			frappe.db.commit()
 			if status == "Replied":
 				send_submission_replied(amended, reason)
@@ -2219,6 +2262,13 @@ def submit_guest_application(submission, account):
 					  "Please sign in to submit your anticipatory action."),
 		}
 
+	# A submission's whole point is its intervention rows. Reject an empty one up
+	# front — BEFORE creating the sign-up request — so a hollow submission neither
+	# files a held record nor leaves an orphan access request behind.
+	sub = frappe.parse_json(submission) if isinstance(submission, str) else (submission or {})
+	if not (isinstance(sub, dict) and (sub.get("anticipatory_action_details") or [])):
+		return {"success": False, "error": "Please add at least one anticipatory action entry before submitting."}
+
 	# 1) sign-up request. Call the enumeration-safe core directly (not the
 	#    rate-limited public endpoint) so one guest checkout isn't charged two
 	#    per-IP limits. It no-ops on a repeat/known email — the flow below then
@@ -2249,9 +2299,7 @@ def submit_guest_application(submission, account):
 	#    response shape is identical either way. (For an already-registered email
 	#    there is no Pending request to link to; the reporter should sign in instead.)
 	try:
-		sub = frappe.parse_json(submission) if isinstance(submission, str) else submission
-		if isinstance(sub, dict):
-			sub.setdefault("reporter_email", email)
+		sub.setdefault("reporter_email", email)
 		doc = _insert_submission(frappe.as_json(sub), is_test=0)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "submit_guest_application")
@@ -2318,9 +2366,13 @@ def approve_request(name, organization, role=None, notes=None):
 	if _foreign_roles(email):
 		frappe.throw("A user with this email already exists on this site and is managed elsewhere.")
 
+	# The roster requires a last name, but guest checkout collects it as optional, so
+	# a request may legitimately have none. Default to "-" (the same placeholder the
+	# roster self-heal uses) rather than dead-ending the approval on a raw mandatory
+	# error the approver has no UI to fix.
 	roster = frappe.get_doc({
 		"doctype": "Anticipatory Action User",
-		"first_name": req.first_name, "last_name": req.last_name or "",
+		"first_name": req.first_name, "last_name": (req.last_name or "").strip() or "-",
 		"email": email, "phone": req.phone, "organization": organization,
 		"role": role, "enabled": 1,
 	})

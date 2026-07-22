@@ -1287,6 +1287,14 @@ select.aa-input {
         if (err && err.classList.contains('aa-field-error')) err.style.display = 'none';
       }
     });
+    // A submission's whole point is its intervention rows — block an empty one with a
+    // clear, actionable message instead of filing (or letting the server reject) a
+    // hollow record. Mirrors the server guard in _insert_submission callers.
+    if (valid && !details.length) {
+      (detailsEmpty || addBtn || form).scrollIntoView({ behavior: 'smooth', block: 'center' });
+      frappe.msgprint({ title: 'Add an entry', message: 'Please add at least one anticipatory action entry before submitting.', indicator: 'red' });
+      valid = false;
+    }
     return valid;
   }
 
