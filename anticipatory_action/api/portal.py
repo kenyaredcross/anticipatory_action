@@ -70,10 +70,15 @@ def _can_approve_accounts(user=None):
 	user = user or frappe.session.user
 	if _is_admin(user):
 		return True
-	flag = frappe.db.get_value("Anticipatory Action User", {"user": user}, "can_approve_accounts")
-	if flag is None:
-		flag = frappe.db.get_value("Anticipatory Action User", {"email": user}, "can_approve_accounts")
-	return bool(flag)
+	# The capability requires BOTH the granted flag AND a current Approver role — so a
+	# member demoted out of Approver can't retain sign-up-approval power via a stale
+	# flag (defence-in-depth alongside update_aa_user clearing it on demote — M6).
+	row = frappe.db.get_value(
+		"Anticipatory Action User", {"user": user}, ["can_approve_accounts", "role"], as_dict=True
+	) or frappe.db.get_value(
+		"Anticipatory Action User", {"email": user}, ["can_approve_accounts", "role"], as_dict=True
+	)
+	return bool(row and row.can_approve_accounts and row.role == "Anticipatory Action Approver")
 
 
 def _require_account_approver():
@@ -732,6 +737,10 @@ def update_aa_user(name, first_name=None, last_name=None, phone=None, organizati
 	if role is not None and _can_set_role():
 		_constrain_role(role)
 		doc.role = role
+		# A member moved off the Approver role must not keep the account-approval
+		# capability — clear it so the grant can't outlive the role that justified it (M6).
+		if role != "Anticipatory Action Approver" and doc.can_approve_accounts:
+			doc.can_approve_accounts = 0
 	# Email is intentionally immutable — it is the account identity.
 	doc.flags.ignore_permissions = True
 	with _elevated():
@@ -2095,6 +2104,11 @@ def submit_contact(full_name=None, email=None, organization=None, phone=None, su
 	pillar = (pillar or "").strip() or None
 	if not full_name or not email or not subject or not message:
 		return {"success": False, "error": "Please fill in your name, email, subject and message."}
+	# A "Join a pillar" enquiry that names no pillar can't be routed to a pillar lead —
+	# it would land silently in the inbox and be dropped. Require the pillar so the
+	# intent actually reaches an owner.
+	if request_type == "Join a pillar" and not pillar:
+		return {"success": False, "error": "Please choose which pillar you'd like to join."}
 	if not validate_email_address(email):
 		return {"success": False, "error": "Please enter a valid email address."}
 	try:
