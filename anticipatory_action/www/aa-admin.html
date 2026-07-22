@@ -1951,6 +1951,9 @@
         html += tableHead(['Name', 'Email', 'Organisation', 'Requested', 'Status', '']);
         html += rows.map(function (q) {
           var sb = q.status === 'Approved' ? 'approved' : (q.status === 'Rejected' ? 'rejected' : 'pending');
+          var infoChip = (q.status === 'Pending' && (q.pending_info_request || '').trim())
+            ? ' <span class="badge" style="background:#FFFBEB;color:#B45309;border-color:#B45309" title="More information was requested; it will be emailed when the account is approved">Info requested</span>'
+            : '';
           var acts = '<button class="btn sm ghost" data-view-req="' + AA.esc(q.name) + '">Review</button>';
           if (q.status === 'Pending') {
             acts += '<button class="btn sm ok" data-approve-req="' + AA.esc(q.name) + '">Approve</button>' +
@@ -1961,7 +1964,7 @@
             '<td>' + AA.esc(q.email) + '</td>' +
             '<td>' + AA.esc(q.organization || '-') + '</td>' +
             '<td>' + AA.esc((q.creation || '').slice(0, 10)) + '</td>' +
-            '<td><span class="badge ' + sb + '">' + AA.esc(q.status) + '</span></td>' +
+            '<td><span class="badge ' + sb + '">' + AA.esc(q.status) + '</span>' + infoChip + '</td>' +
             '<td class="row-actions">' + acts + '</td></tr>';
         }).join('');
         html += '</tbody></table></div>';
@@ -2028,7 +2031,20 @@
       var orgs = (await ensureOrgs()).map(function (o) { return { value: o.name, label: o.name_of_organization }; });
       var pending = d.status === 'Pending';
       var sb = d.status === 'Approved' ? 'approved' : (d.status === 'Rejected' ? 'rejected' : 'pending');
+      var held = d.held_submissions || [];
+      var heldNote = held.length
+        ? '<div class="review-alert" style="background:rgba(0,166,184,0.08);border-color:var(--teal)"><b>' +
+            held.length + ' anticipatory action' + (held.length === 1 ? '' : 's') + '</b> ' +
+            (held.length === 1 ? 'is' : 'are') + ' waiting for this account. Approving releases ' +
+            (held.length === 1 ? 'it' : 'them') + ' into the review queue under the new member.</div>'
+        : '';
+      var infoNote = (d.pending_info_request || '').trim()
+        ? '<div class="review-alert" style="background:#FFFBEB;border-color:#B45309;color:#5c3a10">' +
+            '<b>More information requested (not sent yet):</b> ' + AA.esc(d.pending_info_request) +
+            '<br><span style="font-size:12px">This is emailed to the applicant when you approve the account.</span></div>'
+        : '';
       var body = '<div style="margin-bottom:16px"><span class="badge ' + sb + '">' + AA.esc(d.status) + '</span></div>' +
+        heldNote + infoNote +
         '<div class="kv-grid">' +
           kv('Name', d.full_name) + kv('Email', d.email) +
           kv('Phone', d.phone) + kv('Organisation (stated)', d.organization) +
@@ -2049,6 +2065,7 @@
           '</div>' +
           '<div class="form-actions">' +
             '<button class="btn ok" id="q-approve">Approve &amp; Create Account</button>' +
+            '<button class="btn ghost" id="q-info">Request more info</button>' +
             '<button class="btn danger" id="q-reject">Reject</button>' +
             '<button class="btn ghost" id="q-close">Close</button>' +
           '</div>';
@@ -2072,9 +2089,26 @@
             loadRequests(curReqFilter()); loaded.users = false; loaded.overview = false;
           } catch (e) { AA.toast(e.message); done(); }
         });
+        document.getElementById('q-info').addEventListener('click', function () { requestInfoModal(name); });
         document.getElementById('q-reject').addEventListener('click', function () { rejectRequestModal(name); });
       }
     } catch (e) { AA.toast(e.message); }
+  }
+
+  // Ask a sign-up applicant for more information. The applicant has no account yet,
+  // so nothing is emailed now: the message is stored and only sent when the account
+  // is approved (at which point any submission they filed is returned for revision).
+  function requestInfoModal(name) {
+    openModal('Request More Information',
+      '<div class="alert show info" style="grid-column:1/-1;margin-bottom:2px">This message is <b>not sent now</b> — the applicant has no account yet. It is emailed when you approve the account, and any submission they filed is returned to them to revise.</div>' +
+      field({ label: 'Information needed from the applicant', id: 'info_req_msg', type: 'textarea', required: true, full: true, hint: 'Saved on the request and emailed when the account is approved.' }),
+      async function () {
+        var msg = v('info_req_msg');
+        if (!msg) { modalErr('Please write what you need from the applicant.'); return; }
+        await AA.call(P + 'request_more_info', { name: name, message: msg });
+        closeModal(); AA.toast('Saved — it will be sent when you approve the account.', true);
+        loadRequests(curReqFilter()); loaded.overview = false;
+      }, 'Save Request');
   }
 
   // ===================== RAISE A REQUEST (approvers + admins) =====================

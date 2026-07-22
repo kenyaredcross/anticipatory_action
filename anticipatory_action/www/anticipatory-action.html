@@ -717,18 +717,34 @@ select.aa-input {
             <label>Email <span class="req">*</span></label>
             <input type="email" id="acc-email" class="aa-input" autocomplete="email" />
             <div class="aa-field-error">Please enter a valid email</div>
+            <div id="acc-email-taken" style="display:none;margin-top:6px;font-size:13px;line-height:1.5;color:var(--red)">
+              An account with this email already exists. Please
+              <a href="/anticipatory-login?redirect-to=/anticipatory-action" style="color:var(--red);font-weight:700;text-decoration:underline">sign in</a>
+              to submit.
+            </div>
           </div>
           <div class="aa-field">
-            <label>Phone</label>
+            <label>Phone <span class="req">*</span></label>
             <input type="tel" id="acc-phone" class="aa-input" autocomplete="tel" placeholder="254700000000" />
+            <div class="aa-field-error">Phone number is required</div>
           </div>
           <div class="aa-field">
-            <label>Organization</label>
-            <input id="acc-org" class="aa-input" autocomplete="organization" />
+            <label>Organization <span class="req">*</span></label>
+            <select id="acc-org" class="aa-input" autocomplete="organization">
+              <option value="">Select your organisation…</option>
+              <option value="__other__">Other (not listed)</option>
+            </select>
+            <div class="aa-field-error">Please choose your organisation</div>
+          </div>
+          <div class="aa-field" id="acc-org-other-wrap" style="display:none">
+            <label>Organisation name <span class="req">*</span></label>
+            <input id="acc-org-other" class="aa-input" placeholder="Type your organisation name" />
+            <div class="aa-field-error">Please enter your organisation name</div>
           </div>
           <div class="aa-field">
-            <label>Position</label>
+            <label>Position <span class="req">*</span></label>
             <input id="acc-position" class="aa-input" autocomplete="organization-title" />
+            <div class="aa-field-error">Position / role is required</div>
           </div>
         </div>
         <div style="margin-top:6px;font-size:14px">
@@ -843,7 +859,80 @@ select.aa-input {
   const accEmail       = document.getElementById('acc-email');
   const accPhone       = document.getElementById('acc-phone');
   const accOrg         = document.getElementById('acc-org');
+  const accOrgOtherWrap= document.getElementById('acc-org-other-wrap');
+  const accOrgOther    = document.getElementById('acc-org-other');
   const accPosition    = document.getElementById('acc-position');
+  const accEmailTaken  = document.getElementById('acc-email-taken');
+  let   emailTaken     = false;   // set by the async "does this email have an account?" check
+
+  // Populate the organisation dropdown with the orgs already on the platform, so a
+  // returning organisation's people pick their employer instead of retyping it.
+  // "Other (not listed)" reveals a free-text field (see the change handler below).
+  function loadOrgOptions() {
+    if (!accOrg) return;
+    frappe.call({
+      method: 'anticipatory_action.api.portal.list_public_organizations',
+      callback: function (r) {
+        var res = (r && r.message) || r || {};
+        var list = res.data || [];
+        if (!list.length) return;
+        var otherOpt = accOrg.querySelector('option[value="__other__"]');
+        var frag = document.createDocumentFragment();
+        list.forEach(function (nm) {
+          var o = document.createElement('option');
+          o.value = nm; o.textContent = nm;
+          frag.appendChild(o);
+        });
+        accOrg.insertBefore(frag, otherOpt);
+      }
+    });
+  }
+  loadOrgOptions();
+
+  if (accOrg) accOrg.addEventListener('change', function () {
+    var other = accOrg.value === '__other__';
+    if (accOrgOtherWrap) accOrgOtherWrap.style.display = other ? '' : 'none';
+    if (!other && accOrgOther) {
+      accOrgOther.value = '';
+      accOrgOther.classList.remove('error');
+      var e = accOrgOtherWrap.querySelector('.aa-field-error');
+      if (e) e.style.display = 'none';
+    } else if (other && accOrgOther) {
+      setTimeout(function () { accOrgOther.focus(); }, 50);
+    }
+  });
+
+  // Ask the server whether this email already has an account; if so, steer the
+  // visitor to sign in rather than filing a duplicate request. Enforced again on
+  // submit and on the server, so this is UX guidance, not the trust boundary.
+  function checkEmailTaken() {
+    if (!accEmail) return;
+    var em = accEmail.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+      emailTaken = false;
+      if (accEmailTaken) accEmailTaken.style.display = 'none';
+      return;
+    }
+    frappe.call({
+      method: 'anticipatory_action.api.portal.guest_email_status',
+      args: { email: em },
+      callback: function (r) {
+        var res = (r && r.message) || r || {};
+        emailTaken = !!res.registered;
+        if (accEmailTaken) accEmailTaken.style.display = emailTaken ? 'block' : 'none';
+        if (emailTaken) accEmail.classList.add('error');
+      }
+    });
+  }
+  if (accEmail) {
+    accEmail.addEventListener('blur', checkEmailTaken);
+    accEmail.addEventListener('input', function () {
+      // Clear the warning as they retype; it is re-checked on blur and on submit.
+      emailTaken = false;
+      if (accEmailTaken) accEmailTaken.style.display = 'none';
+      accEmail.classList.remove('error');
+    });
+  }
 
   // modal fields
   const mSubcountyLevel = document.getElementById('m-subcounty-level');
@@ -1381,10 +1470,26 @@ select.aa-input {
     }
     if (repEmail && !accEmail.value) accEmail.value = repEmail;
     if (repPhone && !accPhone.value) accPhone.value = repPhone;
-    if (repOrg && !accOrg.value)     accOrg.value   = repOrg;
+    if (repOrg && accOrg && !accOrg.value) {
+      // Match the reported organisation to a known one; otherwise select "Other" and
+      // carry the typed name into the free-text field.
+      var matched = Array.prototype.some.call(accOrg.options, function (o) { return o.value === repOrg; });
+      if (matched) {
+        accOrg.value = repOrg;
+      } else if (accOrgOther) {
+        accOrg.value = '__other__';
+        if (accOrgOtherWrap) accOrgOtherWrap.style.display = '';
+        accOrgOther.value = repOrg;
+      }
+    }
 
     accountOverlay.querySelectorAll('.aa-field-error').forEach(function (el) { el.style.display = 'none'; });
     accountOverlay.querySelectorAll('.aa-input').forEach(function (el) { el.classList.remove('error'); });
+
+    // Re-evaluate the "already has an account?" check for any prefilled email.
+    emailTaken = false;
+    if (accEmailTaken) accEmailTaken.style.display = 'none';
+    if (accEmail && accEmail.value.trim()) checkEmailTaken();
 
     accountOverlay.classList.add('open');
     setTimeout(function () { accFirst.focus(); }, 100);
@@ -1410,16 +1515,31 @@ select.aa-input {
     }
 
     var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(accEmail.value.trim());
+    var orgIsOther = accOrg.value === '__other__';
+    var orgName = orgIsOther ? accOrgOther.value.trim() : accOrg.value.trim();
     flag(accFirst, !!accFirst.value.trim());
     flag(accEmail, emailOk);
+    flag(accPhone, !!accPhone.value.trim());
+    flag(accOrg, !!accOrg.value);
+    if (orgIsOther) flag(accOrgOther, !!orgName);
+    flag(accPosition, !!accPosition.value.trim());
     if (!valid) return;
+
+    // A returning user whose email already has an account is sent to sign in.
+    if (emailTaken) {
+      if (accEmailTaken) accEmailTaken.style.display = 'block';
+      accEmail.classList.add('error');
+      accEmail.focus();
+      frappe.msgprint({ title: 'Account already exists', message: 'An account with this email already exists. Please sign in to submit your anticipatory action.', indicator: 'blue' });
+      return;
+    }
 
     var account = {
       first_name:   accFirst.value.trim(),
       last_name:    accLast.value.trim(),
       email:        accEmail.value.trim(),
       phone:        accPhone.value.trim(),
-      organization: accOrg.value.trim(),
+      organization: orgName,
       position:     accPosition.value.trim(),
       message:      ''
     };
@@ -1456,6 +1576,14 @@ select.aa-input {
             if (redirectNote) redirectNote.style.display = 'none';
             var goNow = successBox.querySelector('a.aa-btn-outline');
             if (goNow) { goNow.setAttribute('href', '/anticipatory-action'); goNow.textContent = 'Submit another →'; }
+          } else if (res && res.already_registered) {
+            accountSubmit.disabled = false;
+            accountSubmit.innerHTML = 'Create account &amp; submit';
+            emailTaken = true;
+            if (accEmailTaken) accEmailTaken.style.display = 'block';
+            accEmail.classList.add('error');
+            accEmail.focus();
+            frappe.msgprint({ title: 'Account already exists', message: (res && res.error) || 'An account with this email already exists. Please sign in to submit.', indicator: 'blue' });
           } else {
             accountSubmit.disabled = false;
             accountSubmit.innerHTML = 'Create account &amp; submit';
