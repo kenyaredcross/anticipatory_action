@@ -17,7 +17,13 @@ from frappe.rate_limiter import rate_limit
 from frappe.utils import sanitize_html, strip_html
 
 from anticipatory_action.api.anticipatory_action import _sanitize
-from anticipatory_action.api.aa_email import AA_INBOX, aa_email_html, aa_sendmail, send_submission_replied
+from anticipatory_action.api.aa_email import (
+	AA_INBOX,
+	aa_email_html,
+	aa_sendmail,
+	send_submission_rejected,
+	send_submission_replied,
+)
 from anticipatory_action.api.permissions import _can_review, _is_admin, _user_org, reviewer_owner_scope
 
 # The roles an AA account may hold. "Approver" sits between User and Admin:
@@ -845,6 +851,8 @@ def set_submission_status(name, status, reason=None):
 				frappe.db.commit()
 				if status == "Replied":
 					send_submission_replied(doc, reason)
+				elif status == "Not Approved":
+					send_submission_rejected(doc, reason)
 				return {"success": True, "status": status, "name": existing}
 			doc.cancel()
 			amended = frappe.copy_doc(doc)
@@ -859,6 +867,8 @@ def set_submission_status(name, status, reason=None):
 			frappe.db.commit()
 			if status == "Replied":
 				send_submission_replied(amended, reason)
+			elif status == "Not Approved":
+				send_submission_rejected(amended, reason)
 			return {"success": True, "status": status, "name": amended.name}
 		# Approved (already) / Pending — status / reason are the only mutable bits.
 		doc.db_set("status", status)
@@ -878,6 +888,8 @@ def set_submission_status(name, status, reason=None):
 	frappe.db.commit()
 	if status == "Replied":
 		send_submission_replied(doc, reason)
+	elif status == "Not Approved":
+		send_submission_rejected(doc, reason)
 	return {"success": True, "status": status}
 
 
@@ -1960,20 +1972,33 @@ def _create_membership_request(first_name, last_name=None, email=None, phone=Non
 	from frappe.utils import validate_email_address
 
 	# Everything is required except the free-text "Why would you like access?"
-	# (message). Mirror the form's client-side validation server-side.
+	# (message). Mirror the form's required fields server-side and name the specific
+	# missing field: a single generic "fill in all fields" message was read as
+	# "reason for joining" (the one OPTIONAL field) when a required field such as
+	# Position was actually the one left blank.
 	first_name = (first_name or "").strip()
 	last_name = (last_name or "").strip()
 	email = (email or "").strip().lower()
 	phone = (phone or "").strip()
 	organization = (organization or "").strip()
 	position = (position or "").strip()
-	if not (first_name and last_name and email and phone and organization and position):
-		return {"success": False, "error": "Please fill in all fields. Only “Why would you like access?” is optional."}
+	if not first_name:
+		return {"success": False, "error": "Please enter your first name."}
+	if not email:
+		return {"success": False, "error": "Please enter your email address."}
 	if not validate_email_address(email):
 		return {"success": False, "error": "Please enter a valid email address."}
+	if not phone:
+		return {"success": False, "error": "Please enter your phone number."}
+	if not organization:
+		return {"success": False, "error": "Please choose or enter your organisation."}
+	if not position:
+		return {"success": False, "error": "Please enter your position or role — it is required."}
 	if (frappe.db.exists("AA Membership Request", {"email": email, "status": "Pending"})
 			or frappe.db.exists("Anticipatory Action User", {"email": email})):
-		# Neutral no-op — do not reveal that this email is already known.
+		# Neutral no-op — do not reveal that this email is already known. (The guest
+		# checkout flow catches an already-registered email earlier and steers the
+		# person to sign in; this remains the safe default for the public form.)
 		return {"success": True}
 	try:
 		doc = frappe.get_doc({
@@ -1986,6 +2011,7 @@ def _create_membership_request(first_name, last_name=None, email=None, phone=Non
 		doc.insert()
 		frappe.db.commit()
 		_email_request_received(doc)
+		_email_request_admins(doc)
 		return {"success": True}
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "submit_membership_request")
@@ -2112,6 +2138,55 @@ def _route_to_pillar_lead(msg, pillar):
 _GUEST_HELD_CAP = 10
 
 
+def _has_account(email):
+	"""Does this email already have a sign-in account (an AA member, or a Frappe
+	User managed by another project on this shared site)? Used to steer a returning
+	visitor to sign in instead of filing another access request."""
+	email = (email or "").strip().lower()
+	if not email:
+		return False
+	return bool(
+		frappe.db.exists("Anticipatory Action User", {"email": email})
+		or _foreign_roles(email)
+		or frappe.db.exists("User", {"name": email, "enabled": 1})
+	)
+
+
+@frappe.whitelist(allow_guest=True)
+@rate_limit(limit=60, seconds=60 * 60)
+def guest_email_status(email):
+	"""Guest sign-up helper: report whether an email already has an account so the
+	submission form can steer a returning user to sign in rather than file a
+	duplicate access request.
+
+	This intentionally trades a little enumeration-safety — an anonymous caller can
+	learn that an email is registered — for the sign-in-vs-sign-up UX the platform
+	owner asked for. The per-IP rate limit blunts bulk scraping."""
+	from frappe.utils import validate_email_address
+
+	email = (email or "").strip().lower()
+	if not email or not validate_email_address(email):
+		return {"success": True, "registered": False}
+	return {"success": True, "registered": _has_account(email)}
+
+
+@frappe.whitelist(allow_guest=True)
+@rate_limit(limit=120, seconds=60 * 60)
+def list_public_organizations():
+	"""Public, minimal list of organisation names for the guest sign-up dropdown —
+	names only, no contact details — so a returning organisation's people can pick
+	their employer from the list instead of retyping it (with an "Other" fallback
+	handled client-side)."""
+	names = sorted({
+		(o.name_of_organization or "").strip()
+		for o in frappe.get_all(
+			"Anticipatory Action Organization",
+			fields=["name_of_organization"], limit=1000,
+		)
+	} - {""})
+	return {"success": True, "data": names}
+
+
 @frappe.whitelist(allow_guest=True)
 @rate_limit(limit=200, seconds=60 * 60)
 def submit_guest_application(submission, account):
@@ -2132,6 +2207,17 @@ def submit_guest_application(submission, account):
 		return {"success": False, "error": "Your name and email are required to submit."}
 	if not validate_email_address(email):
 		return {"success": False, "error": "Please enter a valid email address."}
+
+	# A returning visitor whose email already has an account is steered to sign in
+	# rather than filing another access request (platform-owner request). Nothing is
+	# created — no held submission, no duplicate request — so they land in the
+	# authenticated flow where they can submit directly and see their own history.
+	if _has_account(email):
+		return {
+			"success": False, "already_registered": True,
+			"error": ("An account with this email already exists. "
+					  "Please sign in to submit your anticipatory action."),
+		}
 
 	# 1) sign-up request. Call the enumeration-safe core directly (not the
 	#    rate-limited public endpoint) so one guest checkout isn't charged two
@@ -2187,7 +2273,8 @@ def list_requests(status=None):
 		"AA Membership Request",
 		filters=filters,
 		fields=["name", "full_name", "email", "phone", "organization", "position",
-				"status", "creation", "reviewed_by", "reviewed_on", "user"],
+				"status", "creation", "reviewed_by", "reviewed_on", "user",
+				"pending_info_request"],
 		order_by="creation desc",
 		limit=500,
 	)
@@ -2197,7 +2284,16 @@ def list_requests(status=None):
 @frappe.whitelist()
 def get_request(name):
 	_require_account_approver()
-	return {"success": True, "data": frappe.get_doc("AA Membership Request", name).as_dict()}
+	data = frappe.get_doc("AA Membership Request", name).as_dict()
+	# Surface any submissions held against this sign-up (guest-checkout flow) so the
+	# reviewer can see that an application is waiting on this account being approved.
+	data["held_submissions"] = frappe.get_all(
+		"Anticipatory Action",
+		filters={"linked_request": name, "awaiting_account": 1},
+		fields=["name", "implementing_organization", "anticipated_hazard"],
+		limit=20,
+	)
+	return {"success": True, "data": data}
 
 
 @frappe.whitelist()
@@ -2240,22 +2336,62 @@ def approve_request(name, organization, role=None, notes=None):
 	req.flags.ignore_permissions = True
 	req.save()
 
-	# Release any submission held against this sign-up (guest-checkout flow):
-	# hand it to the new member and let it into the review queue.
+	# Release any submission held against this sign-up (guest-checkout flow): hand it
+	# to the new member and let it into the review queue. If a reviewer previously
+	# asked for more information (request_more_info), that message was deliberately
+	# held back — the applicant had no account to answer with — so deliver it now:
+	# the released submission lands as "Replied" carrying the reviewer's question.
 	new_owner = roster.user or email
-	for held in frappe.get_all(
+	info_msg = (req.pending_info_request or "").strip()
+	released = frappe.get_all(
 		"Anticipatory Action",
 		filters={"linked_request": req.name, "awaiting_account": 1},
 		pluck="name",
-	):
+	)
+	for held in released:
 		frappe.db.set_value("Anticipatory Action", held, {
 			"awaiting_account": 0,
 			"owner": new_owner,
-			"status": "Pending",
+			"status": "Replied" if info_msg else "Pending",
+			"info_request": info_msg or None,
 		}, update_modified=False)
 
 	frappe.db.commit()
+
+	# Now that the applicant has a login, send any held "more information" request.
+	if info_msg:
+		for held in released:
+			with contextlib.suppress(Exception):
+				send_submission_replied(frappe.get_doc("Anticipatory Action", held), info_msg)
+		if not released:
+			# No held submission to carry the message (e.g. a public sign-up that was
+			# sent back for info): deliver it as a standalone note so it is not lost.
+			_email_request_more_info(req, info_msg)
+
 	return {"success": True, "user": roster.user}
+
+
+@frappe.whitelist()
+def request_more_info(name, message=None):
+	"""Reviewer asks a sign-up applicant for more information.
+
+	Per the guest-checkout workflow this is NOT emailed while the account is pending
+	— an applicant with no account cannot sign in to answer. The message is stored on
+	the request and only sent when the account is approved (see approve_request),
+	which is also when any held submission is released for the member to revise. The
+	request stays Pending so it remains actionable."""
+	_require_account_approver()
+	msg = (message or "").strip()
+	if not msg:
+		frappe.throw("Please write the information you need from the applicant.")
+	req = frappe.get_doc("AA Membership Request", name)
+	if req.status != "Pending":
+		frappe.throw("Only a pending request can be sent back for more information.")
+	req.pending_info_request = msg
+	req.flags.ignore_permissions = True
+	req.save()
+	frappe.db.commit()
+	return {"success": True}
 
 
 @frappe.whitelist()
@@ -2274,6 +2410,18 @@ def reject_request(name, notes=None):
 	req.reviewed_on = frappe.utils.now_datetime()
 	req.flags.ignore_permissions = True
 	req.save()
+
+	# Discard any submission held against this now-declined sign-up: it has no owner
+	# and would otherwise linger forever awaiting an account that will never exist.
+	# Held submissions are unsubmitted drafts (docstatus 0), so deletion is clean.
+	for held in frappe.get_all(
+		"Anticipatory Action",
+		filters={"linked_request": req.name, "awaiting_account": 1},
+		pluck="name",
+	):
+		with contextlib.suppress(Exception):
+			frappe.delete_doc("Anticipatory Action", held, ignore_permissions=True, force=True)
+
 	frappe.db.commit()
 	_email_request_rejected(req, reason)
 	return {"success": True}
@@ -2302,6 +2450,99 @@ def _email_request_received(req):
 		aa_sendmail([req.email], "We've received your access request", html)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "request_received email")
+
+
+def _email_request_admins(req):
+	"""Alert the people who action sign-ups that a new access request has arrived: a
+	branded email to the AA inbox and every account approver, plus an in-app
+	notification so it surfaces in the admin console. Fully wrapped so a mail hiccup
+	never fails the applicant's request."""
+	try:
+		from anticipatory_action.api.aa_email import portal_url
+
+		# Everyone who can act on a sign-up: every enabled AA Admin, plus Approvers an
+		# admin has granted the account-approval capability.
+		approvers = [
+			a for a in frappe.get_all(
+				"Anticipatory Action User",
+				filters={"enabled": 1, "role": ["in", [
+					"Anticipatory Action Admin", "Anticipatory Action Approver"]]},
+				fields=["email", "user", "role", "can_approve_accounts"],
+			)
+			if a.role == "Anticipatory Action Admin" or a.can_approve_accounts
+		]
+
+		full_name = ((req.first_name or "") + " " + (req.last_name or "")).strip() or (req.email or "someone")
+		body = (
+			"<p>A new request for access to the Kenya Anticipatory Action platform has just come in. "
+			"Open the admin console to approve it, decline it, or ask the applicant for more "
+			"information.</p>"
+		)
+		rows = [
+			("Name", frappe.utils.escape_html(full_name)),
+			("Email", frappe.utils.escape_html(req.email or "-")),
+			("Phone", frappe.utils.escape_html(req.phone or "-")),
+			("Organisation", frappe.utils.escape_html(req.organization or "-")),
+			("Position", frappe.utils.escape_html(req.position or "-")),
+		]
+		if (req.message or "").strip():
+			rows.append(("Message", frappe.utils.escape_html(req.message)))
+		html = aa_email_html(
+			"New access request", body, rows=rows,
+			cta_label="Review in the admin console", cta_url=portal_url("/aa-admin"),
+			chip="Action needed", chip_tone="amber",
+		)
+		recipients = sorted({e for e in ([AA_INBOX] + [(a.email or "").strip() for a in approvers]) if e})
+		if recipients:
+			aa_sendmail(recipients, "New access request - " + full_name, html)
+
+		for a in approvers:
+			login = (a.user or "").strip()
+			if not login:
+				continue
+			with contextlib.suppress(Exception):
+				frappe.get_doc({
+					"doctype": "Notification Log",
+					"subject": "New access request: " + full_name,
+					"email_content": full_name + " has requested access to the AA platform.",
+					"for_user": login, "type": "Alert",
+					"document_type": "AA Membership Request", "document_name": req.name,
+				}).insert(ignore_permissions=True)
+		frappe.db.commit()
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "email_request_admins")
+
+
+def _email_request_more_info(req, message):
+	"""Deliver a reviewer's 'more information' request to an applicant at approval
+	time. Used only when there is no held submission to carry the message (e.g. a
+	public sign-up that was sent back for info); the guest-checkout path carries the
+	message on the released submission via send_submission_replied instead."""
+	if not (req.email or "").strip():
+		return
+	try:
+		from anticipatory_action.api.aa_email import portal_url
+
+		name = frappe.utils.escape_html((req.first_name or "there").strip())
+		body = (
+			"<p>Dear " + name + ",</p>"
+			"<p>Your access to the Kenya Anticipatory Action platform has been approved. Before the "
+			"National TWG Secretariat finishes reviewing your request, we'd be grateful if you could "
+			"help us with the following:</p>"
+			'<div style="margin:16px 0;padding:13px 16px;background:#FFFBEB;border-left:3px solid #B45309;'
+			'color:#5c3a10;font-size:13.5px;line-height:1.55;border-radius:0 6px 6px 0">'
+			+ frappe.utils.escape_html(message or "-").replace("\n", "<br/>") +
+			'</div>'
+			"<p>You can reply to this email, or sign in to the portal to continue.</p>"
+		)
+		html = aa_email_html(
+			"A little more information, please", body,
+			cta_label="Open the portal", cta_url=portal_url("/aa-portal"),
+			chip="Action needed", chip_tone="amber",
+		)
+		aa_sendmail([req.email], "More information needed", html)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "email_request_more_info")
 
 
 def _email_request_rejected(req, reason):

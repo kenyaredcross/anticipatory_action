@@ -20,6 +20,7 @@
   "status",
   "role",
   "review_notes",
+  "pending_info_request",
   "column_break_review",
   "reviewed_by",
   "reviewed_on",
@@ -75,7 +76,8 @@
   {
    "fieldname": "position",
    "fieldtype": "Data",
-   "label": "Position / Role"
+   "label": "Position / Role",
+   "reqd": 1
   },
   {
    "fieldname": "message",
@@ -108,6 +110,13 @@
    "fieldname": "review_notes",
    "fieldtype": "Small Text",
    "label": "Review Notes"
+  },
+  {
+   "description": "A 'more information' message written by a reviewer. It is NOT emailed while the account is pending — it is only sent to the applicant when their account is approved (guest sign-up flow).",
+   "fieldname": "pending_info_request",
+   "fieldtype": "Small Text",
+   "label": "Pending Info Request",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_review",

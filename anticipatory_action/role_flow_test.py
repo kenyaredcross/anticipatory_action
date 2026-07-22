@@ -306,13 +306,16 @@ def run(send_real=0):
         _check("Approver", "approval email fired to reporter", len(appr_mail) >= 1, [m["subject"] for m in appr_mail])
         _check("Approver", "approval email carries the PDF", any(m["has_pdf"] for m in appr_mail))
 
-        # WKF-001: approved -> Not Approved reopens an editable draft
+        # WKF-001: approved -> Not Approved reopens an editable draft + emails reporter
+        mk = _mark()
         rr = portal.set_submission_status(m_sub, "Not Approved", reason="needs budget")
         reopened = rr.get("name")
         _track("Anticipatory Action", reopened)
         rd = frappe.db.get_value("Anticipatory Action", reopened, ["docstatus", "status", "amended_from"], as_dict=True) if reopened else {}
         _check("Approver", "WKF-001 reopen -> editable Draft",
                reopened and rd.get("docstatus") == 0 and rd.get("status") == "Not Approved" and rd.get("amended_from") == m_sub, rd)
+        rej_mail = _mail_to(mem_a_email, mk)
+        _check("Approver", "rejection email fired to reporter", len(rej_mail) >= 1, [m["subject"] for m in rej_mail])
 
         # SEC-003: cross-org change-log denied, own-org allowed
         mem_b_roster = frappe.db.get_value("Anticipatory Action User", {"email": mem_b_email}, "name")
@@ -416,6 +419,13 @@ def run(send_real=0):
         portal.set_submission_status(t_owned, "Approved")
         _check("TestMode", "approving a TEST submission sends NO email", len(_MAILS) - mk == 0, "mails=%d" % (len(_MAILS) - mk))
 
+        # rejecting a TEST submission is likewise silent (is_test guard on the
+        # rejection email); reopens as an editable Draft carrying is_test
+        mk = _mark()
+        tr = portal.set_submission_status(t_owned, "Not Approved", reason="test reject")
+        _track("Anticipatory Action", tr.get("name"))
+        _check("TestMode", "rejecting a TEST submission sends NO email", len(_MAILS) - mk == 0, "mails=%d" % (len(_MAILS) - mk))
+
     except Exception as e:
         import traceback
         _log("FATAL", type(e).__name__, "FAIL", traceback.format_exc().splitlines()[-1])
@@ -450,6 +460,19 @@ def _rejects(fn):
 
 
 def _cleanup(tag):
+    # Deleting a User (and some docs) enqueues background work; stub enqueue for the
+    # duration of teardown so cleanup never needs a running Redis and always removes
+    # everything this run created (otherwise User rows leak on a Redis-less bench).
+    _orig_enqueue = getattr(frappe, "enqueue", None)
+    frappe.enqueue = lambda *a, **k: None
+    try:
+        _cleanup_sweep(tag)
+    finally:
+        if _orig_enqueue is not None:
+            frappe.enqueue = _orig_enqueue
+
+
+def _cleanup_sweep(tag):
     # Safety-net sweep: catch any tag-scoped records this run created but didn't
     # explicitly track (amendments, releases, an interrupted run), so nothing leaks.
     email_like = "rft.%" + tag + "@example.com"

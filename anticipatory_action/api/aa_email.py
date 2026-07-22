@@ -267,6 +267,63 @@ def send_submission_replied(doc, message=None, method=None):
 		frappe.log_error(frappe.get_traceback(), "send_submission_replied")
 
 
+def send_submission_rejected(doc, message=None, method=None):
+	"""Email the reporter that their submission was not approved, with the reviewer's
+	reason.
+
+	Mirrors send_submission_replied but for the "Not Approved" decision. There is no
+	Frappe Notification for this any more - this is the single, branded source for the
+	rejection email (see set_submission_status). The submission stays editable (WKF-001
+	reopens a finalised one as a Draft), so the reporter can revise it and resubmit for
+	another review. Skips test/dissemination submissions and is fully wrapped so a mail
+	hiccup can never roll back the review action."""
+	try:
+		if doc.get("is_test"):
+			return
+		to = (doc.get("reporter_email") or "").strip()
+		if not to:
+			return
+		msg = (message or doc.get("reason_for_rejection") or "").strip()
+		name = escape_html(doc.get("reporting_person") or "there")
+		body = (
+			"<p>Dear " + name + ",</p>"
+			"<p>Thank you for your Anticipatory Action submission. After review by the National "
+			"TWG Secretariat, we're sorry to let you know it was <strong>not approved</strong> in "
+			"its current form.</p>"
+		)
+		if msg:
+			body += (
+				'<div style="margin:16px 0;padding:13px 16px;background:#FEF2F2;border-left:3px solid #991B1B;'
+				'color:#5c1a1a;font-size:13.5px;line-height:1.55;border-radius:0 6px 6px 0">'
+				'<span style="display:block;font-size:11px;font-weight:700;letter-spacing:0.06em;'
+				'text-transform:uppercase;color:#6B7280;margin-bottom:5px">Reason from the reviewer</span>'
+				+ escape_html(msg).replace("\n", "<br/>") +
+				'</div>'
+			)
+		body += (
+			"<p>You're welcome to revise your submission in the portal and resubmit it - it will "
+			"return to the review queue for the Secretariat to reconsider.</p>"
+		)
+		rows = [
+			("Reference", escape_html(doc.get("name") or "-")),
+			("Organisation", escape_html(doc.get("implementing_organization") or "-")),
+			("Hazard", escape_html(doc.get("anticipated_hazard") or "-")),
+		]
+		html = aa_email_html(
+			"Your submission was not approved", body, rows=rows,
+			cta_label="Review your submission", cta_url=portal_url("/aa-portal"),
+			chip="Not approved", chip_tone="red",
+			sign_off='Questions? Contact <a href="mailto:' + AA_INBOX + '" style="color:#CC0000">' + AA_INBOX + '</a>.',
+		)
+		aa_sendmail(
+			[to],
+			"Your submission was not approved - " + (doc.get("name") or ""),
+			html,
+		)
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "send_submission_rejected")
+
+
 def send_submission_received(doc, method=None):
 	"""Acknowledge a freshly-filed Anticipatory Action to the reporter.
 
