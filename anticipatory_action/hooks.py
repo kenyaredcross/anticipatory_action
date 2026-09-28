@@ -190,6 +190,13 @@ scheduler_events = {
 	"daily": [
 		"anticipatory_action.api.scheduling.refresh_statuses",
 	],
+	# 08:00 site time (the site must run on Africa/Nairobi): one summary email per
+	# reviewer, replacing the per-submission and per-access-request staff emails.
+	"cron": {
+		"0 8 * * *": [
+			"anticipatory_action.api.digest.send_daily_digests",
+		],
+	},
 }
 
 # scheduler_events = {

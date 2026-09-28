@@ -2107,7 +2107,7 @@ def _create_membership_request(first_name, last_name=None, email=None, phone=Non
 		doc.insert()
 		frappe.db.commit()
 		_email_request_received(doc)
-		_email_request_admins(doc)
+		_notify_request_admins(doc)
 		return {"success": True}
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "submit_membership_request")
@@ -2582,14 +2582,12 @@ def _email_request_received(req):
 		frappe.log_error(frappe.get_traceback(), "request_received email")
 
 
-def _email_request_admins(req):
-	"""Alert the people who action sign-ups that a new access request has arrived: a
-	branded email to the AA inbox and every account approver, plus an in-app
-	notification so it surfaces in the admin console. Fully wrapped so a mail hiccup
-	never fails the applicant's request."""
+def _notify_request_admins(req):
+	"""Leave everyone who actions sign-ups an in-app notification that a new access
+	request has arrived. There is no per-request email any more: admins and account
+	approvers see pending requests in their daily summary (api/digest.py). Fully
+	wrapped so it never fails the applicant's request."""
 	try:
-		from anticipatory_action.api.aa_email import portal_url
-
 		# Everyone who can act on a sign-up: every enabled AA Admin, plus Approvers an
 		# admin has granted the account-approval capability.
 		approvers = [
@@ -2603,29 +2601,6 @@ def _email_request_admins(req):
 		]
 
 		full_name = ((req.first_name or "") + " " + (req.last_name or "")).strip() or (req.email or "someone")
-		body = (
-			"<p>A new request for access to the Kenya Anticipatory Action platform has just come in. "
-			"Open the admin console to approve it, decline it, or ask the applicant for more "
-			"information.</p>"
-		)
-		rows = [
-			("Name", frappe.utils.escape_html(full_name)),
-			("Email", frappe.utils.escape_html(req.email or "-")),
-			("Phone", frappe.utils.escape_html(req.phone or "-")),
-			("Organisation", frappe.utils.escape_html(req.organization or "-")),
-			("Position", frappe.utils.escape_html(req.position or "-")),
-		]
-		if (req.message or "").strip():
-			rows.append(("Message", frappe.utils.escape_html(req.message)))
-		html = aa_email_html(
-			"New access request", body, rows=rows,
-			cta_label="Review in the admin console", cta_url=portal_url("/aa-admin"),
-			chip="Action needed", chip_tone="amber",
-		)
-		recipients = sorted({e for e in ([AA_INBOX] + [(a.email or "").strip() for a in approvers]) if e})
-		if recipients:
-			aa_sendmail(recipients, "New access request - " + full_name, html)
-
 		for a in approvers:
 			login = (a.user or "").strip()
 			if not login:
@@ -2640,7 +2615,7 @@ def _email_request_admins(req):
 				}).insert(ignore_permissions=True)
 		frappe.db.commit()
 	except Exception:
-		frappe.log_error(frappe.get_traceback(), "email_request_admins")
+		frappe.log_error(frappe.get_traceback(), "notify_request_admins")
 
 
 def _email_request_more_info(req, message):
