@@ -59,3 +59,10 @@ jspm_packages/
 skills-lock.json
 DESIGN.md
 PRODUCT.md
+
+# Local pre-handover audit notes
+AUDIT.md
+
+# Local UI sandbox copy of the admin console
+anticipatory_action/www/aa-admin-copy.html
+anticipatory_action/www/aa_admin_copy.py
