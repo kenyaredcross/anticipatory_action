@@ -1,5 +1,7 @@
 import frappe
 
+from anticipatory_action.api.portal import public_url
+
 
 def get_context(context):
 	context.no_cache = 1
@@ -22,7 +24,7 @@ def get_context(context):
 		limit=50,
 	)
 	for p in policies:
-		p["url"] = p.get("link") or p.get("attachment") or "#"
+		p["url"] = public_url(p.get("link")) or public_url(p.get("attachment"))
 	context.policies = policies
 	terms = next((p for p in policies if p.get("policy_type") == "Terms & Conditions"), None)
 	context.terms_url = (terms or {}).get("url")

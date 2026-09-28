@@ -16,7 +16,7 @@ import frappe
 from frappe.rate_limiter import rate_limit
 from frappe.utils import sanitize_html, strip_html
 
-from anticipatory_action.api.anticipatory_action import _sanitize
+from anticipatory_action.api.anticipatory_action import _friendly_error, _sanitize
 from anticipatory_action.api.aa_email import (
 	AA_INBOX,
 	aa_email_html,
@@ -24,7 +24,13 @@ from anticipatory_action.api.aa_email import (
 	send_submission_rejected,
 	send_submission_replied,
 )
-from anticipatory_action.api.permissions import _can_review, _is_admin, _user_org, reviewer_owner_scope
+from anticipatory_action.api.permissions import (
+	_can_review,
+	_is_admin,
+	_user_org,
+	require_aa_access,
+	reviewer_owner_scope,
+)
 
 # The roles an AA account may hold. "Approver" sits between User and Admin:
 # it can clear the submission queue and curate content, but not manage users,
@@ -444,11 +450,16 @@ def get_my_profile():
 		as_dict=True,
 	)
 	roster = frappe.db.get_value(
-		"Anticipatory Action User",
-		{"user": frappe.session.user},
-		["organization", "role"],
-		as_dict=True,
+		"Anticipatory Action User", {"user": frappe.session.user}, ["organization", "role", "phone"], as_dict=True
+	) or frappe.db.get_value(
+		"Anticipatory Action User", {"email": frappe.session.user}, ["organization", "role", "phone"], as_dict=True
 	)
+	# The roster is where the phone is captured (sign-up / admin); older login
+	# accounts never had it copied across, so fall back to it.
+	if u is not None and not u.get("phone") and roster and roster.get("phone"):
+		u["phone"] = roster["phone"]
+	if roster:
+		roster.pop("phone", None)
 	if roster and roster.get("organization"):
 		roster["organization_name"] = frappe.db.get_value(
 			"Anticipatory Action Organization", roster["organization"], "name_of_organization"
@@ -519,7 +530,10 @@ def mark_my_notifications_read(names=None):
 	_require_login()
 	filters = {"for_user": frappe.session.user, "read": 0, "type": "Alert"}
 	targets = frappe.parse_json(names) if names else None
-	for n in (targets or frappe.get_all("Notification Log", filters=filters, pluck="name")):
+	if targets:
+		# Only ever touch the caller's own alerts, whatever names were sent.
+		filters["name"] = ["in", list(targets)]
+	for n in frappe.get_all("Notification Log", filters=filters, pluck="name"):
 		with contextlib.suppress(Exception):
 			frappe.db.set_value("Notification Log", n, "read", 1, update_modified=False)
 	frappe.db.commit()
@@ -874,6 +888,12 @@ def set_submission_status(name, status, reason=None):
 
 	doc = frappe.get_doc("Anticipatory Action", name)
 	_assert_submission_in_scope(doc)
+	if doc.docstatus == 2:
+		newer = frappe.db.get_value("Anticipatory Action", {"amended_from": doc.name}, "name")
+		frappe.throw(
+			f"{doc.name} is an earlier version that has been superseded"
+			+ (f" by {newer}. Please review {newer} instead." if newer else ".")
+		)
 	doc.flags.ignore_permissions = True
 	reason_val = reason if status == "Not Approved" else None
 	info_val = reason if status == "Replied" else None
@@ -992,12 +1012,30 @@ def _safe_link(url):
 	u = (url or "").strip()
 	if not u:
 		return None
+	# Double quotes / angle brackets / backticks never belong in a URL we store; they
+	# are how a value breaks out of an href="..." attribute on a server-rendered page.
+	if any(c in u for c in "\"<>`"):
+		frappe.throw("Please provide a valid link.")
 	head = u.split("/", 1)[0].split("?", 1)[0].split("#", 1)[0]
 	if ":" in head:
 		scheme = head.split(":", 1)[0].strip().lower()
 		if scheme not in ("http", "https", "mailto", "tel"):
 			frappe.throw("Please provide a valid http(s) link.")
 	return u
+
+
+def public_url(url):
+	"""An href that is safe to print on a public, server-rendered page: only http(s)
+	links and site-relative paths. Anything else (javascript:, data:, stray quotes)
+	becomes None, so the template renders no link at all."""
+	u = (url or "").strip()
+	if not u or any(c in u for c in "\"<>`"):
+		return None
+	if u.startswith("/") and not u.startswith("//"):
+		return u
+	if u.lower().startswith(("http://", "https://")):
+		return u
+	return None
 
 
 @frappe.whitelist()
@@ -1014,7 +1052,7 @@ def add_report(title, year=None, month=None, description=None, category=None,
 		"doctype": "Anticipatory Report",
 		"title": title, "year": year or None, "month": month, "description": description,
 		"category": category or "Report", "source": source, "key_words": key_words,
-		"link": _safe_link(link), "attachment": attachment, "visibility": visibility,
+		"link": _safe_link(link), "attachment": _safe_link(attachment), "visibility": visibility,
 		# 'Published' means "visible on the public website" — Private reports are
 		# portal-only, so they are never published to the website.
 		"published": _as_bool(published) if visibility == "Public" else 0,
@@ -1034,6 +1072,8 @@ def update_report(name, title=None, year=None, month=None, description=None, cat
 		frappe.throw("Invalid category.")
 	if link is not None:
 		link = _safe_link(link) or ""  # SEC-101: validate scheme; "" clears the field
+	if attachment is not None:
+		attachment = _safe_link(attachment) or ""
 	doc = frappe.get_doc("Anticipatory Report", name)
 	for field, value in (("title", title), ("year", year), ("month", month), ("description", description),
 						 ("category", category), ("source", source), ("key_words", key_words),
@@ -1107,7 +1147,9 @@ def submit_my_report(title, description=None, category=None, source=None,
 					 key_words=None, link=None, attachment=None, visibility="Private"):
 	"""A member uploads a report. They choose Public (also shown on the public
 	website) or Private (only visible inside the portal)."""
-	_require_login()
+	# AA members only — a bare login would let any account on this shared site
+	# publish to the public AA website.
+	require_aa_access()
 	if not (title or "").strip():
 		frappe.throw("Report title is required.")
 	if not (link or attachment):
@@ -1118,8 +1160,8 @@ def submit_my_report(title, description=None, category=None, source=None,
 	doc = frappe.get_doc({
 		"doctype": "Anticipatory Report",
 		"title": title, "description": description, "category": category or "Report",
-		"source": source, "key_words": key_words, "link": _safe_link(link), "attachment": attachment,
-		"visibility": visibility,
+		"source": source, "key_words": key_words, "link": _safe_link(link),
+		"attachment": _safe_link(attachment), "visibility": visibility,
 		"published": 1 if visibility == "Public" else 0,
 		"uploaded_by": frappe.session.user,
 	})
@@ -1136,6 +1178,8 @@ def delete_my_report(name):
 	row = frappe.db.get_value("Anticipatory Report", name, ["uploaded_by", "removed"], as_dict=True)
 	if not row or row.uploaded_by != frappe.session.user:
 		frappe.throw("You can only remove your own reports.", frappe.PermissionError)
+	if row.removed:
+		frappe.throw("A reviewer has already taken this report down; it is kept for the record.")
 	frappe.delete_doc("Anticipatory Report", name, ignore_permissions=True)
 	frappe.db.commit()
 	return {"success": True}
@@ -1565,7 +1609,7 @@ def add_policy(title, policy_type=None, description=None, attachment=None, link=
 	doc = frappe.get_doc({
 		"doctype": "AA Policy Document",
 		"title": title.strip(), "policy_type": policy_type or "Terms & Conditions",
-		"description": description, "attachment": attachment, "link": link,
+		"description": description, "attachment": _safe_link(attachment), "link": _safe_link(link),
 		"published": _as_bool(published, 1), "display_order": int(display_order or 0),
 	})
 	doc.flags.ignore_permissions = True
@@ -1585,9 +1629,9 @@ def update_policy(name, title=None, policy_type=None, description=None, attachme
 	if description is not None:
 		doc.description = description
 	if attachment is not None:
-		doc.attachment = attachment
+		doc.attachment = _safe_link(attachment) or ""
 	if link is not None:
-		doc.link = link
+		doc.link = _safe_link(link) or ""
 	if published is not None:
 		doc.published = _as_bool(published, 1)
 	if display_order is not None:
@@ -2196,17 +2240,15 @@ _GUEST_HELD_CAP = 10
 
 
 def _has_account(email):
-	"""Does this email already have a sign-in account (an AA member, or a Frappe
-	User managed by another project on this shared site)? Used to steer a returning
-	visitor to sign in instead of filing another access request."""
+	"""Does this email already have an Anticipatory Action account? Used to steer a
+	returning member to sign in instead of filing another access request.
+
+	Only the AA roster counts: a login that exists on this shared site for another
+	project has no AA access, so telling that person to "sign in" was a dead end."""
 	email = (email or "").strip().lower()
 	if not email:
 		return False
-	return bool(
-		frappe.db.exists("Anticipatory Action User", {"email": email})
-		or _foreign_roles(email)
-		or frappe.db.exists("User", {"name": email, "enabled": 1})
-	)
+	return bool(frappe.db.exists("Anticipatory Action User", {"email": email}))
 
 
 @frappe.whitelist(allow_guest=True)
@@ -2276,6 +2318,15 @@ def submit_guest_application(submission, account):
 					  "Please sign in to submit your anticipatory action."),
 		}
 
+	# The email belongs to an account another project manages on this shared site.
+	# It can never be turned into an AA account, so say so now rather than filing a
+	# request an approver would be unable to approve.
+	if _foreign_roles(email):
+		return {"success": False, "error": (
+			"This email address is already used by another system on this site. "
+			"Please use a different email address, or contact " + AA_INBOX + " for help."
+		)}
+
 	# A submission's whole point is its intervention rows. Reject an empty one up
 	# front — BEFORE creating the sign-up request — so a hollow submission neither
 	# files a held record nor leaves an orphan access request behind.
@@ -2283,7 +2334,28 @@ def submit_guest_application(submission, account):
 	if not (isinstance(sub, dict) and (sub.get("anticipatory_action_details") or [])):
 		return {"success": False, "error": "Please add at least one anticipatory action entry before submitting."}
 
-	# 1) sign-up request. Call the enumeration-safe core directly (not the
+	# WKF-004: cap how many submissions one email can hold against a pending sign-up.
+	if frappe.db.count("Anticipatory Action", {"reporter_email": email, "awaiting_account": 1}) >= _GUEST_HELD_CAP:
+		return {"success": False, "error": (
+			"You already have several submissions waiting for your account to be approved. "
+			"Please wait for the approval email, then sign in to add more."
+		)}
+
+	# 1) the submission first (not yet committed), so a validation problem with it is
+	#    reported to the visitor BEFORE any access request is filed.
+	try:
+		sub.setdefault("reporter_email", email)
+		doc = _insert_submission(frappe.as_json(sub), is_test=0)
+	except Exception as e:
+		frappe.db.rollback()
+		frappe.local.message_log = []
+		if not isinstance(e, frappe.ValidationError):
+			frappe.log_error(frappe.get_traceback(), "submit_guest_application")
+		return {"success": False, "error": _friendly_error(e)}
+	# Held from the start: the sign-up request below commits this transaction.
+	frappe.db.set_value("Anticipatory Action", doc.name, "awaiting_account", 1, update_modified=False)
+
+	# 2) sign-up request. Call the enumeration-safe core directly (not the
 	#    rate-limited public endpoint) so one guest checkout isn't charged two
 	#    per-IP limits. It no-ops on a repeat/known email — the flow below then
 	#    behaves identically whether or not the email is already registered
@@ -2294,30 +2366,13 @@ def submit_guest_application(submission, account):
 		position=acc.get("position"), message=acc.get("message"),
 	)
 	if not req_result.get("success"):
+		frappe.db.rollback()  # drop the uncommitted submission with the failed request
 		return req_result  # surfaced validation error (bad phone / missing field)
 	req_name = frappe.db.get_value(
 		"AA Membership Request", {"email": email, "status": "Pending"}, "name"
 	)
 
-	# WKF-004: cap how many submissions one email can hold against a pending sign-up.
-	# Without this, repeated guest checkouts pile unlimited held rows onto one request,
-	# and a single approval silently absorbs them all under the new member's name.
-	if frappe.db.count("Anticipatory Action", {"reporter_email": email, "awaiting_account": 1}) >= _GUEST_HELD_CAP:
-		return {"success": False, "error": (
-			"You already have several submissions waiting for your account to be approved. "
-			"Please wait for the approval email, then sign in to add more."
-		)}
-
-	# 2) the submission itself, stamped with the reporter's email and held out of
-	#    the review queue. Created whether or not the email is already known, so the
-	#    response shape is identical either way. (For an already-registered email
-	#    there is no Pending request to link to; the reporter should sign in instead.)
-	try:
-		sub.setdefault("reporter_email", email)
-		doc = _insert_submission(frappe.as_json(sub), is_test=0)
-	except Exception:
-		frappe.log_error(frappe.get_traceback(), "submit_guest_application")
-		return {"success": False, "error": "Submission failed. Please try again or contact support."}
+	# 3) hold the submission out of the review queue until the account is approved.
 	frappe.db.set_value("Anticipatory Action", doc.name, {
 		"linked_request": req_name,
 		"awaiting_account": 1,
@@ -2347,6 +2402,9 @@ def list_requests(status=None):
 def get_request(name):
 	_require_account_approver()
 	data = frappe.get_doc("AA Membership Request", name).as_dict()
+	# A non-admin account approver may only place new members in their own
+	# organisation; tell the console so it can offer just that one.
+	data["restrict_org"] = None if _is_admin() else (_user_org() or "__none__")
 	# Surface any submissions held against this sign-up (guest-checkout flow) so the
 	# reviewer can see that an application is waiting on this account being approved.
 	data["held_submissions"] = frappe.get_all(
@@ -2372,6 +2430,12 @@ def approve_request(name, organization, role=None, notes=None):
 	_constrain_role(role)
 	if not organization or not frappe.db.exists("Anticipatory Action Organization", organization):
 		frappe.throw("Please choose a valid organization for this member.")
+	if not _is_admin() and organization != _user_org():
+		frappe.throw(
+			"You can only approve members into your own organisation. "
+			"Ask an administrator to approve members for other organisations.",
+			frappe.PermissionError,
+		)
 	if not (req.phone or "").strip():
 		frappe.throw("This request has no phone number — edit the request and add one before approving.")
 	email = (req.email or "").strip().lower()

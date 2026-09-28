@@ -51,6 +51,31 @@ def _submission_dict(d, is_test=0):
 	}
 
 
+_GENERIC_SUBMIT_ERROR = "Submission failed. Please try again or contact support."
+
+
+def _friendly_error(e):
+	"""A message the reporter can act on. Validation problems (a missing field, a
+	negative number, an end date before the start) are the reporter's to fix, so
+	show them; anything unexpected stays generic (and is logged by the caller)."""
+	if isinstance(e, frappe.MandatoryError):
+		missing = str(e).rsplit(":", 1)[-1].strip()
+		labels = []
+		for f in missing.split(","):
+			f = f.strip()
+			df = frappe.get_meta("Anticipatory Action").get_field(f) or frappe.get_meta(
+				"Anticipatory Action Details").get_field(f)
+			labels.append(df.label if df and df.label else f.replace("_", " "))
+		return "Please fill in: " + ", ".join(l for l in labels if l) + "."
+	if isinstance(e, frappe.ValidationError):
+		msg = strip_html(str(e)).strip()
+		# Select-field errors append every allowed option (all 47 counties); the
+		# reporter only needs to know which value was wrong.
+		msg = msg.split(". It should be one of", 1)[0].rstrip(".") + "." if ". It should be one of" in msg else msg
+		return msg or _GENERIC_SUBMIT_ERROR
+	return _GENERIC_SUBMIT_ERROR
+
+
 def _insert_submission(data, is_test=0):
 	"""Insert an Anticipatory Action from public form JSON and return the doc.
 
@@ -135,9 +160,12 @@ def submit_anticipatory_action(data):
 		_notify_new_submission(doc)
 		return {"success": True, "name": doc.name}
 
-	except Exception:
-		frappe.log_error(frappe.get_traceback(), "submit_anticipatory_action")
-		return {"success": False, "error": "Submission failed. Please try again or contact support."}
+	except Exception as e:
+		frappe.db.rollback()
+		frappe.local.message_log = []  # the error is returned below; don't also pop a dialog
+		if not isinstance(e, frappe.ValidationError):
+			frappe.log_error(frappe.get_traceback(), "submit_anticipatory_action")
+		return {"success": False, "error": _friendly_error(e)}
 
 
 @frappe.whitelist(allow_guest=True)
@@ -164,9 +192,12 @@ def submit_test_application(data):
 		frappe.db.commit()
 		return {"success": True, "name": doc.name, "test": True}
 
-	except Exception:
-		frappe.log_error(frappe.get_traceback(), "submit_test_application")
-		return {"success": False, "error": "Test submission failed. Please try again."}
+	except Exception as e:
+		frappe.db.rollback()
+		frappe.local.message_log = []
+		if not isinstance(e, frappe.ValidationError):
+			frappe.log_error(frappe.get_traceback(), "submit_test_application")
+		return {"success": False, "error": _friendly_error(e)}
 
 
 @frappe.whitelist(allow_guest=True)
@@ -344,7 +375,7 @@ def _build_public_metrics():
 			COUNT(DISTINCT NULLIF(d.county, ''))                  AS counties
 		FROM `tabAnticipatory Action Details` d
 		JOIN `tabAnticipatory Action` p ON d.parent = p.name
-		WHERE p.status = 'Approved' AND (p.is_test = 0 OR p.is_test IS NULL)
+		WHERE p.status = 'Approved' AND p.docstatus = 1 AND (p.is_test = 0 OR p.is_test IS NULL)
 		""",
 		as_dict=True,
 	)
@@ -355,7 +386,7 @@ def _build_public_metrics():
 		SELECT COALESCE(NULLIF(p.anticipated_hazard,''),'Unspecified') AS hazard,
 			   COUNT(DISTINCT p.name) AS activations
 		FROM `tabAnticipatory Action` p
-		WHERE p.status = 'Approved' AND (p.is_test = 0 OR p.is_test IS NULL)
+		WHERE p.status = 'Approved' AND p.docstatus = 1 AND (p.is_test = 0 OR p.is_test IS NULL)
 		GROUP BY hazard
 		ORDER BY activations DESC
 		""",
@@ -364,7 +395,7 @@ def _build_public_metrics():
 
 	return {
 		"success": True,
-		"approved_submissions": frappe.db.count("Anticipatory Action", {"status": "Approved", "is_test": ["!=", 1]}),
+		"approved_submissions": frappe.db.count("Anticipatory Action", {"status": "Approved", "docstatus": 1, "is_test": ["!=", 1]}),
 		"funds_committed_kes": float(t.get("funds") or 0),
 		"people_targeted": int(t.get("people") or 0),
 		"counties_reached": int(t.get("counties") or 0),

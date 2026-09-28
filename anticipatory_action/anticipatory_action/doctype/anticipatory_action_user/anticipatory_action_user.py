@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.utils import validate_phone_number
 
 # The only roles an Anticipatory Action account may ever hold. Keeping this
 # narrow is what stops an AA Admin from minting System Managers or touching
@@ -21,6 +22,39 @@ class AnticipatoryActionUser(Document):
 			frappe.throw("Invalid role for an Anticipatory Action user.")
 		if self.enabled is None:
 			self.enabled = 1
+		self._guard_target_account()
+
+	def _guard_target_account(self):
+		"""Stop a roster record from being pointed at an account it doesn't own.
+
+		The portal checks this before it saves, but the desk / REST path
+		(/api/resource/Anticipatory Action User) skips the portal entirely, and
+		_sync_user then renames, disables and module-blocks whatever User the email
+		resolves to. So enforce it here, on every save: the email and linked user
+		are fixed once set, never a built-in account, and never an account that
+		holds another project's roles (only a System Manager may do that)."""
+		email = (self.email or "").strip()
+		if email.lower() in ("administrator", "guest"):
+			frappe.throw("This account cannot be managed as an Anticipatory Action user.", frappe.PermissionError)
+
+		before = self.get_doc_before_save()
+		if before:
+			if (before.email or "").strip().lower() != email.lower():
+				frappe.throw("The email of an Anticipatory Action user cannot be changed.", frappe.PermissionError)
+			if before.user and before.user != self.user:
+				frappe.throw("The linked login account cannot be changed.", frappe.PermissionError)
+		if self.user and self.user.lower() != email.lower():
+			frappe.throw("The linked login account must match the member's email.", frappe.PermissionError)
+
+		if "System Manager" in frappe.get_roles():
+			return
+		if frappe.db.exists("User", email):
+			foreign = set(frappe.get_roles(email)) - set(AA_ROLES) - {"All", "Guest", "Desk User"}
+			if foreign:
+				frappe.throw(
+					"A user with this email already exists on this site and is managed elsewhere.",
+					frappe.PermissionError,
+				)
 
 	def after_insert(self):
 		# Create the backing login account exactly once, on first save.
@@ -91,6 +125,10 @@ class AnticipatoryActionUser(Document):
 
 		user.first_name = self.first_name
 		user.last_name = self.last_name
+		# The roster is where the phone is captured; mirror it so the member's profile
+		# shows it. Skip a value Frappe's phone check would reject rather than fail the save.
+		if self.phone and validate_phone_number(self.phone):
+			user.phone = self.phone
 		user.user_type = "System User"
 		user.enabled = 1 if self.enabled else 0
 

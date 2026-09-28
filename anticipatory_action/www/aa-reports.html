@@ -78,27 +78,27 @@
       </div>
       <select class="filter-select" id="catFilter" aria-label="Filter by category" onchange="filterReports()">
         <option value="">All Categories</option>
-        {% for cat in categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}
+        {% for cat in categories %}<option value="{{ cat | e }}">{{ cat | e }}</option>{% endfor %}
       </select>
       <select class="filter-select" id="yearFilter" aria-label="Filter by year" onchange="filterReports()">
         <option value="">All Years</option>
-        {% for yr in years %}<option value="{{ yr }}">{{ yr }}</option>{% endfor %}
+        {% for yr in years %}<option value="{{ yr | e }}">{{ yr | e }}</option>{% endfor %}
       </select>
     </div>
 
     <div class="reports-grid" id="reportsGrid">
       {% for r in reports %}
-      <div class="report-card" data-cat="{{ r.category or '' }}" data-year="{{ r.year or '' }}" data-search="{{ (r.title or '') | lower }} {{ (r.description or '') | lower }} {{ (r.key_words or '') | lower }}">
+      <div class="report-card" data-cat="{{ (r.category or '') | e }}" data-year="{{ (r.year or '') | e }}" data-search="{{ (r.title or '') | lower | e }} {{ (r.description or '') | lower | e }} {{ (r.key_words or '') | lower | e }}">
         <div class="report-meta">
-          {% if r.category %}<span class="report-cat">{{ r.category }}</span>{% endif %}
-          <span class="report-year">{% if r.month %}{{ r.month }} {% endif %}{% if r.year %}{{ r.year }}{% endif %}</span>
+          {% if r.category %}<span class="report-cat">{{ r.category | e }}</span>{% endif %}
+          <span class="report-year">{% if r.month %}{{ r.month | e }} {% endif %}{% if r.year %}{{ r.year | e }}{% endif %}</span>
         </div>
-        <div class="report-title">{{ r.title }}</div>
-        {% if r.description %}<div class="report-desc">{{ r.description }}</div>{% endif %}
+        <div class="report-title">{{ r.title | e }}</div>
+        {% if r.description %}<div class="report-desc">{{ r.description | e }}</div>{% endif %}
         <div class="report-footer">
-          <span class="report-source">{% if r.source %}{{ r.source }}{% endif %}</span>
-          {% if r.link or r.attachment %}
-          <a href="{{ r.link or r.attachment }}" target="_blank" rel="noopener" class="report-link" aria-label="Download {{ r.title }}">
+          <span class="report-source">{% if r.source %}{{ r.source | e }}{% endif %}</span>
+          {% if r.url %}
+          <a href="{{ r.url | e }}" target="_blank" rel="noopener" class="report-link" aria-label="Download {{ r.title | e }}">
             Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </a>
           {% else %}<span class="no-link">Link coming soon</span>{% endif %}
