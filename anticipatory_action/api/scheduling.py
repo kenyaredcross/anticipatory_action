@@ -39,9 +39,17 @@ def derive_status(start_date, end_date, today=None):
 	return "Ongoing"
 
 
+def validate_dates(doc):
+	"""An end date, when given, can't precede the start date."""
+	start, end = doc.get("start_date"), doc.get("end_date")
+	if start and end and getdate(end) < getdate(start):
+		frappe.throw("The end date can't be before the start date.")
+
+
 def auto_set_status(doc):
 	"""Controller hook: set the document's status from its dates on save,
 	unless an operator has parked it On Hold or Cancelled it."""
+	validate_dates(doc)
 	if doc.get("status") in MANUAL_STATUSES:
 		return
 	new = derive_status(doc.get("start_date"), doc.get("end_date"))

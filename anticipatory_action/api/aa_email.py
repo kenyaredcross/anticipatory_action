@@ -373,38 +373,3 @@ def send_submission_received(doc, method=None):
 		)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "send_submission_received")
-
-
-def send_new_submission_alert(doc, recipients):
-	"""Alert reviewers (an organisation's approvers + all admins) that a new
-	submission needs review. Each recipient is emailed SEPARATELY - one address per
-	message - so reviewers' addresses are never exposed to one another. Fully
-	wrapped so a mail hiccup can never fail the submission."""
-	try:
-		if doc.get("is_test"):
-			return
-		to_list = [e for e in {(r or "").strip() for r in (recipients or [])} if e]
-		if not to_list:
-			return
-		body = (
-			"<p>A new Anticipatory Action submission has been filed and is ready for your review "
-			"in the admin console.</p>"
-		)
-		rows = [
-			("Reference", escape_html(doc.get("name") or "-")),
-			("Organisation", escape_html(doc.get("implementing_organization") or "-")),
-			("Reporter", escape_html(doc.get("reporting_person") or "-")),
-			("Hazard", escape_html(doc.get("anticipated_hazard") or "-")),
-			("Activation date", escape_html(str(doc.get("activation_start_date") or "-"))),
-		]
-		html = aa_email_html(
-			"A new submission is awaiting review", body, rows=rows,
-			cta_label="Review in the admin console", cta_url=portal_url("/aa-admin"),
-			chip="For review", chip_tone="blue",
-			sign_off="You're receiving this as a reviewer for the Kenya Anticipatory Action programme.",
-		)
-		subject = "New submission for review - " + (doc.get("name") or "")
-		for to in to_list:
-			aa_sendmail([to], subject, html)
-	except Exception:
-		frappe.log_error(frappe.get_traceback(), "send_new_submission_alert")

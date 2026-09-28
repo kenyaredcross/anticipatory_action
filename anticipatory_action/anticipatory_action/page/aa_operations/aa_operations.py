@@ -43,20 +43,21 @@ def get_summary():
 			COUNT(DISTINCT NULLIF(d.county, ''))                  AS counties
 		FROM `tabAnticipatory Action Details` d
 		JOIN `tabAnticipatory Action` p ON d.parent = p.name
-		WHERE p.status = 'Approved' AND (p.is_test = 0 OR p.is_test IS NULL)
+		WHERE p.status = 'Approved' AND p.docstatus = 1 AND (p.is_test = 0 OR p.is_test IS NULL)
 		""",
 		as_dict=True,
 	)
 	t = totals[0] if totals else {}
 
-	# Held guest-checkout submissions (awaiting account approval) and test/
-	# dissemination submissions are not part of the real register.
-	_live = {"awaiting_account": ["!=", 1], "is_test": ["!=", 1]}
+	# Held guest-checkout submissions (awaiting account approval), test/dissemination
+	# submissions and cancelled versions superseded by an amendment (docstatus 2) are
+	# not part of the real register.
+	_live = {"awaiting_account": ["!=", 1], "is_test": ["!=", 1], "docstatus": ["<", 2]}
 	data = {
 		"is_admin": is_admin,
 		"activations_total": frappe.db.count("Anticipatory Action", {**_live, **owner_filter}),
 		"activations_pending": frappe.db.count("Anticipatory Action", {"status": "Pending", **_live, **owner_filter}),
-		"activations_approved": frappe.db.count("Anticipatory Action", {"status": "Approved", **owner_filter}),
+		"activations_approved": frappe.db.count("Anticipatory Action", {**_live, **owner_filter, "status": "Approved", "docstatus": 1}),
 		"people_reached": int(t.get("people") or 0),
 		"households": int(t.get("households") or 0),
 		"funds_kes": float(t.get("funds") or 0),
@@ -66,7 +67,7 @@ def get_summary():
 		"activities": frappe.db.count("Anticipatory Activity"),
 		"reports": frappe.db.count("Anticipatory Report"),
 		"hazards": _hazard_breakdown(),
-		"recent": _recent_activations(owner_filter),
+		"recent": _recent_activations({**_live, **owner_filter}),
 	}
 
 	if is_admin:
@@ -97,7 +98,7 @@ def _build_hazard_breakdown():
 			COALESCE(SUM(d.number_of_people_targeted), 0)             AS people
 		FROM `tabAnticipatory Action` p
 		LEFT JOIN `tabAnticipatory Action Details` d ON d.parent = p.name
-		WHERE p.status = 'Approved' AND (p.is_test = 0 OR p.is_test IS NULL)
+		WHERE p.status = 'Approved' AND p.docstatus = 1 AND (p.is_test = 0 OR p.is_test IS NULL)
 		GROUP BY hazard
 		ORDER BY activations DESC, people DESC
 		""",
@@ -143,7 +144,7 @@ def _build_situation():
 			COUNT(DISTINCT p.name)                                     AS activations
 		FROM `tabAnticipatory Action Details` d
 		JOIN `tabAnticipatory Action` p ON d.parent = p.name
-		WHERE p.status = 'Approved' AND (p.is_test = 0 OR p.is_test IS NULL) AND IFNULL(d.county, '') != ''
+		WHERE p.status = 'Approved' AND p.docstatus = 1 AND (p.is_test = 0 OR p.is_test IS NULL) AND IFNULL(d.county, '') != ''
 		GROUP BY d.county, hazard, ea_status
 		ORDER BY d.county
 		""",
@@ -171,7 +172,8 @@ def _build_situation():
 		SELECT d.county AS county, COUNT(DISTINCT p.name) AS n
 		FROM `tabAnticipatory Action Details` d
 		JOIN `tabAnticipatory Action` p ON d.parent = p.name
-		WHERE p.status = 'Approved' AND IFNULL(d.county,'') != ''
+		WHERE p.status = 'Approved' AND p.docstatus = 1 AND (p.is_test = 0 OR p.is_test IS NULL)
+			AND IFNULL(d.county,'') != ''
 		GROUP BY d.county
 		""",
 		as_dict=True,
@@ -210,8 +212,9 @@ def get_activations(status=None, hazard=None, county=None, test_only=0):
 
 	Real activations exclude test/dissemination submissions; pass test_only=1 to
 	get ONLY the test data (for the admin Test Data widget)."""
-	# Never surface submissions still held against a pending sign-up request.
-	conditions = ["(p.awaiting_account = 0 OR p.awaiting_account IS NULL)"]
+	# Never surface submissions still held against a pending sign-up request, nor
+	# cancelled versions an update/reopen has superseded (their live amendment shows).
+	conditions = ["(p.awaiting_account = 0 OR p.awaiting_account IS NULL)", "p.docstatus < 2"]
 	if str(test_only) in ("1", "true", "True"):
 		conditions.append("p.is_test = 1")
 	else:

@@ -276,7 +276,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-16 14:20:56.125016",
+ "modified": "2026-09-27 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "Anticipatory Action",
  "name": "Anticipatory Action",
@@ -296,15 +296,13 @@
    "write": 1
   },
   {
-   "create": 1,
    "email": 1,
    "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
    "role": "Anticipatory Action User",
-   "share": 1,
-   "write": 1
+   "share": 1
   },
   {
    "create": 1,

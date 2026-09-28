@@ -137,13 +137,261 @@
       .rpt-seg-btn + .rpt-seg-btn { border-left: none; border-top: 1px solid var(--line); }
     }
   </style>
+  <style id="ui-refresh">
+    /* ================================================================
+       UI refresh (copy only). Loaded after aa-portal-ui.css so these win.
+       (2) Calmer type: sentence case everywhere except table headers and
+           the small kicker; letter-spacing reset.
+       (1) Tables that fit: wrapping long values, a real table-cell for the
+           action column, and stacked cards on phones.
+       ================================================================ */
+
+    /* ---- (2) type: stop the shouting ---- */
+    .pb-links a, .pb-logout, .pb-brand .pb-name, .tab, .btn, .badge,
+    .card-title, .modal-head h3, .review-bar .rv-title, .rv-section-head h3,
+    .ov-sec, .stat .l, .attn-a, .field label, .rpt-label, .rpt-file-x, .rpt-or {
+      text-transform: none; letter-spacing: 0;
+    }
+    .pb-brand .pb-name { font-size: 15px; font-weight: 600; }
+    .pb-links a { font-size: 14px; font-weight: 500; }
+    .pb-logout { font-size: 13px; font-weight: 600; padding: 7px 14px; }
+    .portal-title {
+      text-transform: none; font-weight: 700; letter-spacing: -0.01em;
+      font-size: clamp(24px, 2.4vw, 30px); line-height: 1.15;
+    }
+    .portal-kicker { font-size: 11px; letter-spacing: 0.14em; }
+    .portal-sub { color: var(--muted); }
+
+    .tab { font-size: 14px; font-weight: 500; }
+    .side-tabs .tab.active { font-weight: 600; }
+
+    .btn { font-size: 14px; font-weight: 600; padding: 10px 16px; }
+    .btn.sm { font-size: 13px; padding: 6px 12px; }
+
+    .badge {
+      font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .ov-sec { font-size: 15px; font-weight: 600; color: var(--text); }
+    .stat .l { font-size: 13px; color: var(--muted); }
+    .card-title, .modal-head h3, .rv-section-head h3 { font-size: 16px; font-weight: 600; }
+    .review-bar .rv-title { font-size: 18px; font-weight: 600; }
+    .field label, .rpt-label { font-size: 13px; font-weight: 600; color: var(--text-2); }
+
+    /* table headers keep small caps as the one quiet uppercase element */
+    table.data th { font-size: 11px; letter-spacing: 0.06em; font-weight: 600; }
+
+    /* ---- (1) tables that fit ---- */
+    table.data td { overflow-wrap: anywhere; }
+    table.data td.row-actions {
+      display: table-cell; white-space: nowrap; text-align: right; width: 1%;
+    }
+    table.data td.row-actions .btn + .btn { margin-left: 6px; }
+    .cell-sub { display: block; font-weight: 400; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+    /* Reject / Remove: clearly red, never ghosted */
+    .btn.danger { color: var(--red-dark); border-color: var(--red); background: #fff; }
+    .btn.danger:hover:not(:disabled) { background: var(--red); border-color: var(--red); color: #fff; }
+
+    /* Phones: each row becomes a card, labelled from the column headers */
+    @media (max-width: 720px) {
+      .table-wrap { border: none; background: transparent; overflow: visible; }
+      table.data, table.data tbody, table.data tr, table.data td { display: block; width: 100%; }
+      table.data thead { display: none; }
+      table.data tr {
+        background: var(--paper); border: 1px solid var(--line); margin-bottom: 10px; padding: 6px 0;
+      }
+      table.data tr:hover td { background: transparent; }
+      table.data td {
+        display: flex; gap: 12px; justify-content: space-between; align-items: baseline;
+        border-bottom: none; padding: 6px 14px; text-align: right;
+      }
+      table.data td[data-label]::before {
+        content: attr(data-label); flex: 0 0 38%; text-align: left;
+        font-size: 12px; font-weight: 600; color: var(--muted);
+      }
+      table.data td:not([data-label]) { text-align: left; }
+      table.data td.row-actions {
+        display: flex; justify-content: flex-start; gap: 8px; width: 100%;
+        padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--rule);
+      }
+      table.data td.row-actions .btn + .btn { margin-left: 0; }
+      table.data td.row-actions .btn { flex: 1; }
+    }
+
+    /* ---- (3) grouped sidebar ---- */
+    .side-group {
+      padding: 16px 18px 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--stone); border-top: 1px solid var(--rule);
+      background: var(--paper);
+    }
+    .side-tabs .side-group + .tab { border-top: none; }
+    .side-raise {
+      display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 12px;
+      padding: 11px 18px; font: inherit; font-size: 14px; font-weight: 500; color: var(--text-2);
+      background: transparent; border: 1px dashed var(--line); cursor: pointer;
+    }
+    .side-raise:hover { color: var(--red); border-color: var(--red); background: var(--paper); }
+    @media (max-width: 880px) {
+      .side-group { display: none; }
+      .side-raise { width: auto; margin-top: 10px; }
+    }
+
+    /* ---- (4) lists ---- */
+    .filter-select {
+      min-width: 170px; padding: 10px 36px 10px 12px; font: inherit; font-size: 14px; color: var(--text);
+      background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A8980' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;
+      border: 1px solid var(--line); border-radius: 0; cursor: pointer; -webkit-appearance: none; appearance: none;
+    }
+    .filter-select:hover { border-color: var(--rule); }
+    .filter-select:focus, .search:focus-within { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-tint); }
+    .list-count { font-size: 13px; color: var(--muted); white-space: nowrap; }
+    /* long lists scroll inside the table so the header row stays in view */
+    .admin-content .table-wrap { max-height: calc(100vh - 230px); overflow: auto; }
+    .admin-content table.data th { position: sticky; top: 0; z-index: 1; }
+    @media (max-width: 720px) {
+      .admin-content .table-wrap { max-height: none; overflow: visible; }
+      .search { max-width: none; min-width: 0; }
+      .filter-select { width: 100%; }
+    }
+
+    /* ---- (5) overview ---- */
+    .ov-hi { font-size: 24px; font-weight: 700; }
+    .ov-attn { gap: 16px; }
+    .attn { padding: 20px 22px; }
+    .attn-n { font-size: 36px; font-weight: 700; }
+    .attn-l { font-size: 14.5px; }
+    .attn-a { font-size: 13px; }
+    .ov-sec { margin-top: 34px; display: flex; align-items: baseline; gap: 10px; }
+    .ov-sec-note { font-size: 12.5px; font-weight: 400; color: var(--muted); }
+    .stat .v { font-weight: 700; }
+    .stat-grid.impact .stat { padding: 22px 22px; }
+    .stat-grid.impact .stat .v { font-size: 30px; }
+    .hz-bars { display: flex; flex-direction: column; gap: 14px; }
+    .hz-row { display: grid; grid-template-columns: 170px minmax(0, 1fr) 150px; align-items: center; gap: 16px; }
+    .hz-label { font-size: 14px; font-weight: 500; color: var(--text); }
+    .hz-track { height: 10px; background: var(--paper-3); }
+    .hz-fill { height: 100%; background: var(--red); }
+    .hz-val { display: flex; align-items: baseline; gap: 8px; justify-content: flex-end; font-size: 13px; color: var(--muted); white-space: nowrap; }
+    .hz-val strong { font-size: 15px; color: var(--text); font-weight: 700; }
+    @media (max-width: 720px) {
+      .hz-row { grid-template-columns: 1fr auto; gap: 6px 12px; }
+      .hz-track { grid-column: 1 / -1; grid-row: 2; }
+    }
+
+    /* ---- (6) polish ---- */
+    /* soft filled status chips */
+    .badge { border-color: transparent; }
+    .badge.pending  { background: #FEF3C7; color: #92400E; }
+    .badge.approved { background: #D1FAE5; color: #065F46; }
+    .badge.rejected { background: #FEE2E2; color: #991B1B; }
+    .badge.new      { background: #CFFAFE; color: #155E75; }
+    .badge.muted, .badge.off, .badge.draft { background: var(--paper-3); color: var(--muted); }
+    /* visible keyboard focus everywhere */
+    .btn:focus-visible, .tab:focus-visible, .attn:focus-visible, .side-raise:focus-visible,
+    .review-close:focus-visible, .pb-links a:focus-visible, .pb-logout:focus-visible,
+    table.data tr.clickable-row:focus-visible {
+      outline: 2px solid var(--red); outline-offset: 2px;
+    }
+    table.data tr.clickable-row:focus-visible { outline-offset: -2px; }
+    /* spacing + number/date columns */
+    .toolbar { margin-bottom: 16px; gap: 12px; }
+    table.data td { padding: 13px 16px; }
+    table.data .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    table.data .nowrap { white-space: nowrap; }
+    .card { padding: 22px 24px; }
+    /* in-place reload */
+    .tab-panel { position: relative; }
+    .tab-panel.is-loading .table-wrap, .tab-panel.is-loading .empty { opacity: 0.45; pointer-events: none; transition: opacity 0.15s; }
+    .tab-panel.is-loading::before {
+      content: ''; position: absolute; left: 0; right: 0; top: -8px; height: 2px; z-index: 2;
+      background: linear-gradient(90deg, transparent, var(--red), transparent); background-size: 40% 100%;
+      background-repeat: no-repeat; animation: aa-load 0.9s linear infinite;
+    }
+    @keyframes aa-load { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+    @media (prefers-reduced-motion: reduce) { .tab-panel.is-loading::before { animation: none; background: var(--red); } }
+
+    /* ---- review screen ---- */
+    .review-bar {
+      background: var(--paper); color: var(--text); border-bottom: 1px solid var(--line);
+      padding: 16px 28px; gap: 16px;
+    }
+    .review-bar .rv-title {
+      color: var(--text); font-size: 20px; font-weight: 700; line-height: 1.2;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .review-bar .rv-sub { color: var(--muted); font-size: 13.5px; }
+    .review-bar .badge { border-color: transparent; }
+    .review-close {
+      color: var(--muted); font-size: 26px; width: 40px; height: 40px; display: flex;
+      align-items: center; justify-content: center; border: 1px solid var(--line); padding: 0;
+    }
+    .review-close:hover { color: var(--text); border-color: var(--text); }
+    .review-scroll { padding: 28px 28px 48px; }
+    .review-layout {
+      max-width: 1180px; margin: 0 auto; display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start;
+    }
+    .review-doc { max-width: none; margin: 0; }
+    .review-aside { position: sticky; top: 0; display: flex; flex-direction: column; gap: 14px; }
+    .review-foot { display: none; }
+
+    .rv-glance {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line);
+      border: 1px solid var(--line); margin-bottom: 18px;
+    }
+    .rv-g { background: var(--paper); padding: 16px 18px; }
+    .rv-g-v { font-size: 22px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+    .rv-g-l { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+
+    .rv-section { margin-bottom: 16px; }
+    .rv-section-head { background: var(--paper); padding: 16px 22px 0; border-bottom: none; }
+    .rv-num { display: none; }
+    .rv-section-head h3 { font-size: 16px; font-weight: 600; }
+    .rv-section-body { padding: 14px 22px 22px; }
+    .rv-label { text-transform: none; letter-spacing: 0; font-size: 12.5px; font-weight: 500; margin-bottom: 3px; }
+    .rv-value { font-size: 14.5px; }
+    .rv-card { padding: 14px 16px; border-color: var(--rule); }
+    .rv-card + .rv-card { margin-top: 0; }
+    .rv-meta-l { text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 500; }
+    .rv-meta-v { font-variant-numeric: tabular-nums; }
+    .review-alert { border-width: 0 0 0 3px; border-style: solid; }
+
+    .rv-panel { background: var(--paper); border: 1px solid var(--line); padding: 18px 20px; }
+    .rv-panel-h { font-size: 12.5px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
+    .rv-decide { border-top: 3px solid var(--red); }
+    .rv-decide-status { margin-bottom: 14px; }
+    .rv-actions { display: flex; flex-direction: column; gap: 8px; }
+    .rv-actions .btn { width: 100%; }
+    .rv-note { margin: 12px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+    .rv-person { font-size: 14.5px; font-weight: 600; color: var(--text); }
+    .rv-contact { display: block; font-size: 13.5px; color: var(--red); text-decoration: none; margin-top: 4px; overflow-wrap: anywhere; }
+    .rv-contact:hover { text-decoration: underline; }
+    .rv-org { font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+
+    @media (max-width: 960px) {
+      .review-layout { grid-template-columns: 1fr; }
+      .review-aside { position: static; }
+      .review-scroll { padding: 18px 16px 110px; }
+      .review-bar { padding: 14px 16px; }
+      .rv-glance { grid-template-columns: repeat(2, 1fr); }
+      /* actions dock to the bottom of the screen */
+      .rv-decide .rv-actions {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; flex-direction: row;
+        padding: 12px 16px; background: var(--paper); border-top: 1px solid var(--line);
+        box-shadow: 0 -8px 24px rgba(11,11,14,0.08);
+      }
+      .rv-decide .rv-actions .btn { flex: 1; padding-left: 8px; padding-right: 8px; }
+    }
+  </style>
 </head>
 <body class="portal">
 
 <header class="portal-bar">
   <a href="/aa-portal" class="pb-brand">
     <img src="/aadashboard.png" alt="Kenya Anticipatory Action" />
-    <div class="pb-name">Admin Console</div>
+    <div class="pb-name">Anticipatory Action</div>
   </a>
   <nav class="pb-links" id="pbLinks">
     <a href="/aa-portal">Dashboard</a>
@@ -172,10 +420,6 @@
       <p class="portal-sub">Manage Anticipatory Action members, review submissions, and curate the programme's activities, reports and publications - all in one place.</p>
       {% endif %}
     </div>
-    <button class="btn ghost" id="raiseRequestBtn" type="button">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Raise a request
-    </button>
   </div>
 
   <div class="admin-shell">
@@ -185,36 +429,28 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           <span>Overview</span>
         </button>
-        {% if can_view_users %}
-        <button class="tab" data-tab="users">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span>Users</span><span class="count" id="cnt-users" style="display:none"></span>
+        <div class="side-group">Review queue</div>
+        <button class="tab" data-tab="submissions">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+          <span>Submissions</span>
         </button>
-        {% endif %}
         {% if can_manage_users or can_approve_accounts %}
         <button class="tab" data-tab="requests">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="11" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
           <span>Requests</span><span class="count" id="cnt-reqs" style="display:none"></span>
         </button>
         {% endif %}
+        <button class="tab" data-tab="messages">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+          <span>Messages</span><span class="count" id="cnt-msgs" style="display:none"></span>
+        </button>
         {% if can_manage_users %}
         <button class="tab" data-tab="support">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6h-5a3 3 0 0 0-3 3v9"/><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M3 21h18"/></svg>
           <span>Support</span><span class="count" id="cnt-support" style="display:none"></span>
         </button>
-        <button class="tab" data-tab="pillars">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
-          <span>Pillar Leads</span>
-        </button>
-        <button class="tab" data-tab="policy">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          <span>Policy &amp; Terms</span>
-        </button>
         {% endif %}
-        <button class="tab" data-tab="submissions">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
-          <span>Submissions</span>
-        </button>
+        <div class="side-group">Website content</div>
         <button class="tab" data-tab="reports">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span>Reports</span>
@@ -227,28 +463,33 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 8 12 8 12s8-6.6 8-12a8 8 0 0 0-8-8z"/></svg>
           <span>Events</span>
         </button>
+        <button class="tab" data-tab="faq">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>FAQ</span>
+        </button>
+        {% if can_view_users or can_manage_users %}<div class="side-group">Administration</div>{% endif %}
+        {% if can_view_users %}
+        <button class="tab" data-tab="users">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Users</span><span class="count" id="cnt-users" style="display:none"></span>
+        </button>
+        {% endif %}
         {% if can_manage_users %}
         <button class="tab" data-tab="orgs">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><line x1="9" y1="8" x2="9" y2="8"/><line x1="9" y1="12" x2="9" y2="12"/><line x1="15" y1="8" x2="15" y2="8"/><line x1="15" y1="12" x2="15" y2="12"/></svg>
           <span>Organizations</span>
         </button>
-        {% endif %}
-        {# Publications hidden - documents now live under Reports (Resource Library). #}
-        {% if false %}
-        <button class="tab" data-tab="pubs">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          <span>Publications</span>
+        <button class="tab" data-tab="pillars">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+          <span>Pillar Leads</span>
+        </button>
+        <button class="tab" data-tab="policy">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Policy &amp; Terms</span>
         </button>
         {% endif %}
-        <button class="tab" data-tab="messages">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
-          <span>Messages</span><span class="count" id="cnt-msgs" style="display:none"></span>
-        </button>
-        <button class="tab" data-tab="faq">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          <span>FAQ</span>
-        </button>
       </nav>
+      <button class="side-raise" id="raiseRequestBtn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Raise a request</button>
     </aside>
 
     <div class="admin-content">
@@ -286,7 +527,10 @@
     </div>
     <button class="review-close" id="review-close" aria-label="Close">&times;</button>
   </div>
-  <div class="review-scroll"><div class="review-doc" id="review-body"></div></div>
+  <div class="review-scroll"><div class="review-layout">
+    <div class="review-doc" id="review-body"></div>
+    <aside class="review-aside" id="review-aside"></aside>
+  </div></div>
   <div class="review-foot" id="review-foot"></div>
 </div>
 
@@ -462,10 +706,73 @@
     document.getElementById('modal-body').innerHTML = bodyHTML;
     showModal();
   }
-  function curSubFilter() { var f = document.getElementById('sub-filter'); return f ? f.value : ''; }
-  function curReqFilter() { var f = document.getElementById('req-filter'); return f ? f.value : ''; }
+  // Queues open on Pending (what a reviewer came for) and then remember the chosen filter.
+  var subStatus = 'Pending', reqStatus = 'Pending';
+  var listSearch = {};  // per-panel search text, kept across re-renders
+  function curSubFilter() { return subStatus; }
+  function curReqFilter() { return reqStatus; }
 
-  function panelHTML(id, html) { document.getElementById('panel-' + id).innerHTML = html; }
+  // Instant client-side search over a rendered table, with a live result count.
+  function wireListSearch(panelId, noun) {
+    var panel = document.getElementById('panel-' + panelId);
+    var input = panel.querySelector('[data-list-search]');
+    var countEl = panel.querySelector('[data-list-count]');
+    if (!input) return;
+    function apply() {
+      var q = input.value.trim().toLowerCase();
+      listSearch[panelId] = input.value;
+      var rows = panel.querySelectorAll('table.data tbody tr'), shown = 0;
+      rows.forEach(function (r) {
+        var hit = !q || r.textContent.toLowerCase().indexOf(q) !== -1;
+        r.style.display = hit ? '' : 'none';
+        if (hit) shown++;
+      });
+      if (countEl) countEl.textContent = q ? (shown + ' of ' + rows.length + ' ' + noun) : (rows.length + ' ' + noun);
+    }
+    input.addEventListener('input', apply);
+    apply();
+  }
+  function listSearchBox(panelId, placeholder) {
+    return '<div class="search">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+        '<input type="search" data-list-search placeholder="' + AA.esc(placeholder) + '" value="' + AA.esc(listSearch[panelId] || '') + '" autocomplete="off" />' +
+      '</div><span class="list-count" data-list-count></span>';
+  }
+
+  function panelHTML(id, html) {
+    var el = document.getElementById('panel-' + id);
+    // Reloading a list that is already on screen: keep it visible (dimmed, with a
+    // progress bar) instead of blanking the whole panel, so the toolbar doesn't jump.
+    if (html.indexOf('<div class="loading">') === 0 && el.querySelector('.table-wrap')) {
+      el.classList.add('is-loading');
+      return;
+    }
+    el.classList.remove('is-loading');
+    el.innerHTML = html;
+    labelCells(el);
+  }
+  // Copy each column header onto its cells as data-label, so the phone layout
+  // can show rows as labelled cards. Blank headers (action columns) get none.
+  var NUM_COLS = ['People', 'Funds (KES)', 'Activations', 'People Targeted', 'Order'];
+  var DATE_COLS = ['Date', 'Requested', 'Received', 'Created', 'Dates'];
+  function labelCells(root) {
+    root.querySelectorAll('table.data').forEach(function (t) {
+      var ths = t.querySelectorAll('thead th');
+      var heads = [].map.call(ths, function (th) { return th.textContent.trim(); });
+      heads.forEach(function (h, i) {
+        if (NUM_COLS.indexOf(h) !== -1) ths[i].classList.add('num');
+        if (DATE_COLS.indexOf(h) !== -1) ths[i].classList.add('nowrap');
+      });
+      t.querySelectorAll('tbody tr').forEach(function (tr) {
+        [].forEach.call(tr.children, function (td, i) {
+          if (!heads[i]) return;
+          td.setAttribute('data-label', heads[i]);
+          if (NUM_COLS.indexOf(heads[i]) !== -1) td.classList.add('num');
+          if (DATE_COLS.indexOf(heads[i]) !== -1) td.classList.add('nowrap');
+        });
+      });
+    });
+  }
   function errPanel(id, msg) { panelHTML(id, '<div class="empty"><p>' + AA.esc(msg) + '</p></div>'); }
 
   // Disable a button and show a "working…" state while an async action runs.
@@ -570,26 +877,35 @@
           '<p class="ov-hs">' + (needs > 0 ? 'Jump straight to whatever needs a decision.' : 'Nothing is waiting in the queues right now.') + '</p></div>' +
         '<div class="ov-attn">' + attn.join('') + '</div>' +
 
-        '<div class="ov-sec">Programme impact</div>' +
-        '<div class="stat-grid">' +
-          stat(d.activations_approved || 0, 'Approved Activations') +
-          stat(d.counties_active || 0, 'Counties Active') +
-          stat(d.activations_total || 0, 'Total Submissions') +
+        '<div class="ov-sec">Programme impact <span class="ov-sec-note">approved activations only</span></div>' +
+        '<div class="stat-grid impact">' +
+          stat(AA.fmtNum(d.activations_approved || 0), 'Approved activations', true) +
+          stat(fmtCompact(d.people_reached || 0), 'People targeted') +
+          stat('KES ' + fmtCompact(d.funds_kes || 0), 'Funds committed') +
+          stat(d.counties_active || 0, 'Counties reached') +
         '</div>' +
 
         '<div class="ov-sec">Knowledge &amp; network</div>' +
         '<div class="stat-grid">' +
           stat(d.reports || 0, 'Reports') +
-          stat(d.activities || 0, 'TWG Activities') +
-          (IS_ADMIN ? stat(d.organizations || 0, 'Organizations') : '') +
-          (IS_ADMIN ? stat(d.users || 0, 'AA Members') : '') +
+          stat(d.activities || 0, 'TWG activities') +
+          (IS_ADMIN ? stat(d.organizations || 0, 'Organisations') : '') +
+          (IS_ADMIN ? stat(d.users || 0, 'Members') : '') +
         '</div>';
 
       if (d.hazards && d.hazards.length) {
-        html += '<div class="card"><h3 class="card-title">Approved Activations by Hazard</h3>' +
-          tableHead(['Hazard', 'Activations', 'People Targeted']) +
-          d.hazards.map(function (h) { return '<tr><td class="strong">' + AA.esc(h.hazard) + '</td><td>' + AA.esc(h.activations) + '</td><td>' + AA.esc(AA.fmtNum(h.people)) + '</td></tr>'; }).join('') +
-          '</tbody></table></div></div>';
+        // Simple horizontal bars, scaled to the largest hazard - easier to compare than a table.
+        var maxAct = Math.max.apply(null, d.hazards.map(function (h) { return h.activations || 0; })) || 1;
+        html += '<div class="card"><h3 class="card-title">Approved activations by hazard</h3><div class="hz-bars">' +
+          d.hazards.map(function (h) {
+            var pct = Math.max(2, Math.round((h.activations || 0) / maxAct * 100));
+            return '<div class="hz-row">' +
+              '<div class="hz-label">' + AA.esc(h.hazard) + '</div>' +
+              '<div class="hz-track"><div class="hz-fill" style="width:' + pct + '%"></div></div>' +
+              '<div class="hz-val"><strong>' + AA.esc(h.activations) + '</strong><span>' + AA.esc(fmtCompact(h.people)) + ' people</span></div>' +
+            '</div>';
+          }).join('') +
+        '</div></div>';
       }
 
       // Test Data section - only when test mode is on. Clear amber TEST treatment.
@@ -622,17 +938,17 @@
       var rows = (r && r.data) || [];
       var html = toolbar(
         searchBox('user-search', 'Search by name, email or organization…', usersSearch) +
+        '<span class="list-count">' + rows.length + (rows.length === 1 ? ' member' : ' members') + '</span><div class="grow"></div>' +
         (CAN_MANAGE ? '<button class="btn" id="add-user"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add User</button>' : ''));
       if (!rows.length) {
         html += '<div class="empty"><p>' + (usersSearch ? 'No users match "' + AA.esc(usersSearch) + '".' : 'No Anticipatory Action users yet.') + '</p></div>';
       } else {
-        html += tableHead(['Name', 'Email', 'Phone', 'Organization', 'Role', 'Status']);
+        html += tableHead(['Name', 'Phone', 'Organization', 'Role', 'Status']);
         html += rows.map(function (u) {
           var role = (u.role || '').replace('Anticipatory Action ', 'AA ');
           var status = u.enabled ? '<span class="badge approved">Active</span>' : '<span class="badge off">Disabled</span>';
           return '<tr' + (CAN_MANAGE ? ' class="clickable-row" tabindex="0" role="button" title="Click to edit this user"' : '') + ' data-row-user="' + AA.esc(u.name) + '">' +
-            '<td class="strong">' + AA.esc(u.full_name || '-') + '</td>' +
-            '<td>' + AA.esc(u.email) + '</td>' +
+            '<td class="strong">' + AA.esc(u.full_name || '-') + '<span class="cell-sub">' + AA.esc(u.email) + '</span></td>' +
             '<td>' + AA.esc(u.phone || '-') + '</td>' +
             '<td>' + AA.esc(u.organization_name || u.organization || '-') + '</td>' +
             '<td>' + AA.esc(role) + '</td>' +
@@ -744,24 +1060,26 @@
 
   // ===================== SUBMISSIONS =====================
   async function loadSubmissions(status) {
+    if (status === undefined) status = subStatus;
+    subStatus = status || '';
     panelHTML('submissions', '<div class="loading">Loading submissions…</div>');
     try {
       var r = await AA.call(P + 'list_submissions', status ? { status: status } : {});
       var rows = (r && r.data) || [];
-      var filterSel = '<select class="filter-select" id="sub-filter" style="min-width:170px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' +
+      var filterSel = '<select class="filter-select" id="sub-filter">' +
         ['', 'Pending', 'Replied', 'Approved', 'Not Approved'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s === 'Replied' ? 'Info Requested' : (s || 'All statuses')) + '</option>'; }).join('') + '</select>';
-      var html = toolbar('<div class="grow"></div>' + filterSel);
+      var html = toolbar(listSearchBox('submissions', 'Search reference, organisation, county…') + '<div class="grow"></div>' + filterSel);
       if (!rows.length) {
         html += '<div class="empty"><p>No submissions found.</p></div>';
       } else {
-        html += tableHead(['Reference', 'Organization', 'Hazard', 'Counties', 'People', 'Funds (KES)', 'Date', 'Status', '']);
+        html += tableHead(['Reference', 'Organization', 'Hazard', 'Counties', 'People', 'Funds (KES)', 'Date', 'Status']);
         html += rows.map(function (s) {
           var badge = s.status === 'Approved' ? '<span class="badge approved">Approved</span>'
             : s.status === 'Not Approved' ? '<span class="badge rejected">Not Approved</span>'
             : s.status === 'Replied' ? '<span class="badge new">Info Requested</span>'
             : '<span class="badge pending">Pending</span>';
           var ref = '<span class="strong">' + AA.esc(s.name) + '</span>';
-          if (s.is_update) ref += '<div><span class="badge muted" title="This supersedes an earlier approved submission">Update to a previous submission</span></div>';
+          if (s.is_update) ref += '<span class="cell-sub" title="This supersedes an earlier approved submission">Update to an earlier submission</span>';
           return '<tr class="clickable-row" tabindex="0" role="button" data-row-open="' + AA.esc(s.name) + '" title="Click to review this submission">' +
             '<td>' + ref + '</td>' +
             '<td>' + AA.esc(s.organization || '-') + '</td>' +
@@ -770,12 +1088,12 @@
             '<td>' + AA.fmtNum(s.people) + '</td>' +
             '<td>' + AA.fmtNum(s.funds) + '</td>' +
             '<td>' + AA.esc(fmtDate(s.submitted_on)) + '</td>' +
-            '<td>' + badge + '</td>' +
-            '<td class="row-actions"><button class="btn sm ghost" data-row-review="' + AA.esc(s.name) + '">Review</button></td></tr>';
+            '<td>' + badge + '</td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
       panelHTML('submissions', html);
+      wireListSearch('submissions', rows.length === 1 ? 'submission' : 'submissions');
       document.getElementById('sub-filter').addEventListener('change', function () { loadSubmissions(this.value); });
       // The row and its Review button both open the full detail view; decisions live there.
       document.querySelectorAll('[data-row-review]').forEach(function (b) {
@@ -785,6 +1103,14 @@
         tr.addEventListener('click', function (e) { if (e.target.closest('button')) return; submissionDetail(tr.dataset.rowOpen); });
       });
     } catch (e) { errPanel('submissions', e.message); }
+  }
+
+  // 1234 -> "1,234", 1008840 -> "1.01M", 2528669000 -> "2.53B" (headline figures).
+  function fmtCompact(n) {
+    n = Number(n) || 0;
+    if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(2).replace(/\.?0+$/, '') + 'B';
+    if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+    return AA.fmtNum(n);
   }
 
   // Format a YYYY-MM-DD[ HH:MM:SS] value as a readable date (e.g. "12 Mar 2026").
@@ -876,9 +1202,13 @@
       '<div class="rv-label">' + AA.esc(label) + '</div>' +
       '<div class="rv-value">' + (opts.html && !blank ? val : AA.esc(val)) + '</div></div>';
   }
+  function glance(label, value) {
+    return '<div class="rv-g"><div class="rv-g-v">' + AA.esc(value) + '</div><div class="rv-g-l">' + AA.esc(label) + '</div></div>';
+  }
   function rvSection(num, title, inner) {
-    return '<div class="rv-section"><div class="rv-section-head"><span class="rv-num">' + num + '</span><h3>' + AA.esc(title) + '</h3></div>' +
-      '<div class="rv-section-body">' + inner + '</div></div>';
+    // `num` is kept for call compatibility; the refreshed layout doesn't number sections.
+    return '<section class="rv-section"><div class="rv-section-head"><h3>' + AA.esc(title) + '</h3></div>' +
+      '<div class="rv-section-body">' + inner + '</div></section>';
   }
   function closeReview() { document.getElementById('review').classList.remove('open'); }
   document.getElementById('review-close').addEventListener('click', closeReview);
@@ -907,22 +1237,29 @@
       if (d.other_implementing_partners) partners += ': ' + d.other_implementing_partners;
 
       var sec1 = '<div class="rv-grid">' +
-        rvField('Implementing Organisation', d.implementing_organization) +
-        rvField('Organisation Type', orgType) +
-        rvField('Funding Source', d.funding_source) +
-        rvField('Reporting Person', d.reporting_person) +
-        rvField('Email Address', d.reporter_email) +
-        rvField('Phone Number', d.reporter_phone_number) +
+        rvField('Implementing organisation', d.implementing_organization) +
+        rvField('Organisation type', orgType) +
+        rvField('Funding source', d.funding_source) +
+        rvField('Reporting person', d.reporting_person) +
+        rvField('Email', d.reporter_email) +
+        rvField('Phone', d.reporter_phone_number) +
       '</div>';
 
       var sec2 = '<div class="rv-grid">' +
-        rvField('Hazard Being Anticipated', hazard) +
-        rvField('Implementing Partners', partners) +
-        rvField('Activation Start Date', d.activation_start_date) +
-        rvField('Proposed End Date', d.activation_end_date) +
+        rvField('Hazard', hazard) +
+        rvField('Implementing partners', partners) +
+        rvField('Activation start', d.activation_start_date ? fmtDate(d.activation_start_date) : '') +
+        rvField('Proposed end', d.activation_end_date ? fmtDate(d.activation_end_date) : '') +
       '</div>';
 
       var dets = d.anticipatory_action_details || [];
+      var tot = dets.reduce(function (a, x) {
+        a.people += Number(x.number_of_people_targeted) || 0;
+        a.hh += Number(x.number_of_hh_targeted) || 0;
+        a.kes += Number(x.amount_for_anticipatory_action_kes) || 0;
+        if (x.county && a.counties.indexOf(x.county) === -1) a.counties.push(x.county);
+        return a;
+      }, { people: 0, hh: 0, kes: 0, counties: [] });
       var sec3 = dets.length ? ('<div class="rv-cards">' + dets.map(function (x) {
         var s = (x.status_of_the_early_action || 'Planned').toLowerCase();
         var pill = s.indexOf('complete') === 0 ? 'complete' : (s.indexOf('ongoing') === 0 ? 'ongoing' : 'planned');
@@ -938,11 +1275,11 @@
       }).join('') + '</div>') : '<div class="rv-value">No intervention details were recorded.</div>';
 
       var add = '';
-      if (d.triggers_and_thresholds) add += rvField('Triggers & Thresholds', d.triggers_and_thresholds, { full: true });
-      if (d.lessons_learnt) add += rvField('Key Lessons Learnt', d.lessons_learnt, { full: true });
-      if (d.challenges) add += rvField('Challenges Faced', d.challenges, { full: true });
+      if (d.triggers_and_thresholds) add += rvField('Triggers & thresholds', d.triggers_and_thresholds, { full: true });
+      if (d.lessons_learnt) add += rvField('Lessons learnt', d.lessons_learnt, { full: true });
+      if (d.challenges) add += rvField('Challenges', d.challenges, { full: true });
       if (d.recommendations) add += rvField('Recommendations', d.recommendations, { full: true });
-      if (d.supporting_materials) add += rvField('Supporting Materials', '<a href="' + AA.esc(AA.safeUrl(d.supporting_materials)) + '" target="_blank" rel="noopener">Open file ↗</a>', { full: true, html: true });
+      if (d.supporting_materials) add += rvField('Supporting materials', '<a href="' + AA.esc(AA.safeUrl(d.supporting_materials)) + '" target="_blank" rel="noopener">Open file ↗</a>', { full: true, html: true });
 
       // Version / amendment history - shows that this supersedes an earlier approved submission.
       var versionsSec = '';
@@ -957,7 +1294,7 @@
             '<td><span class="badge ' + vcls + '">' + AA.esc(vn.status || '-') + '</span></td>' +
             '<td>' + AA.esc(fmtDate(vn.creation)) + '</td></tr>';
         }).join('');
-        versionsSec = rvSection('↺', 'Version History',
+        versionsSec = rvSection('', 'Version history',
           '<div class="rv-value" style="margin-bottom:12px">This submission is part of an amendment chain and supersedes an earlier approved submission.</div>' +
           '<div class="table-wrap"><table class="data"><thead><tr><th>Version</th><th>Reference</th><th>Status</th><th>Created</th></tr></thead><tbody>' +
           (rowsV || '<tr><td colspan="4">No earlier versions recorded.</td></tr>') +
@@ -968,28 +1305,58 @@
         (d.is_update ? '<div class="review-alert" style="background:rgba(0,166,184,0.08);border-color:var(--teal)"><b>Update to a previous submission.</b> This supersedes an earlier approved submission.</div>' : '') +
         (d.status === 'Not Approved' && d.reason_for_rejection ? '<div class="review-alert"><b>Rejection reason:</b> ' + AA.esc(d.reason_for_rejection) + '</div>' : '') +
         (d.info_request ? '<div class="review-alert" style="background:rgba(0,166,184,0.08);border-color:var(--teal)"><b>Information requested:</b> ' + AA.esc(d.info_request) + '</div>' : '') +
-        rvSection(1, 'Implementing Organization', sec1) +
-        rvSection(2, 'Hazard & Anticipatory Actions', sec2) +
-        rvSection(3, 'Anticipatory Action Details', sec3) +
-        (add ? rvSection(4, 'Additional Information', '<div class="rv-grid">' + add + '</div>') : '') +
+        '<div class="rv-glance">' +
+          glance('People targeted', AA.fmtNum(tot.people)) +
+          glance('Households', tot.hh ? AA.fmtNum(tot.hh) : '-') +
+          glance('Budget', 'KES ' + fmtCompact(tot.kes)) +
+          glance('Counties', tot.counties.length) +
+        '</div>' +
+        rvSection(1, 'Interventions (' + dets.length + ')', sec3) +
+        rvSection(2, 'Hazard & activation', sec2) +
+        rvSection(3, 'Organisation & reporter', sec1) +
+        (add ? rvSection(4, 'Additional information', '<div class="rv-grid">' + add + '</div>') : '') +
         versionsSec +
         changeHistoryHTML();
 
-      document.getElementById('review-title').textContent = 'Submission ' + d.name;
-      document.getElementById('review-sub').innerHTML = 'Submitted by ' + AA.esc(d.owner || '-') + ' &nbsp;·&nbsp; <span class="badge ' + statusCls + '">' + AA.esc(statusLabel) + '</span>';
+      document.getElementById('review-title').innerHTML = AA.esc(d.name) + ' <span class="badge ' + statusCls + '">' + AA.esc(statusLabel) + '</span>';
+      document.getElementById('review-sub').textContent = [d.implementing_organization, d.anticipated_hazard,
+        'submitted ' + fmtDate(d.creation) + (d.reporting_person ? ' by ' + d.reporting_person : '')].filter(Boolean).join(' · ');
       document.getElementById('review-body').innerHTML = html;
       wireChangeHistory(document.getElementById('review-body'), 'Anticipatory Action', d.name);
 
-      var foot = '';
-      if (d.status !== 'Approved') foot += '<button class="btn ok" id="rv-approve">Approve</button>';
-      if (d.status !== 'Not Approved') foot += '<button class="btn danger" id="rv-reject">Reject</button>';
-      foot += '<button class="btn ghost" id="rv-info">Request more info</button>';
-      foot += '<button class="btn ghost" id="rv-cancel">Close</button>';
-      document.getElementById('review-foot').innerHTML = foot;
+      // Decision panel (sticky on desktop; the action row docks to the bottom on phones).
+      var acts = '';
+      if (d.status !== 'Approved') acts += '<button class="btn ok" id="rv-approve">Approve</button>';
+      acts += '<button class="btn ghost" id="rv-info">Request more info</button>';
+      if (d.status !== 'Not Approved') acts += '<button class="btn danger" id="rv-reject">Reject</button>';
+      var decideNote = d.status === 'Approved'
+        ? 'Approved and published. Rejecting or requesting info reopens it as a draft for the reporter.'
+        : 'Approving locks the submission and publishes it to the dashboards.';
+      var tel = (d.reporter_phone_number || '').replace(/[^+\d]/g, '');
+      document.getElementById('review-aside').innerHTML =
+        '<div class="rv-panel rv-decide">' +
+          '<div class="rv-panel-h">Decision</div>' +
+          '<div class="rv-decide-status"><span class="badge ' + statusCls + '">' + AA.esc(statusLabel) + '</span></div>' +
+          '<div class="rv-actions">' + acts + '</div>' +
+          '<p class="rv-note">' + AA.esc(decideNote) + '</p>' +
+        '</div>' +
+        '<div class="rv-panel">' +
+          '<div class="rv-panel-h">Reporter</div>' +
+          '<div class="rv-person">' + AA.esc(d.reporting_person || '-') + '</div>' +
+          (d.reporter_email ? '<a class="rv-contact" href="mailto:' + AA.esc(d.reporter_email) + '">' + AA.esc(d.reporter_email) + '</a>' : '') +
+          (tel ? '<a class="rv-contact" href="tel:' + AA.esc(tel) + '">' + AA.esc(d.reporter_phone_number) + '</a>' : '') +
+          '<div class="rv-org">' + AA.esc(d.implementing_organization || '') + '</div>' +
+        '</div>' +
+        '<div class="rv-panel rv-window">' +
+          '<div class="rv-panel-h">Activation window</div>' +
+          '<div class="rv-person">' + AA.esc(d.activation_start_date ? fmtDate(d.activation_start_date) : '-') +
+            ' &ndash; ' + AA.esc(d.activation_end_date ? fmtDate(d.activation_end_date) : 'open') + '</div>' +
+          '<div class="rv-org">' + AA.esc(tot.counties.join(', ') || '-') + '</div>' +
+        '</div>';
+      document.getElementById('review-foot').innerHTML = '';
 
       document.getElementById('review').classList.add('open');
       document.querySelector('.review-scroll').scrollTop = 0;
-      document.getElementById('rv-cancel').addEventListener('click', closeReview);
       var ap = document.getElementById('rv-approve');
       if (ap) ap.addEventListener('click', async function () {
         if (!confirm('Approve this submission? It will be locked and published to the dashboards.')) return;
@@ -1050,7 +1417,7 @@
             : (x.published ? '<span class="badge approved">Published</span>' : '<span class="badge off">Hidden</span>');
           var title = '<span class="strong">' + AA.esc(x.title) + '</span>';
           if (member) title += ' <span class="badge muted" title="Uploaded by a member">Member upload</span>';
-          if (x.description) title += '<div style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:3px">' + AA.esc(x.description) + '</div>';
+          if (x.description) title += '<span class="cell-sub">' + AA.esc(x.description) + '</span>';
           if (removed && x.removal_reason) title += '<div style="font-weight:400;color:var(--red-dark);font-size:12px;margin-top:3px">Removed: ' + AA.esc(x.removal_reason) + '</div>';
           var actions = '';
           if (!removed) {
@@ -1603,8 +1970,8 @@
         html += tableHead(['Order', 'Title', 'Type', 'Document', 'Visibility']);
         html += rows.map(function (x) {
           var vis = x.published ? '<span class="badge approved">Public</span>' : '<span class="badge off">Hidden</span>';
-          var doc = x.attachment ? '<a href="' + AA.esc(x.attachment) + '" target="_blank" rel="noopener">File</a>'
-            : x.link ? '<a href="' + AA.esc(x.link) + '" target="_blank" rel="noopener">Link</a>' : '-';
+          var doc = x.attachment ? '<a href="' + AA.esc(AA.safeUrl(x.attachment)) + '" target="_blank" rel="noopener">File</a>'
+            : x.link ? '<a href="' + AA.esc(AA.safeUrl(x.link)) + '" target="_blank" rel="noopener">Link</a>' : '-';
           return '<tr class="clickable-row" tabindex="0" role="button" data-row-policy="' + AA.esc(x.name) + '" title="Click to edit this document">' +
             '<td>' + AA.esc(x.display_order != null ? x.display_order : '-') + '</td>' +
             '<td class="strong">' + AA.esc(x.title) + '</td>' +
@@ -1630,7 +1997,7 @@
     var types = POLICY_TYPES.map(function (t) { return { value: t, label: t }; });
     var existingFile = (pol && pol.attachment) || '';
     var fileNote = existingFile
-      ? '<div class="field full"><label>Current file</label><div class="hint"><a href="' + AA.esc(existingFile) + '" target="_blank" rel="noopener">' + AA.esc(existingFile.split('/').pop()) + '</a></div></div>'
+      ? '<div class="field full"><label>Current file</label><div class="hint"><a href="' + AA.esc(AA.safeUrl(existingFile)) + '" target="_blank" rel="noopener">' + AA.esc(existingFile.split('/').pop()) + '</a></div></div>'
       : '';
     var f =
       field({ label: 'Title', id: 'p_title', required: true, full: true, value: pol && pol.title }) +
@@ -1826,7 +2193,7 @@
             '<td>' + AA.esc(x.type || '-') + '</td>' +
             '<td>' + AA.esc(x.publication_date || '-') + '</td>' +
             '<td>' + AA.esc(x.publishing_authority || '-') + '</td>' +
-            '<td>' + (url ? '<a class="btn sm ghost" href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open</a>' : '-') + '</td>' +
+            '<td>' + (url ? '<a class="btn sm ghost" href="' + AA.esc(AA.safeUrl(url)) + '" target="_blank" rel="noopener">Open</a>' : '-') + '</td>' +
             '<td class="row-actions"><button class="btn sm ghost" data-view-pub="' + AA.esc(x.name) + '">View</button><button class="btn sm danger" data-del-pub="' + AA.esc(x.name) + '">Remove</button></td></tr>';
         }).join('');
         html += '</tbody></table></div>';
@@ -1856,7 +2223,7 @@
           kv('Type', d.type) + kv('Publication Date', d.publication_date) +
           kv('Publishing Authority', d.publishing_authority) +
           kv('State', d.docstatus === 1 ? 'Submitted' : 'Draft') +
-          kv('Link / File', url ? '<a href="' + AA.esc(url) + '" target="_blank" rel="noopener">Open document ↗</a>' : '-', { full: true, html: true }) +
+          kv('Link / File', url ? '<a href="' + AA.esc(AA.safeUrl(url)) + '" target="_blank" rel="noopener">Open document ↗</a>' : '-', { full: true, html: true }) +
         '</div>' +
         '<div class="form-actions"><button class="btn danger" id="d-del">Remove</button><button class="btn ghost" id="d-close">Close</button></div>';
       detailModal('Publication · ' + name, body);
@@ -1897,20 +2264,19 @@
     try {
       var r = await AA.call(P + 'list_messages', status ? { status: status } : {});
       var rows = (r && r.data) || [];
-      var filterSel = '<select class="filter-select" id="msg-filter" style="min-width:160px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' +
+      var filterSel = '<select class="filter-select" id="msg-filter">' +
         ['', 'New', 'Read', 'Replied', 'Closed'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
       var html = toolbar('<div class="grow"></div>' + filterSel);
       if (!rows.length) { html += '<div class="empty"><p>No messages.</p></div>'; }
       else {
-        html += tableHead(['From', 'Subject', 'Received', 'Status', '']);
+        html += tableHead(['From', 'Subject', 'Received', 'Status']);
         html += rows.map(function (m) {
           var sb = m.status === 'New' ? 'new' : (m.status === 'Closed' ? 'off' : 'muted');
           return '<tr class="clickable-row" tabindex="0" role="button" data-row-msg="' + AA.esc(m.name) + '" title="Click to open this message">' +
-            '<td class="strong">' + AA.esc(m.full_name) + '<div style="font-weight:400;color:var(--muted);font-size:12px">' + AA.esc(m.email) + '</div></td>' +
+            '<td class="strong">' + AA.esc(m.full_name) + '<span class="cell-sub">' + AA.esc(m.email) + '</span></td>' +
             '<td>' + AA.esc(m.subject || '-') + '</td>' +
-            '<td>' + AA.esc((m.submitted_on || m.creation || '').slice(0, 16).replace('T', ' ')) + '</td>' +
-            '<td><span class="badge ' + sb + '">' + AA.esc(m.status) + '</span></td>' +
-            '<td class="row-actions"><button class="btn sm ghost" data-view-msg="' + AA.esc(m.name) + '">View</button></td></tr>';
+            '<td>' + AA.esc(fmtDateTime(m.submitted_on || m.creation)) + '</td>' +
+            '<td><span class="badge ' + sb + '">' + AA.esc(m.status) + '</span></td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
@@ -1951,37 +2317,40 @@
 
   // ===================== ACCESS REQUESTS (sign-ups) =====================
   async function loadRequests(status) {
+    if (status === undefined) status = reqStatus;
+    reqStatus = status || '';
     panelHTML('requests', '<div class="loading">Loading sign-up requests…</div>');
     try {
       var r = await AA.call(P + 'list_requests', status ? { status: status } : {});
       var rows = (r && r.data) || [];
-      var filterSel = '<select class="filter-select" id="req-filter" style="min-width:160px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' +
+      var filterSel = '<select class="filter-select" id="req-filter">' +
         ['', 'Pending', 'Approved', 'Rejected'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
-      var html = toolbar('<div class="grow"></div>' + filterSel);
+      var html = toolbar(listSearchBox('requests', 'Search name, email, organisation…') + '<div class="grow"></div>' + filterSel);
       if (!rows.length) { html += '<div class="empty"><p>No sign-up requests.</p></div>'; }
       else {
-        html += tableHead(['Name', 'Email', 'Organisation', 'Requested', 'Status', '']);
+        html += tableHead(['Applicant', 'Organisation', 'Requested', 'Status', '']);
         html += rows.map(function (q) {
           var sb = q.status === 'Approved' ? 'approved' : (q.status === 'Rejected' ? 'rejected' : 'pending');
           var infoChip = (q.status === 'Pending' && (q.pending_info_request || '').trim())
             ? ' <span class="badge" style="background:#FFFBEB;color:#B45309;border-color:#B45309" title="More information was requested; it will be emailed when the account is approved">Info requested</span>'
             : '';
-          var acts = '<button class="btn sm ghost" data-view-req="' + AA.esc(q.name) + '">Review</button>';
+          // The whole row opens the review, so no separate Review button.
+          var acts = '';
           if (q.status === 'Pending') {
             acts += '<button class="btn sm ok" data-approve-req="' + AA.esc(q.name) + '">Approve</button>' +
                     '<button class="btn sm danger" data-reject-req="' + AA.esc(q.name) + '">Reject</button>';
           }
           return '<tr class="clickable-row" tabindex="0" role="button" data-row-req="' + AA.esc(q.name) + '" title="Click to review this request">' +
-            '<td class="strong">' + AA.esc(q.full_name || '-') + '</td>' +
-            '<td>' + AA.esc(q.email) + '</td>' +
+            '<td class="strong">' + AA.esc(q.full_name || '-') + '<span class="cell-sub">' + AA.esc(q.email) + '</span></td>' +
             '<td>' + AA.esc(q.organization || '-') + '</td>' +
-            '<td>' + AA.esc((q.creation || '').slice(0, 10)) + '</td>' +
+            '<td>' + AA.esc(fmtDate(q.creation)) + '</td>' +
             '<td><span class="badge ' + sb + '">' + AA.esc(q.status) + '</span>' + infoChip + '</td>' +
             '<td class="row-actions">' + acts + '</td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
       panelHTML('requests', html);
+      wireListSearch('requests', rows.length === 1 ? 'request' : 'requests');
       document.getElementById('req-filter').addEventListener('change', function () { loadRequests(this.value); });
       document.querySelectorAll('#panel-requests tr.clickable-row').forEach(function (tr) {
         tr.addEventListener('click', function (e) { if (e.target.closest('button')) return; requestDetail(tr.dataset.rowReq); });
@@ -2005,12 +2374,15 @@
       var d = (r && r.data) || {};
       if (d.status === 'Approved') { AA.toast('This request is already approved.'); return; }
       var orgs = (await ensureOrgs()).map(function (o) { return { value: o.name, label: o.name_of_organization }; });
+      // An approver can only onboard into their own organisation (enforced server-side too).
+      if (d.restrict_org) orgs = orgs.filter(function (o) { return o.value === d.restrict_org; });
       var roleField = CAN_SET_ROLE
         ? field({ label: 'Role', id: 'q_role', type: 'select', options: META.roles.map(function (rl) { return { value: rl, label: rl.replace('Anticipatory Action ', 'AA ') }; }), value: d.role || 'Anticipatory Action User', placeholder: false })
         : field({ label: 'Role', id: 'q_role_ro', value: (d.role || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA '), readonly: true, hint: 'Only an administrator can change the role.' });
       var f =
         '<div class="alert show info" style="grid-column:1/-1;margin-bottom:2px">Approving creates an Anticipatory Action account for <b>' + AA.esc(d.full_name || d.email) + '</b> and emails them a link to set a password and sign in.</div>' +
-        field({ label: 'Assign Organisation', id: 'q_org', type: 'select', options: orgs, value: '', required: true, full: true, hint: 'Add it under Organizations first if it is missing.' }) +
+        field({ label: 'Assign organisation', id: 'q_org', type: 'select', options: orgs, value: d.restrict_org && orgs.length ? orgs[0].value : '', required: true, full: true,
+          hint: d.restrict_org ? 'You can approve members into your own organisation only.' : 'Add it under Organizations first if it is missing.' }) +
         roleField +
         field({ label: 'Notes (optional)', id: 'q_notes', type: 'textarea', full: true });
       openModal('Approve · ' + (d.full_name || name), f, async function () {
@@ -2060,7 +2432,7 @@
         '<div class="kv-grid">' +
           kv('Name', d.full_name) + kv('Email', d.email) +
           kv('Phone', d.phone) + kv('Organisation (stated)', d.organization) +
-          kv('Position', d.position) + kv('Requested', (d.creation || '').slice(0, 10)) +
+          kv('Position', d.position) + kv('Requested', fmtDate(d.creation)) +
           kv('Role to Assign', (d.role || 'Anticipatory Action User').replace('Anticipatory Action ', 'AA ')) +
           kv('Message', d.message, { full: true }) +
           (d.review_notes ? kv('Review Notes', d.review_notes, { full: true }) : '') +
@@ -2156,22 +2528,21 @@
     try {
       var r = await AA.call(P + 'list_support_requests', status ? { status: status } : {});
       var rows = (r && r.data) || [];
-      var filterSel = '<select class="filter-select" id="support-filter" style="min-width:160px;padding:10px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' +
+      var filterSel = '<select class="filter-select" id="support-filter">' +
         ['', 'New', 'Open', 'Resolved', 'Closed'].map(function (s) { return '<option value="' + s + '"' + (s === (status || '') ? ' selected' : '') + '>' + (s || 'All statuses') + '</option>'; }).join('') + '</select>';
       var html = toolbar('<div class="grow"></div>' + filterSel);
       if (!rows.length) { html += '<div class="empty"><p>No support requests.</p></div>'; }
       else {
-        html += tableHead(['Subject', 'Type', 'Raised by', 'Priority', 'Date', 'Status', '']);
+        html += tableHead(['Subject', 'Type', 'Raised by', 'Priority', 'Date', 'Status']);
         html += rows.map(function (q) {
-          var who = AA.esc(q.raised_by || '-') + (q.raised_by_role ? '<div style="font-weight:400;color:var(--muted);font-size:12px">' + AA.esc(q.raised_by_role.replace('Anticipatory Action ', 'AA ')) + '</div>' : '');
+          var who = AA.esc(q.raised_by || '-') + (q.raised_by_role ? '<span class="cell-sub">' + AA.esc(q.raised_by_role.replace('Anticipatory Action ', 'AA ')) + '</span>' : '');
           return '<tr class="clickable-row" tabindex="0" role="button" data-row-support="' + AA.esc(q.name) + '" title="Click to triage this request">' +
             '<td class="strong">' + AA.esc(q.subject || '-') + '</td>' +
             '<td>' + AA.esc(q.request_type || '-') + '</td>' +
             '<td>' + who + '</td>' +
             '<td>' + AA.esc(q.priority || '-') + '</td>' +
             '<td>' + AA.esc(fmtDate(q.submitted_on || q.creation)) + '</td>' +
-            '<td>' + supportBadge(q.status) + '</td>' +
-            '<td class="row-actions"><button class="btn sm ghost" data-view-support="' + AA.esc(q.name) + '">Open</button></td></tr>';
+            '<td>' + supportBadge(q.status) + '</td></tr>';
         }).join('');
         html += '</tbody></table></div>';
       }
@@ -2243,7 +2614,7 @@
         var current = p.lead_name
           ? '<span class="strong">' + AA.esc(p.lead_name) + '</span>' + (p.lead_email ? '<div style="font-weight:400;color:var(--muted);font-size:12px">' + AA.esc(p.lead_email) + '</div>' : '')
           : '<span class="badge muted">Not set</span>';
-        var sel = '<select class="filter-select" data-pillar-sel="' + AA.esc(p.pillar) + '" style="min-width:240px;padding:9px 12px;border:1px solid var(--line);background:#fff;font-family:Helvetica,Arial,sans-serif">' + opts + '</select>';
+        var sel = '<select class="filter-select" data-pillar-sel="' + AA.esc(p.pillar) + '">' + opts + '</select>';
         return '<tr>' +
           '<td class="strong">' + AA.esc(p.pillar) + '</td>' +
           '<td>' + current + '</td>' +
